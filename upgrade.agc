@@ -46,16 +46,6 @@ function CreateUpgradePod(row, col)
 
 	LoadSpriteExpress(spr + 4, areaChr$ + upgradeChr$ + str(1+upgrades[row+1,col+1]) + ".png", GetSpriteWidth(spr+2), GetSpriteHeight(spr+2), GetSPriteX(spr+2), GetSpriteY(spr+2), GetSpriteDepth(spr+2)-1)
 	
-	if col >= areaSeen
-		for k = 0 to 2
-			IncSpriteX(spr+k, 9999)
-			IncTextX(spr+k, 9999)
-		next k
-		IncSpriteX(spr+3, 9999)
-		IncSpriteX(spr+4, 9999)
-	endif
-
-	
 endfunction
 
 
@@ -79,7 +69,7 @@ function CreateUpgrade()
 	LoadSpriteExpress(startRace, "nextRace.png", 420/2.8, 165/2.8, 1100-300*(3-areaSeen), 350, 5)
 	
 	//TODO - Slide everything in, fade in a slightly dark layer
-	for col = 0 to 2
+	for col = 0 to areaSeen - 1
 		for row = 0 to 3
 			CreateUpgradePod(row, col)
 		next row
@@ -130,7 +120,7 @@ endfunction
 
 function DoUpgrade()
 	
-	for col = 0 to 2
+	for col = 0 to areaSeen - 1
 		for row = 0 to 3
 			DoUpgradePod(row, col)
 		next row
