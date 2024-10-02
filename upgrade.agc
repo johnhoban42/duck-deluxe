@@ -22,7 +22,6 @@ function CreateUpgradePod(row, col)
 		if k = 0 then CreateTextExpress(spr + k, "", 96, fontMI, 1, GetSpriteX(spr) + 30, GetSpriteY(spr) + 2, 0, 15)
 		if k = 1 then CreateTextExpress(spr + k, "", 48, font1I + upgrades[row+1, col+1], 0, GetSpriteX(spr) + 30 + 30, GetSpriteY(spr) + 2 + 5, -7, 15)
 		if k = 2 then CreateTextExpress(spr + k, "", 24, fontMI, 1, GetSpriteMiddleX(spr+1), GetSpriteY(spr) + 73, -4, 10)
-		
 	next k
 	
 	areaChr$ = AREA_CHARS[col]
@@ -92,50 +91,50 @@ function CreateUpgrade()
 	
 endfunction
 
+
+function DoUpgradePod(row, col)
+	// Handle events for a single upgrade pod.
+	
+	spr = upgrage1StartSpr + 200*col + row*10
+	
+	cost = GetCost(row, col)
+	if Button(spr) and scrapTotal >= cost and upgrades[row+1, col+1] <= 2
+		inc upgrades[row+1, col+1], 1
+		inc scrapTotal, -cost
+		PlaySound(buyS, volumeS)
+		PlaySound(selectS, volumeS)
+		UpdateScrapText()
+		
+		if upgrades[row+1, col+1] <> 3
+			SetTextString(spr + 1, words[row+1, upgrades[row+1,col+1]+1, col+1])
+			SetTextString(spr + 2, UPGRADE_CHARS[row] + words[row+1, upgrades[row+1,col+1]+2, col+1] + "- " + Str(cost) + "~" + chr(10) + powers[row+1, upgrades[row+1,col+1]+2, col+1])
+		else
+			SetTextString(spr + 1, words[row+1, 4, col+1])
+			SetTextString(spr + 2, "")
+			SetSpriteVisible(spr+1, 0)
+			IncTextY(spr+1, 40)
+			IncSpriteY(spr+3, 40)
+			IncSpritePosition(spr+2, 290, -38) //Icons
+			IncSpritePosition(spr+4, 290, -38) //Icons
+		endif
+		SetTextFontImage(spr + 1, font1I + upgrades[row+1, col+1])
+		SetSpriteImage(spr + 4, LoadImage(AREA_CHARS[col] + UPGRADE_CHARS[row] + str(1+upgrades[row+1,col+1]) + ".png"))
+		trashBag.insert(GetSpriteImageID(spr+4))
+		
+	endif
+
+	if cost > scrapTotal then SetTextColor(spr + 2, 160, 160, 160, 255)
+	
+endfunction
+
+
 function DoUpgrade()
 	
-	for j = 0 to 2
-		for i = 0 to 3
-			spr = upgrage1StartSpr + 200*j + i*10
-			
-			if i = 0 then str$ = "M"
-			if i = 1 then str$ = "O"
-			if i = 2 then str$ = "D"
-			if i = 3 then str$ = "E"
-			
-			//upgrades[i, j]
-			cost = GetCost(i, j)
-			if Button(spr) and scrapTotal >= cost and upgrades[i+1, j+1] <= 2
-				inc upgrades[i+1, j+1], 1
-				inc scrapTotal, -cost
-				PlaySound(buyS, volumeS)
-				PlaySound(selectS, volumeS)
-				UpdateScrapText()
-				
-				if upgrades[i+1, j+1] <> 3
-					SetTextString(spr + 1, words[i+1, upgrades[i+1,j+1]+1, j+1])
-					SetTextString(spr + 2, str$ + words[i+1, upgrades[i+1,j+1]+2, j+1] + "- " + Str(GetCost(i,j)) + "~" + chr(10) + powers[i+1, upgrades[i+1,j+1]+2, j+1])
-				else
-					SetTextString(spr + 1, words[i+1, 4, j+1])
-					SetTextString(spr + 2, "")
-					SetSpriteVisible(spr+1, 0)
-					IncTextY(spr+1, 40)
-					IncSpriteY(spr+3, 40)
-					IncSpritePosition(spr+2, 290, -38) //Icons
-					IncSpritePosition(spr+4, 290, -38) //Icons
-				endif
-				SetTextFontImage(spr + 1, font1I + upgrades[i+1, j+1])
-				if j = 0 then SetSpriteImage(spr + 4, LoadImage("W" + str$ + str(1+upgrades[i+1,j+1]) + ".png"))
-				if j = 1 then SetSpriteImage(spr + 4, LoadImage("L" + str$ + str(1+upgrades[i+1,j+1]) + ".png"))
-				if j = 2 then SetSpriteImage(spr + 4, LoadImage("S" + str$ + str(1+upgrades[i+1,j+1]) + ".png"))
-				trashBag.insert(GetSpriteImageID(spr+4))
-				
-			endif
-
-			if GetCost(i,j) > scrapTotal then SetTextColor(spr + 2, 160, 160, 160, 255)
-
-		next i
-	next j
+	for col = 0 to 2
+		for row = 0 to 3
+			DoUpgradePod(row, col)
+		next row
+	next col
 	
 	
 	if Button(startRace)
