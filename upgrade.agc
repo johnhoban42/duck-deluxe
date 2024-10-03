@@ -1,17 +1,13 @@
 // File: upgrade.agc
 // Created: 24-09-27
 
-// TODO - these should be moved to some sort of constants file
-global UPGRADE_CHARS as string[4] = ["M", "O", "D", "E"]
-global AREA_CHARS as string[3] = ["W", "L", "S"]
-
+#include "constants.agc"
 
 function CreateUpgradePod(row, col)
 	// Create a single upgrade pod.
 	
 	spr = upgrage1StartSpr + 200*col + row*10
 	LoadSpriteExpress(spr, "shopbox" + str(col+1) + ".png", 362, 154, 10 + col*360, 80 + row*156, 20)
-	//SetSpriteColor(spr, 30, 30, 30, 220)
 	
 	LoadSpriteExpress(spr + 1, "shopPlate.png", 240, 75, GetSpriteX(spr) + 72, GetSpriteY(spr) + 60, 14)
 	SetSpriteColor(spr+1, 110, 110, 110, 255)
@@ -61,9 +57,9 @@ function CreateUpgrade()
 	PlaySprite(instruct, 2, 1, 1, 2)
 	LoadSpriteExpress(vehicle4, "upgradeV" + str(areaSeen) + ".png", GetSpriteWidth(instruct), GetSpriteWidth(instruct), GetSpriteX(instruct), GetSpriteY(instruct), 70)
 	
-	for i = 0 to areaSeen - 1
-		LoadSpriteExpress(vehicle1 + i, "mode" + str(1+i) + ".png", 395*0.6, 80*0.6, 70 + i*(360), 25, 30)
-	next i
+	for col = 0 to areaSeen - 1
+		LoadSpriteExpress(vehicle1 + col, "mode" + str(1+col) + ".png", 395*0.6, 80*0.6, 70 + col*(360), 25, 30)
+	next col
 	
 	LoadSpriteExpress(upgradeBG, "upgradebg" + str(areaSeen) + ".png", w, h, 0, 0, 99)	
 	LoadSpriteExpress(startRace, "nextRace.png", 420/2.8, 165/2.8, 1100-300*(3-areaSeen), 350, 5)
@@ -146,6 +142,7 @@ function DoUpgrade()
 	endif
 	
 endfunction
+
 
 function GetCost(i, j)
 	cost = 0
