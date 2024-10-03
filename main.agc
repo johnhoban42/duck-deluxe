@@ -19,7 +19,7 @@ SetWindowTitle("Race Against a Duck")
 SetWindowSize( 1280, 720, 0 )
 SetWindowAllowResize( 1 ) // allow the user to resize the window
 
-
+global debug = 1
 
 #constant w 1280
 #constant h 720
@@ -240,6 +240,7 @@ global nextScreen = TITLE
 //Gameplay variables
 global heroX# = 0
 global heroY# = 0
+global heroLocalDistance# = 0
 global damageAmt# = 0
 global scrapTotal = 0
 global duckDistance# = 60000
@@ -270,6 +271,31 @@ SetSpriteVisible(cutsceneSpr2, 0)
 //SetPhysicsDebugOn()
 
 
+//This is the array (technically not a queue) of races to be gone through in a gameplay order
+global raceQueue as integer[0]
+global curRaceSet = 1
+SetRaceQueue(1)
+
+function SetRaceQueue(raceSet)
+	
+	//First, clearing the current race queue
+	endI = raceQueue.length
+	for i = 1 to endI
+		raceQueue.remove(0)
+	next i
+	
+	if raceSet = 1 //Race Against a Duck order
+		raceQueue.insert(WATER)
+		raceQueue.insert(LAND)
+		raceQueue.insert(AIR)
+	elseif raceSet = 2 //Race Against a Duck 2 order
+		raceQueue.insert(WATER2)
+		raceQueue.insert(LAND2)
+		raceQueue.insert(AIR2)
+		raceQueue.insert(SPACE2)
+	endif
+endfunction
+
 
 do
     fpsr# = (60.0/ScreenFPS())*9
@@ -292,33 +318,33 @@ do
 		endif
 	endif
 
-	
 
 	if screen < UPGRADE
+		
+		
+		if GetRawKeyState(81) and debug = 1 then heroLocalDistance# = heroLocalDistance# - 100
+		
 		if screen = WATER
 			DoWater()
-			if heroWaterDistance# <= 0
-				PlayTweenSprite(tweenSprFadeIn, coverS, 0)
-				PlaySound(windMS, volumeS)
-				WaitFadeTween()
-				DeleteScene(screen)
-				screen = 0
-				nextScreen = LAND
-			endif
 		elseif screen = LAND
 			DoLand()
-			if heroLandDistance# <= 0
+		elseif screen = AIR
+			DoAir()
+		endif
+		
+		if heroLocalDistance# <= 0
+			if raceQueue.length > 0
+				//Loading in the next race
 				PlayTweenSprite(tweenSprFadeIn, coverS, 0)
 				PlaySound(windMS, volumeS)
 				WaitFadeTween()
 				DeleteScene(screen)
 				screen = 0
-				nextScreen = AIR
-			endif
-		elseif screen = AIR
-			DoAir()
-			if heroAirDistance# <= 0
-				
+				nextScreen = raceQueue[1]
+				raceQueue.remove(1)
+			else
+				//Last race just ended, finishing this 'session'
+				//This was currently copied from the 'AIR' finishing code, should be updated
 				StopMusicOGG(waterM)
 				StopMusicOGG(landM)
 				StopMusicOGG(airM)
@@ -343,7 +369,9 @@ do
 				screen = 0
 				nextScreen = FINISH
 			endif
+				
 		endif
+		
 		dec duckDistance#, duckSpeed#*fpsr#
 		if duckDistance# < 40000 and areaSeen = 1 then duckSpeed# = 100
 		if duckDistance# < 20000 and areaSeen = 2 then duckSpeed# = 100
@@ -419,7 +447,12 @@ do
 				WaitFadeTween()
 				DeleteScene(screen)
 				screen = 0
-				nextScreen = WATER
+				//TODO - change this current race set out to correspond with different menu screen buttons
+				curRaceSet = 1
+				SetRaceQueue(curRaceSet)
+				nextScreen = raceQueue[1]
+				raceQueue.remove(1)
+				
 				duckDistance# = 60000
 				duckSpeed# = duckSpeedDefault#
 				if GetMusicPlayingOGG(introM) then StopMusicOGG(introM)
@@ -554,6 +587,8 @@ function SetupScene(scene)
 
 	if scene < UPGRADE
 
+		
+
 		if GetMusicPlayingOGG(waterM) = 0 then PlayMusicOGG(waterM, 0)
 		if GetMusicPlayingOGG(landM) = 0 then PlayMusicOGG(landM, 0)
 		if GetMusicPlayingOGG(airM) = 0 then PlayMusicOGG(airM, 0)
@@ -687,7 +722,7 @@ function SetupScene(scene)
 			SetSpriteDepth(cutsceneSpr, 2)
 			
 			//Gameplay setting
-			heroWaterDistance# = waterDistance
+			heroLocalDistance# = waterDistance
 			waterVelX# = 0
 			
 		elseif scene = LAND
@@ -799,7 +834,7 @@ function SetupScene(scene)
 			
 			
 			//Gameplay setting
-			heroLandDistance# = landDistance
+			heroLocalDistance# = landDistance
 		
 			boostAmt# = boostTotal
 		
@@ -882,7 +917,7 @@ function SetupScene(scene)
 			
 			
 			//Gameplay setting
-			heroAirDistance# = airDistance
+			heroLocalDistance# = airDistance
 			airVelX# = 0
 			airVelY# = 0
 		
@@ -1102,7 +1137,7 @@ function DeleteScene(scene)
 			DeleteAnimatedSprite(cutsceneSpr)
 			
 			//Gameplay setting
-			heroWaterDistance# = waterDistance
+			heroLocalDistance# = waterDistance
 
 	elseif scene = LAND
 		

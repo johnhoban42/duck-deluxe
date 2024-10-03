@@ -1,7 +1,6 @@
 // File: 3air.agc
 // Created: 24-10-03
 
-global heroAirDistance# = 0
 #constant airDistance 20000
 global fixedAirSpeed# = .31
 global airSpeedMax# = 2
@@ -18,7 +17,7 @@ global spinLeft# = 0
 
 function DoAir()
 	
-	SetSpriteFrame(bg3, 1+12.0*(Round(airDistance-heroAirDistance#)/(1.0*airDistance)))
+	SetSpriteFrame(bg3, 1+12.0*(Round(airDistance-heroLocalDistance#)/(1.0*airDistance)))
 	
 	if spinLeft# > 0
 		inc spinLeft#, -fpsr#
@@ -44,7 +43,7 @@ function DoAir()
 		
 		dec damageAmt#, fpsr#/3
 		
-		inc heroAirDistance#, fixedAirSpeed#*fpsr#/(255.0/damageAmt#)
+		inc heroLocalDistance#, fixedAirSpeed#*fpsr#/(255.0/damageAmt#)
 		
 		SetSpriteColor(hero, 255, 255-damageAmt#, 255-damageAmt#, 255)
 	endif
@@ -106,15 +105,15 @@ function DoAir()
 		
 	
 	if airSpeed# > 0
-		dec heroAirDistance#, airSpeed#*fpsr#
+		dec heroLocalDistance#, airSpeed#*fpsr#
 		dec airSpeed#, airSpeedLoss#*fpsr#
 	endif
-	dec heroAirDistance#, fixedAirSpeed#*fpsr#
+	dec heroLocalDistance#, fixedAirSpeed#*fpsr#
 	//IncSpriteAngle(airS, .14*fpsr#)
 	
-	SetSpriteFrame(airS, 1+Mod(Round(airDistance-heroAirDistance#)/12, 52))
+	SetSpriteFrame(airS, 1+Mod(Round(airDistance-heroLocalDistance#)/12, 52))
 	
-	SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(airDistance - heroAirDistance#)/airDistance)/3 + (GetSpriteWidth(progBack)*2/3)-GetSpriteWidth(heroIcon)/2)
+	SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(airDistance - heroLocalDistance#)/airDistance)/3 + (GetSpriteWidth(progBack)*2/3)-GetSpriteWidth(heroIcon)/2)
 	SetSpriteX(duckIcon, Min(GetSpriteX(progBack)-GetSpriteWidth(duckIcon)/2 + (GetSpriteWidth(progBack)*(20000 - (duckDistance#-40000))/20000)/3, GetSpriteX(progBack)+GetSpriteWidth(progBack)-GetSpriteWidth(duckIcon)))
 	
 	deleted = 0
@@ -171,15 +170,15 @@ function RenderAir()
 	spr = duck
 	dis = (duckDistance#+2000)
 	x# = -0 + 20.0*sin(gameTime#/4)
-	SetSpriteSizeSquare(spr, Max(1, 100 - (heroAirDistance# - dis)/10.0 - 210))
+	SetSpriteSizeSquare(spr, Max(1, 100 - (heroLocalDistance# - dis)/10.0 - 210))
 	if GetSpriteWidth(spr) < 8
 		SetSpriteVisible(spr, 0)
 	else
 		SetSpriteVisible(spr, 1)
 	endif
-	SetSpritePosition(spr, w/2 - GetSpriteWidth(spr)/2 - (heroAirDistance# - dis)/7*(x#/100.0), -GetSpriteHeight(spr)/2 - (heroAirDistance# - dis)/5)
-	if (heroAirDistance#+2700) < dis
-		SetSpriteColorAlpha(spr, (255 + Max(-255, (heroAirDistance#+2700 - dis)/1.5)))
+	SetSpritePosition(spr, w/2 - GetSpriteWidth(spr)/2 - (heroLocalDistance# - dis)/7*(x#/100.0), -GetSpriteHeight(spr)/2 - (heroLocalDistance# - dis)/5)
+	if (heroLocalDistance#+2700) < dis
+		SetSpriteColorAlpha(spr, (255 + Max(-255, (heroLocalDistance#+2700 - dis)/1.5)))
 	endif
 	//Print(duckDistance#)
 	//Print(dis)
@@ -188,26 +187,26 @@ function RenderAir()
 	for i = 1 to spawnActive.length
 		//if i = 61 then Print(spawnActive[i].y)
 		spr = spawnActive[i].spr
-		SetSpriteSizeSquare(spr, Max(1, spawnActive[i].size - (heroAirDistance# - spawnActive[i].y)/10.0 - 210))
+		SetSpriteSizeSquare(spr, Max(1, spawnActive[i].size - (heroLocalDistance# - spawnActive[i].y)/10.0 - 210))
 		if GetSpriteWidth(spr) < 8
 			SetSpriteVisible(spr, 0)
 		else
 			SetSpriteVisible(spr, 1)
 		endif
-		SetSpritePosition(spr, w/2 - GetSpriteWidth(spr)/2 - (heroAirDistance# - spawnActive[i].y)/7*(spawnActive[i].x/100), -GetSpriteHeight(spr)/2 - (heroAirDistance# - spawnActive[i].y)/5)
+		SetSpritePosition(spr, w/2 - GetSpriteWidth(spr)/2 - (heroLocalDistance# - spawnActive[i].y)/7*(spawnActive[i].x/100), -GetSpriteHeight(spr)/2 - (heroLocalDistance# - spawnActive[i].y)/5)
 		//Fade in
 		SetSpriteColorAlpha(spr, 0)
-		if (heroAirDistance#+1100) < spawnActive[i].y
-			SetSpriteColorAlpha(spr, (Min(255, (spawnActive[i].y - (heroAirDistance#+1100))/1.5)))
+		if (heroLocalDistance#+1100) < spawnActive[i].y
+			SetSpriteColorAlpha(spr, (Min(255, (spawnActive[i].y - (heroLocalDistance#+1100))/1.5)))
 		endif
 		//Fade out
-		if (heroAirDistance#+2700) < spawnActive[i].y
-			SetSpriteColorAlpha(spr, (255 + Max(-255, (heroAirDistance#+2700 - spawnActive[i].y)/1.5)))
+		if (heroLocalDistance#+2700) < spawnActive[i].y
+			SetSpriteColorAlpha(spr, (255 + Max(-255, (heroLocalDistance#+2700 - spawnActive[i].y)/1.5)))
 		endif
 	next i
 	
-	//Print((heroAirDistance#+3700) - spawnActive[spawnActive.length].y)
-	//Print(heroAirDistance#)
+	//Print((heroLocalDistance#+3700) - spawnActive[spawnActive.length].y)
+	//Print(heroLocalDistance#)
 	//Print(GetSpriteColorAlpha(spawnActive[1].spr))
 	
 endfunction

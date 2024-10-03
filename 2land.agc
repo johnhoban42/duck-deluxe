@@ -1,7 +1,6 @@
 // File: 2land.agc
 // Created: 24-10-03
 
-global heroLandDistance# = 2000
 #constant landDistance 20000
 global heroYLow# = 0
 global heroVelY# = 0
@@ -39,7 +38,7 @@ function DoLand()
 	if boostAmt# < boostTotal then inc boostAmt#, boostRecharge#
 	
 	if activeBoost# > 0
-		dec heroLandDistance#, boostSpeed#
+		dec heroLocalDistance#, boostSpeed#
 		dec activeBoost#, boostDrain#
 		inc heroX#, .4*fpsr#
 	endif
@@ -85,24 +84,24 @@ function DoLand()
 		//Print((i - landBoost1 + 1) - boostAmt#)
 	next i 
 	
-	SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(landDistance - heroLandDistance#)/landDistance)/areaSeen + (GetSpriteWidth(progBack)/areaSeen))
-	SetSpriteFrame(landS, 1+Mod(Round(landDistance-heroLandDistance#)/6, 60))
+	SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(landDistance - heroLocalDistance#)/landDistance)/areaSeen + (GetSpriteWidth(progBack)/areaSeen))
+	SetSpriteFrame(landS, 1+Mod(Round(landDistance-heroLocalDistance#)/6, 60))
 	SetSpriteX(duckIcon, Min(GetSpriteX(progBack)-GetSpriteWidth(duckIcon)/2 + (GetSpriteWidth(progBack)*(40000 - (duckDistance#-20000))/20000)/areaSeen, GetSpriteX(progBack)+GetSpriteWidth(progBack)-GetSpriteWidth(duckIcon)))
-	SetSpriteX(duck, (heroLandDistance#-(duckDistance#-20000)))
+	SetSpriteX(duck, (heroLocalDistance#-(duckDistance#-20000)))
 	
-	SetSpriteX(rail1, -GetSpriteWidth(rail1)/4+Mod(20000+heroLandDistance#/2.5, GetSpriteWidth(rail1)/4))
+	SetSpriteX(rail1, -GetSpriteWidth(rail1)/4+Mod(20000+heroLocalDistance#/2.5, GetSpriteWidth(rail1)/4))
 	
 	if damageAmt# > 0
 		newC = GetSpriteColorGreen(hero)
 		dec damageAmt#, fpsr#/3
-		inc heroLandDistance#, fixedLandSpeed#*fpsr#/(255.0/damageAmt#)*landSlowDown#
+		inc heroLocalDistance#, fixedLandSpeed#*fpsr#/(255.0/damageAmt#)*landSlowDown#
 		SetSpriteColor(hero, 255, 255-damageAmt#, 255-damageAmt#, 255)
 	endif
 	
 	deleted = 0
 	for i = 1 to spawnActive.length
 		spr = spawnActive[i].spr
-		SetSpriteX(spr, (heroLandDistance#-spawnActive[i].x))
+		SetSpriteX(spr, (heroLocalDistance#-spawnActive[i].x))
 		if spawnActive[i].cat = BAD then SetSpriteFrame(spr, Max(Min(5, 5-(GetSpriteX(spr)/(w/5))), 1))
 		
 		if GetSpriteVisible(spr)
@@ -135,16 +134,16 @@ function DoLand()
 		spawnActive.remove(deleted)
 	endif
 	
-	dec heroLandDistance#, fixedLandSpeed#*fpsr#
+	dec heroLocalDistance#, fixedLandSpeed#*fpsr#
 	
-	if heroLandDistance# < 300
-		IncSpriteY(hero, -(300-heroLandDistance#)*2.5)
+	if heroLocalDistance# < 300
+		IncSpriteY(hero, -(300-heroLocalDistance#)*2.5)
 		SetSpriteFrame(hero, 3)
 		SetSpriteFrame(hero2, 6)
 		if GetSoundInstances(windBoostS) = 0 then PlaySound(windBoostS, volumeS*.8)
 	endif
 	
-	//print(heroLandDistance#)
+	//print(heroLocalDistance#)
 	//print(boostAmt#)
 	
 endfunction

@@ -156,7 +156,10 @@ function DoUpgrade()
 		
 		DeleteScene(UPGRADE)
 		screen = 0
-		nextScreen = WATER
+		//The next three lines are identical to the title screen - should it be combined into a little function? IDK
+		SetRaceQueue(curRaceSet)
+		nextScreen = raceQueue[1]
+		raceQueue.remove(1)
 	endif
 	
 endfunction

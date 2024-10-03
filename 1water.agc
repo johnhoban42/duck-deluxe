@@ -1,7 +1,6 @@
 // File: 1water.agc
 // Created: 24-10-03
 
-global heroWaterDistance# = 0000
 #constant waterDistance 20000
 
 global waterSpeedX# = 0.35
@@ -126,20 +125,20 @@ function DoWater()
 			//Sleep(1000)
 		endif
 		
-		SetSpriteFrame(waterS, 1+Mod(Round(waterDistance-heroWaterDistance#)/6, 52))
+		SetSpriteFrame(waterS, 1+Mod(Round(waterDistance-heroLocalDistance#)/6, 52))
 		
 		if damageAmt# > 0
 			newC = GetSpriteColorGreen(hero)
 			
 			dec damageAmt#, fpsr#/3
 			
-			inc heroWaterDistance#, fixedWaterSpeed#*fpsr#/(255.0/damageAmt#)
+			inc heroLocalDistance#, fixedWaterSpeed#*fpsr#/(255.0/damageAmt#)
 			
 			SetSpriteColor(hero, 255, 255-damageAmt#, 255-damageAmt#, 255)
 		endif
 		
 		if boatSpeed# > 0
-			dec heroWaterDistance#, boatSpeed#*fpsr#
+			dec heroLocalDistance#, boatSpeed#*fpsr#
 			dec boatSpeed#, boatSpeedLoss#*fpsr#
 			
 			if boatSpeed# <= 0
@@ -147,11 +146,11 @@ function DoWater()
 				
 			endif
 		endif
-		dec heroWaterDistance#, fixedWaterSpeed#*fpsr#
+		dec heroLocalDistance#, fixedWaterSpeed#*fpsr#
 		
-		SetSpriteFrame(bg3, 1+8.0*(Round(waterDistance-heroWaterDistance#)/(1.0*waterDistance)))
+		SetSpriteFrame(bg3, 1+8.0*(Round(waterDistance-heroLocalDistance#)/(1.0*waterDistance)))
 		
-		SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(waterDistance - heroWaterDistance#)/waterDistance)/areaSeen)
+		SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(waterDistance - heroLocalDistance#)/waterDistance)/areaSeen)
 		SetSpriteX(duckIcon, Min(GetSpriteX(progBack)-GetSpriteWidth(duckIcon)/2 + (GetSpriteWidth(progBack)*(20000 - (duckDistance#-40000))/20000)/areaSeen, GetSpriteX(progBack)+GetSpriteWidth(progBack)-GetSpriteWidth(duckIcon)))
 		
 		deleted = 0
@@ -202,13 +201,13 @@ function DrawWater()
 	//Updating the duck first
 	spr = duck
 	dis = (duckDistance#-37500)	//This should probably be 40000, once the game actually starts without an FPS spike
-	SetSpriteSizeSquare(spr, Max(1, 100 - (heroWaterDistance# - dis)/10.0 - 210))
+	SetSpriteSizeSquare(spr, Max(1, 100 - (heroLocalDistance# - dis)/10.0 - 210))
 	if GetSpriteWidth(spr) < 8
 		SetSpriteVisible(spr, 0)
 	else
 		SetSpriteVisible(spr, 1)
 	endif
-	SetSpritePosition(spr, w/2 - GetSpriteWidth(spr)/2 - (heroWaterDistance# - dis)/7*(-160.0/100), -GetSpriteHeight(spr)/2 - (heroWaterDistance# - dis)/5)
+	SetSpritePosition(spr, w/2 - GetSpriteWidth(spr)/2 - (heroLocalDistance# - dis)/7*(-160.0/100), -GetSpriteHeight(spr)/2 - (heroLocalDistance# - dis)/5)
 	if GetSpriteY(hero)+120 < GetSpriteY(spr)
 		SetSpriteColorAlpha(spr, (255 - Min(255, -(GetSpriteY(hero)+120) + 2.4*(GetSpriteY(spr)-GetSpriteY(hero)+120))))
 		if GetSpriteColorAlpha(spr) <= 10 then SetSpriteVisible(spr, 0)
@@ -220,13 +219,13 @@ function DrawWater()
 	for i = 1 to spawnActive.length
 		//if i = 61 then Print(spawnActive[i].y)
 		spr = spawnActive[i].spr
-		SetSpriteSizeSquare(spr, Max(1, spawnActive[i].size - (heroWaterDistance# - spawnActive[i].y)/10.0 - 210))
+		SetSpriteSizeSquare(spr, Max(1, spawnActive[i].size - (heroLocalDistance# - spawnActive[i].y)/10.0 - 210))
 		if GetSpriteWidth(spr) < 8
 			SetSpriteVisible(spr, 0)
 		else
 			SetSpriteVisible(spr, 1)
 		endif
-		SetSpritePosition(spr, w/2 - GetSpriteWidth(spr)/2 - (heroWaterDistance# - spawnActive[i].y)/7*(spawnActive[i].x/100), -GetSpriteHeight(spr)/2 - (heroWaterDistance# - spawnActive[i].y)/5)
+		SetSpritePosition(spr, w/2 - GetSpriteWidth(spr)/2 - (heroLocalDistance# - spawnActive[i].y)/7*(spawnActive[i].x/100), -GetSpriteHeight(spr)/2 - (heroLocalDistance# - spawnActive[i].y)/5)
 		if GetSpriteY(hero)+120 < GetSpriteY(spr)
 			SetSpriteColorAlpha(spr, (255 - Min(255, -(GetSpriteY(hero)+120) + 2.4*(GetSpriteY(spr)-GetSpriteY(hero)+120))))
 			if GetSpriteColorAlpha(spr) <= 10 then SetSpriteVisible(spr, 0)
