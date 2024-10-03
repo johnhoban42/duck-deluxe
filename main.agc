@@ -1,5 +1,12 @@
 #include "myLib.agc"
 #include "upgrade.agc"
+#include "1water.agc"
+#include "2land.agc"
+#include "3air.agc"
+#include "4water2.agc"
+#include "5land2.agc"
+#include "6air2.agc"
+#include "7space2.agc"
 
 // Project: EvilDuck 
 // Created: 2023-11-27
@@ -30,6 +37,29 @@ SetScissor(0,0,0,0 ) // use the maximum available screen space, no black borders
 UseNewDefaultFonts( 1 ) // since version 2.0.22 we can use nicer default fonts
 
 SetVSync(1)
+
+#constant WATER 1
+#constant LAND 2
+#constant AIR 3
+#constant WATER2 4
+#constant LAND2 5
+#constant AIR2 6
+#constant SPACE2 7
+
+#constant UPGRADE 8
+#constant TITLE 9
+#constant FINISH 10
+
+global heroImg1
+global heroImg2
+global heroImg3
+
+global hero2Img1
+global hero2Img2
+global hero2Img3
+global hero2Img4
+global hero2Img5
+global hero2Img6
 
 #constant hitS 1
 LoadSoundOGG(hitS, "sounds/hit.ogg")
@@ -205,7 +235,7 @@ SetPowers()
 //Overhead variables
 global fpsr# = 100
 global screen = 0
-global nextScreen = UPGRADE
+global nextScreen = TITLE
 
 //Gameplay variables
 global heroX# = 0
@@ -466,6 +496,11 @@ do
     //Print( ScreenFPS() )
     UpdateAllTweens(GetFrameTime())
     //Print(GetRawLastKey())
+    Print(HeroX#)
+    if GetSpriteExists(hero)
+    		Print(GetSpriteX(Hero))
+    		Print(GetSpriteY(Hero))
+	endif
     Sync()
 loop
 
@@ -478,23 +513,7 @@ function WaitFadeTween()
 	UpdateAllTweens(1)
 endfunction
 
-#constant WATER 1
-#constant LAND 2
-#constant AIR 3
-#constant UPGRADE 4
-#constant TITLE 5
-#constant FINISH 6
 
-global heroImg1
-global heroImg2
-global heroImg3
-
-global hero2Img1
-global hero2Img2
-global hero2Img3
-global hero2Img4
-global hero2Img5
-global hero2Img6
 
 function HideUIText()
 	SetTextVisible(instruct, 0)
@@ -559,11 +578,11 @@ function SetupScene(scene)
 			CreateTextExpress(vehicle1+i, words[i+1, upgrades[i+1,scene]+1, scene], 48, fontGI, 0, 63+i*3, 35 + i*65, -11, 2)
 		next i
 		
+		SetInstructionText(scene)
+		
 		//Duck will be the first spawnable object
 		
 		if scene = WATER
-				
-			SetTextString(instruct, "LEFT/RIGHT - Move" + CHR(10) + "SPACE with Full Bar - Row" + CHR(10) + "Collect scrap metal!")
 			
 			//SetMusicVolumeOGG(waterM, 100)
 			
@@ -673,7 +692,6 @@ function SetupScene(scene)
 			
 		elseif scene = LAND
 			
-			SetTextString(instruct, "LEFT/RIGHT - Move" + CHR(10) + "UP - Jump" + CHR(10) + "SPACE - Use Boost")
 			
 			if duckSpeed# = 100 then duckDistance# = 40000
 			
@@ -787,8 +805,6 @@ function SetupScene(scene)
 		
 		elseif scene = AIR
 			
-			SetTextString(instruct, "LEFT/RIGHT/UP/DOWN - Move" + CHR(10) + "Hit Tornados?" + CHR(10) + "Get an upgrade!")
-			if upgrades[2, 3] > 0 then SetTextString(instruct, "LEFT/RIGHT/UP/DOWN - Move" + CHR(10) + "Hit Tornados - Boost" + CHR(10) + "Win the race!")
 			
 			if duckSpeed# = 100 then duckDistance# = 20000
 			
@@ -973,6 +989,8 @@ function SetupScene(scene)
 		//SetTextColor(scrapText, 0, 0, 0, 255)
 	endif
 	
+	
+	
 	screen = scene
 	
 
@@ -1018,640 +1036,7 @@ function SetBG(scene)
 	
 endfunction
 
-global heroWaterDistance# = 0000
-#constant waterDistance 20000
 
-global waterSpeedX# = 0.35
-global waterVelX# = 0
-global waterBarSize = 210
-
-global chargeC# = 0
-global chargeM = 600
-global chargeSpeed# = .6
-global rowCoolDown# = 0
-global rowCoolDownMax = 450
-global boatSpeedMax = 15
-global boatSpeed# = 0
-global boatSpeedLoss# = .01
-global fixedWaterSpeed# = .013
-global frameCheck = 0
-
-function DoWater()
-	
-	if GetSpriteCurrentFrame(cutsceneSpr) < 4
-		
-		
-		SetSpritePosition(hero, heroX#, heroY# + 10*Abs(sin(gameTime#/8)) + 6*Abs(cos(gameTime#/3)))
-		DrawWater()
-		IncSpriteY(duck, 10*Abs(sin(gameTime#/9)) + 5*Abs(cos(gameTime#/4)))
-		
-		if frameCheck <> GetSpriteCurrentFrame(cutsceneSpr) and GetSpriteCurrentFrame(cutsceneSpr) <> 1
-			PlaySound(beepReadyS, volumeS)
-			frameCheck = GetSpriteCurrentFrame(cutsceneSpr)
-		endif
-		
-	else
-		if GetSpritePlaying(duck) = 0
-			PlaySound(beepGoS, volumeS)
-			PlaySound(windSS, volumeS)
-			PlaySprite(duck, 20, 1, 2, 3)
-			StopMusicOGG(waterM)
-			StopMusicOGG(landM)
-			StopMusicOGG(airM)
-			PlayMusicOGG(waterM, 0)
-			PlayMusicOGG(landM, 0)
-			PlayMusicOGG(airM, 0)
-			SetMusicVolumeOGG(waterM, 100)
-			SetMusicVolumeOGG(landM, 0)
-			SetMusicVolumeOGG(airM, 0)
-		endif
-		IncSpriteY(cutsceneSpr, -2*fpsr#)
-		//waterXMax = -
-		heroX# = Min(Max(heroX#, 195), 1080)
-		SetSpritePosition(hero, heroX#, heroY# + 10*Abs(sin(gameTime#/8)) + 6*Abs(cos(gameTime#/3)))
-		
-		DrawWater()
-		
-		//SetSpriteColor(hero, GetSpriteColorRed(hero) - 1, GetSpriteColorRed(hero) - 1, GetSpriteColorRed(hero) - 1,255)
-		
-		if rowCoolDown# > 0
-			dec rowCoolDown#, 1*fpsr#
-			if rowCoolDown# <= 0 then chargeC# = 0
-		else
-			inc chargeC#, chargeSpeed#*fpsr#
-			SetSpriteColor(waterBarFront, 235, 235, 235, 255)
-			if chargeC# > chargeM
-				SetSpriteColor(waterBarFront, 225, 255, 255, 255)
-				if GetSoundInstances(rowReadyS) = 0 then PlaySound(rowReadyS, volumeS*.8)
-			endif
-		endif
-		if chargeC# > chargeM*1.3 then chargeC# = 10
-		SetSpriteFrame(waterBarFront, 1 + 28*Min(Round(chargeC#), chargeM)*1.0/chargeM*1.0)
-		//waterBarSize*(Min(Round(chargeC#), chargeM)*1.0/chargeM*1.0), GetSpriteHeight(waterBarFront))
-		
-		
-		if inputLeft
-			inc heroX#, -waterSpeedX#*1.5*fpsr#
-			PlaySprite(hero, 5, 0, 1, 2)
-			SetSpriteFlip(hero, 1, 0)
-		endif
-		if inputRight
-			inc heroX#, waterSpeedX#*1.5*fpsr#
-			PlaySprite(hero, 5, 0, 1, 2)
-			SetSpriteFlip(hero, 0, 0)
-		endif
-		
-		if stateRight
-			SetSpriteFlip(hero, 0, 0)
-		elseif stateLeft
-			SetSpriteFlip(hero, 1, 0)
-		endif
-		
-		if (releaseLeft and stateRight = 0) or (releaseRight and stateLeft = 0) then PlaySprite(hero, 10, 0, 3, 4)
-			
-		if Abs(waterVelX#) < .01
-			waterVelX# = 0
-		else
-			
-			waterVelX# =  (((waterVelX#)*((64.0)^fpsr#))/(65.0)^fpsr#)
-		endif
-		//GlideNumToZero(waterVelX#, 40)
-		
-		if stateLeft then waterVelX# = -waterSpeedX#*fpsr#
-		if stateRight then waterVelX# = waterSpeedX#*fpsr#
-		inc heroX#, waterVelX#
-		
-		//Rowing
-		if inputSelect and rowCoolDown# <= 0
-			
-			rowCoolDown# = rowCoolDownMax
-			
-			SetSpriteColor(waterBarFront, 255, 210, 210, 255)
-			if GetSpriteCurrentFrame(waterBarFront) = 29 then SetSpriteColor(waterBarFront, 180, 255, 255, 255)
-			
-			boatSpeed# = Max(boatSpeed#, sqrt(boatSpeedMax*1.0*Min(Round(chargeC#), chargeM)/chargeM))
-			if GetSpriteCurrentFrame(waterBarFront) = 29
-				boatSpeed# = boatSpeed#*1.2
-				PlaySound(rowGoodS, volumeS*0.8)
-				PlaySound(windSS, volumeS)
-			else
-				PlaySound(rowBadS, volumeS)
-			endif
-			//Print(boatSpeed#)
-			//Sync()
-			//Sleep(1000)
-		endif
-		
-		SetSpriteFrame(waterS, 1+Mod(Round(waterDistance-heroWaterDistance#)/6, 52))
-		
-		if damageAmt# > 0
-			newC = GetSpriteColorGreen(hero)
-			
-			dec damageAmt#, fpsr#/3
-			
-			inc heroWaterDistance#, fixedWaterSpeed#*fpsr#/(255.0/damageAmt#)
-			
-			SetSpriteColor(hero, 255, 255-damageAmt#, 255-damageAmt#, 255)
-		endif
-		
-		if boatSpeed# > 0
-			dec heroWaterDistance#, boatSpeed#*fpsr#
-			dec boatSpeed#, boatSpeedLoss#*fpsr#
-			
-			if boatSpeed# <= 0
-				
-				
-			endif
-		endif
-		dec heroWaterDistance#, fixedWaterSpeed#*fpsr#
-		
-		SetSpriteFrame(bg3, 1+8.0*(Round(waterDistance-heroWaterDistance#)/(1.0*waterDistance)))
-		
-		SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(waterDistance - heroWaterDistance#)/waterDistance)/areaSeen)
-		SetSpriteX(duckIcon, Min(GetSpriteX(progBack)-GetSpriteWidth(duckIcon)/2 + (GetSpriteWidth(progBack)*(20000 - (duckDistance#-40000))/20000)/areaSeen, GetSpriteX(progBack)+GetSpriteWidth(progBack)-GetSpriteWidth(duckIcon)))
-		
-		deleted = 0
-		for i = 1 to spawnActive.length
-			spr = spawnActive[i].spr
-			if GetSpriteVisible(spr)
-				if GetSpriteCollision(spr, hero) and Abs((GetSpriteY(hero) - GetSpriteY(spr))) < 80
-					
-					if spawnActive[i].cat = GOOD
-						boatSpeed# = Max(boatSpeed#, sqrt(Min(boatSpeedMax, 20)*1.5))
-						PlaySound(WindSS)
-						PlaySound(rowGoodS, VolumeS*.8)
-					elseif spawnActive[i].cat = BAD
-						if damageAmt# <= 0
-							damageAmt# = 255
-							boatSpeed# = 0
-							PlaySound(hitS, volumeS)
-						endif
-						//Sound effect
-						//SetSpriteColor(hero, 255, 100, 100, 255)
-					else //SCRAP
-						CollectScrap(WATER)
-					endif
-					if spawnActive[i].cat <> RAMP
-						deleted = i
-						i = spawnActive.length
-					endif
-					
-				endif
-			endif
-		next i
-		if deleted <> 0
-			if spawnActive[deleted].cat = GOOD
-				DeleteAnimatedSprite(spawnActive[deleted].spr)
-			else
-				DeleteSprite(spawnActive[deleted].spr)
-			endif
-			spawnActive.remove(deleted)
-		endif
-		
-		//Print(fixedWaterSpeed#)
-	endif
-	
-	
-endfunction
-
-function DrawWater()
-	//Updating the duck first
-	spr = duck
-	dis = (duckDistance#-37500)	//This should probably be 40000, once the game actually starts without an FPS spike
-	SetSpriteSizeSquare(spr, Max(1, 100 - (heroWaterDistance# - dis)/10.0 - 210))
-	if GetSpriteWidth(spr) < 8
-		SetSpriteVisible(spr, 0)
-	else
-		SetSpriteVisible(spr, 1)
-	endif
-	SetSpritePosition(spr, w/2 - GetSpriteWidth(spr)/2 - (heroWaterDistance# - dis)/7*(-160.0/100), -GetSpriteHeight(spr)/2 - (heroWaterDistance# - dis)/5)
-	if GetSpriteY(hero)+120 < GetSpriteY(spr)
-		SetSpriteColorAlpha(spr, (255 - Min(255, -(GetSpriteY(hero)+120) + 2.4*(GetSpriteY(spr)-GetSpriteY(hero)+120))))
-		if GetSpriteColorAlpha(spr) <= 10 then SetSpriteVisible(spr, 0)
-	endif
-	//Print(duckDistance#)
-	//Print(dis)
-	//Print(GetSpriteX(duck))
-	
-	for i = 1 to spawnActive.length
-		//if i = 61 then Print(spawnActive[i].y)
-		spr = spawnActive[i].spr
-		SetSpriteSizeSquare(spr, Max(1, spawnActive[i].size - (heroWaterDistance# - spawnActive[i].y)/10.0 - 210))
-		if GetSpriteWidth(spr) < 8
-			SetSpriteVisible(spr, 0)
-		else
-			SetSpriteVisible(spr, 1)
-		endif
-		SetSpritePosition(spr, w/2 - GetSpriteWidth(spr)/2 - (heroWaterDistance# - spawnActive[i].y)/7*(spawnActive[i].x/100), -GetSpriteHeight(spr)/2 - (heroWaterDistance# - spawnActive[i].y)/5)
-		if GetSpriteY(hero)+120 < GetSpriteY(spr)
-			SetSpriteColorAlpha(spr, (255 - Min(255, -(GetSpriteY(hero)+120) + 2.4*(GetSpriteY(spr)-GetSpriteY(hero)+120))))
-			if GetSpriteColorAlpha(spr) <= 10 then SetSpriteVisible(spr, 0)
-		endif
-	next i
-	
-	//Changeing the ramp
-	SetSpriteSize(spr, GetSpriteWidth(spr)*3, GetSpriteHeight(spr)*1.5)
-	IncSpriteX(spr, -GetSpriteWidth(spr))
-	IncSpriteY(spr, -GetSpriteHeight(spr))
-	
-endfunction
-
-
-global heroLandDistance# = 2000
-#constant landDistance 20000
-global heroYLow# = 0
-global heroVelY# = 0
-#constant gravity# 3.2
-
-global fixedLandSpeed# = .7
-
-global landSpeedX# = 0.65
-global landChargeSpeed# = 0.2
-global landSlowDown# = 1
-
-
-
-global boostTotal = 3
-global boostAmt# = 0
-global activeBoost# = 0
-global boostSpeed# =  8.4
-global boostRecharge# = .0024
-global boostDrain# = .02
-
-function DoLand()
-	
-	heroX# = Min(Max(heroX#, 50), 600)
-	SetSpritePosition(hero, heroX#, heroY# + 4*Abs(sin(gameTime#/3)) + 6*Abs(cos(gameTime#/2)))
-	//Lag
-	inc heroX#, -.2*fpsr#
-	
-	if inputSelect and boostAmt# >= 1
-		//Boost
-		dec boostAmt#, 1
-		activeBoost# = 1
-		PlaySound(boostS, volumeS)
-	endif
-	
-	if boostAmt# < boostTotal then inc boostAmt#, boostRecharge#
-	
-	if activeBoost# > 0
-		dec heroLandDistance#, boostSpeed#
-		dec activeBoost#, boostDrain#
-		inc heroX#, .4*fpsr#
-	endif
-	
-	if inputUp and heroY# = heroYLow#
-		//Jump
-		heroVelY# = -80*9
-		dec heroY#, 3
-		SetSpriteFrame(hero, 3)
-		PlaySprite(hero2, 15, 1, 5, 6)
-		PlaySound(jumpS, volumeS)
-	endif
-	if heroY# <> heroYLow#
-		inc heroY#, heroVelY#*fpsr#/400
-		inc heroVelY#, gravity#*fpsr#
-		if heroVelY# > -60 and GetSpriteCurrentFrame(hero) = 3
-			SetSpriteFrame(hero, 2)
-			PlaySprite(hero2, 15, 1, 3, 4)
-		endif
-		if heroY# > heroYLow#
-			heroY# = heroYLow#
-			heroVelY# = 0
-			SetSpriteFrame(hero, 1)
-			PlaySprite(hero2, 15, 1, 1, 2)
-		endif
-		
-	endif
-	
-	if inputLeft then inc heroX#, -landSpeedX#*1.5*fpsr#
-	if inputRight then inc heroX#, landSpeedX#*1.5*fpsr#
-	if stateLeft then inc heroX#, -landSpeedX#*fpsr#
-	if stateRight then inc heroX#, landSpeedX#*fpsr#
-	
-	for i = landBoost1 to landBoost1 - 1 + boostTotal
-		//Cut the sprite to make it recharge
-		if (i - landBoost1 + 1) <= boostAmt#
-			if GetSpriteCurrentFrame(i) > 4 then PlaySprite(i, 5, 1, 1, 4)
-		else
-			//SetSpriteFrame(i, 4 + Max(0, Min(6, Round(.5+(i - landBoost1 + 1) - boostAmt#)*6)))
-			//SetSpriteFrame(i, 5)
-			SetSpriteFrame(i, Random(5,9))
-		endif
-		//Print((i - landBoost1 + 1) - boostAmt#)
-	next i 
-	
-	SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(landDistance - heroLandDistance#)/landDistance)/areaSeen + (GetSpriteWidth(progBack)/areaSeen))
-	SetSpriteFrame(landS, 1+Mod(Round(landDistance-heroLandDistance#)/6, 60))
-	SetSpriteX(duckIcon, Min(GetSpriteX(progBack)-GetSpriteWidth(duckIcon)/2 + (GetSpriteWidth(progBack)*(40000 - (duckDistance#-20000))/20000)/areaSeen, GetSpriteX(progBack)+GetSpriteWidth(progBack)-GetSpriteWidth(duckIcon)))
-	SetSpriteX(duck, (heroLandDistance#-(duckDistance#-20000)))
-	
-	SetSpriteX(rail1, -GetSpriteWidth(rail1)/4+Mod(20000+heroLandDistance#/2.5, GetSpriteWidth(rail1)/4))
-	
-	if damageAmt# > 0
-		newC = GetSpriteColorGreen(hero)
-		dec damageAmt#, fpsr#/3
-		inc heroLandDistance#, fixedLandSpeed#*fpsr#/(255.0/damageAmt#)*landSlowDown#
-		SetSpriteColor(hero, 255, 255-damageAmt#, 255-damageAmt#, 255)
-	endif
-	
-	deleted = 0
-	for i = 1 to spawnActive.length
-		spr = spawnActive[i].spr
-		SetSpriteX(spr, (heroLandDistance#-spawnActive[i].x))
-		if spawnActive[i].cat = BAD then SetSpriteFrame(spr, Max(Min(5, 5-(GetSpriteX(spr)/(w/5))), 1))
-		
-		if GetSpriteVisible(spr)
-			if GetSpriteCollision(spr, hero) //and Abs((GetSpriteY(hero) - GetSpriteY(spr))) < 80
-				
-				if spawnActive[i].cat = GOOD
-					boostAmt# = Min(boostAmt# + 1, boostTotal)
-					PlaySound(boostChargeS, volumeS*0.6)
-				elseif spawnActive[i].cat = BAD
-					if damageAmt# <= 0 and heroVelY# = 0
-						damageAmt# = 255
-						activeBoost# = 0
-						PlaySound(hitS, volumeS)
-					endif
-				else //SCRAP
-					CollectScrap(LAND)
-				endif
-				if spawnActive[i].cat <> BAD then deleted = i
-				//i = spawnActive.length
-				
-			endif
-		endif
-	next i
-	if deleted <> 0
-		if spawnActive[deleted].cat = BAD
-			DeleteAnimatedSprite(spawnActive[deleted].spr)
-		else
-			DeleteSprite(spawnActive[deleted].spr)
-		endif
-		spawnActive.remove(deleted)
-	endif
-	
-	dec heroLandDistance#, fixedLandSpeed#*fpsr#
-	
-	if heroLandDistance# < 300
-		IncSpriteY(hero, -(300-heroLandDistance#)*2.5)
-		SetSpriteFrame(hero, 3)
-		SetSpriteFrame(hero2, 6)
-		if GetSoundInstances(windBoostS) = 0 then PlaySound(windBoostS, volumeS*.8)
-	endif
-	
-	//print(heroLandDistance#)
-	//print(boostAmt#)
-	
-endfunction
-
-global heroAirDistance# = 0
-#constant airDistance 20000
-global fixedAirSpeed# = .31
-global airSpeedMax# = 2
-global airSpeed# = 0
-global airSpeedLoss# = .01
-
-global airSpeedX# = 0.39
-global airSpeedY# = 0.28
-global airVelX# = 0
-global airVelY# = 0
-
-global spinType = 0
-global spinLeft# = 0
-
-function DoAir()
-	/*
-	//waterXMax = -
-	
-		
-
-	
-	//Rowing
-	if inputSelect and rowCoolDown# <= 0
-		
-		rowCoolDown# = rowCoolDownMax
-		
-		SetSpriteColor(waterBarFront, 255, 210, 210, 255)
-		if chargeC# >= chargeM then SetSpriteColor(waterBarFront, 180, 255, 255, 255)
-		
-		boatSpeed# = Max(boatSpeed#, sqrt(boatSpeedMax*1.0*Min(Round(chargeC#), chargeM)/chargeM))
-		if chargeC# >= chargeM then boatSpeed# = boatSpeed#*1.2
-		//Print(boatSpeed#)
-		//Sync()
-		//Sleep(1000)
-	endif
-	
-	SetSpriteFrame(waterS, 1+Mod(Round(waterDistance-heroWaterDistance#)/6, 52))
-	
-
-	
-	if boatSpeed# > 0
-		dec heroWaterDistance#, boatSpeed#*fpsr#
-		dec boatSpeed#, boatSpeedLoss#*fpsr#
-		
-		if boatSpeed# <= 0
-			
-			
-		endif
-	endif
-	dec heroWaterDistance#, fixedWaterSpeed#*fpsr#
-	
-	*/
-	
-	SetSpriteFrame(bg3, 1+12.0*(Round(airDistance-heroAirDistance#)/(1.0*airDistance)))
-	
-	if spinLeft# > 0
-		inc spinLeft#, -fpsr#
-		
-		if spinType = 1
-			SetSpriteAngle(airS, 15*sin((spinLeft# - Pow(spinLeft#, 2)/6)/200))
-			
-		elseif spinType = 2
-			SetSpriteAngle(airS, 30*sin((spinLeft# - Pow(spinLeft#, 2)/6)/400))
-		else //3
-			SetSpriteAngle(airS, (spinLeft#)*360.0/(1200.0))
-			//spinLeft# = 600*spawnActive[i].cat2
-			//SetSpriteAngle(airS, 360*sin(spinLeft#))
-		endif
-		
-		if spinLeft# < 0
-			SetSpriteAngle(airS, 0)
-		endif
-	endif
-	
-	if damageAmt# > 0
-		newC = GetSpriteColorGreen(hero)
-		
-		dec damageAmt#, fpsr#/3
-		
-		inc heroAirDistance#, fixedAirSpeed#*fpsr#/(255.0/damageAmt#)
-		
-		SetSpriteColor(hero, 255, 255-damageAmt#, 255-damageAmt#, 255)
-	endif
-	
-	if inputLeft
-		inc heroX#, -airSpeedX#*1.5*fpsr#
-		PlaySprite(hero, 5, 0, 1, 2)
-		SetSpriteFlip(hero, 1, 0)
-	endif
-	if inputRight
-		inc heroX#, airSpeedX#*1.5*fpsr#
-		PlaySprite(hero, 5, 0, 1, 2)
-		SetSpriteFlip(hero, 0, 0)
-	endif
-	
-	if stateRight
-		SetSpriteFlip(hero, 0, 0)
-	elseif stateLeft
-		SetSpriteFlip(hero, 1, 0)
-	endif
-	
-	if (releaseLeft and stateRight = 0) or (releaseRight and stateLeft = 0) then PlaySprite(hero, 10, 0, 3, 4)
-		
-	if Abs(airVelX#) < .01
-		airVelX# = 0
-	else
-		airVelX# =  (((airVelX#)*((94.0)^fpsr#))/(95.0)^fpsr#)
-	endif
-	
-	if stateLeft then airVelX# = -airSpeedX#*fpsr#
-	if stateRight then airVelX# = airSpeedX#*fpsr#
-	inc heroX#, airVelX#
-	
-	//Up/down
-	if inputUp
-		inc heroY#, -airSpeedY#*1.5*fpsr#
-	endif
-	if inputDown
-		inc heroY#, airSpeedY#*1.5*fpsr#
-	endif
-	
-	if Abs(airVelY#) < .01
-		airVelY# = 0
-	else
-		airVelY# =  (((airVelY#)*((54.0)^fpsr#))/(55.0)^fpsr#)
-	endif
-	
-	if stateUp then airVelY# = -airSpeedY#*fpsr#
-	if stateDown then airVelY# = airSpeedY#*fpsr#
-	inc heroY#, airVelY#
-	
-	//Print(heroX#)
-	
-	heroX# = Min(Max(heroX#, 95), 1050)
-	heroY# = Min(Max(heroY#, 250), 600)
-	SetSpritePosition(hero, heroX#, heroY# + 15*sin(gameTime#/20))
-	
-	DrawAir()
-		
-	
-	if airSpeed# > 0
-		dec heroAirDistance#, airSpeed#*fpsr#
-		dec airSpeed#, airSpeedLoss#*fpsr#
-	endif
-	dec heroAirDistance#, fixedAirSpeed#*fpsr#
-	//IncSpriteAngle(airS, .14*fpsr#)
-	
-	SetSpriteFrame(airS, 1+Mod(Round(airDistance-heroAirDistance#)/12, 52))
-	
-	SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(airDistance - heroAirDistance#)/airDistance)/3 + (GetSpriteWidth(progBack)*2/3)-GetSpriteWidth(heroIcon)/2)
-	SetSpriteX(duckIcon, Min(GetSpriteX(progBack)-GetSpriteWidth(duckIcon)/2 + (GetSpriteWidth(progBack)*(20000 - (duckDistance#-40000))/20000)/3, GetSpriteX(progBack)+GetSpriteWidth(progBack)-GetSpriteWidth(duckIcon)))
-	
-	deleted = 0
-	for i = 1 to spawnActive.length
-		spr = spawnActive[i].spr
-		if GetSpriteVisible(spr)
-			if GetSpriteCollision(spr, hero) and GetSpriteColorAlpha(spr) > 120 and GetSpriteVisible(spr)
-				
-				if spawnActive[i].cat = GOOD
-					airSpeed# = Max(airSpeed#, spawnActive[i].cat2*sqrt(Min(airSpeedMax#, 20)))
-					if spinType < spawnActive[i].cat2 or spinLeft# <= 0
-						if spawnActive[i].cat2 = 1
-							spinLeft# = 800
-						elseif spawnActive[i].cat2 = 2
-							spinLeft# = 1200
-						elseif spawnActive[i].cat2 = 3
-							spinLeft# = 1200
-						endif
-						spinType = spawnActive[i].cat2
-					endif
-					if GetSoundInstances(windSS-1+spawnActive[i].cat2) = 0 then PlaySound(windSS-1+spawnActive[i].cat2, volumeS)
-					if GetSoundInstances(windBoostS) = 0 then PlaySound(windBoostS, volumeS*.5)
-					
-				elseif spawnActive[i].cat = BAD
-					if damageAmt# <= 0
-						damageAmt# = 255
-						airSpeed# = 0
-						PlaySound(hitS, volumeS)
-					endif
-					//PlaySprite(hero, 10, 0, 1, 4)
-				else //SCRAP
-					CollectScrap(AIR)
-				endif
-				deleted = i
-				i = spawnActive.length
-				
-			endif
-		endif
-	next i
-	if deleted <> 0
-		if spawnActive[deleted].cat = GOOD
-			DeleteAnimatedSprite(spawnActive[deleted].spr)
-		else
-			DeleteSprite(spawnActive[deleted].spr)
-		endif
-		spawnActive.remove(deleted)
-	endif
-	
-	
-endfunction
-
-function DrawAir()
-	//Updating the duck first
-	spr = duck
-	dis = (duckDistance#+2000)
-	x# = -0 + 20.0*sin(gameTime#/4)
-	SetSpriteSizeSquare(spr, Max(1, 100 - (heroAirDistance# - dis)/10.0 - 210))
-	if GetSpriteWidth(spr) < 8
-		SetSpriteVisible(spr, 0)
-	else
-		SetSpriteVisible(spr, 1)
-	endif
-	SetSpritePosition(spr, w/2 - GetSpriteWidth(spr)/2 - (heroAirDistance# - dis)/7*(x#/100.0), -GetSpriteHeight(spr)/2 - (heroAirDistance# - dis)/5)
-	if (heroAirDistance#+2700) < dis
-		SetSpriteColorAlpha(spr, (255 + Max(-255, (heroAirDistance#+2700 - dis)/1.5)))
-	endif
-	//Print(duckDistance#)
-	//Print(dis)
-	//Print(GetSpriteX(duck))
-	
-	for i = 1 to spawnActive.length
-		//if i = 61 then Print(spawnActive[i].y)
-		spr = spawnActive[i].spr
-		SetSpriteSizeSquare(spr, Max(1, spawnActive[i].size - (heroAirDistance# - spawnActive[i].y)/10.0 - 210))
-		if GetSpriteWidth(spr) < 8
-			SetSpriteVisible(spr, 0)
-		else
-			SetSpriteVisible(spr, 1)
-		endif
-		SetSpritePosition(spr, w/2 - GetSpriteWidth(spr)/2 - (heroAirDistance# - spawnActive[i].y)/7*(spawnActive[i].x/100), -GetSpriteHeight(spr)/2 - (heroAirDistance# - spawnActive[i].y)/5)
-		//Fade in
-		SetSpriteColorAlpha(spr, 0)
-		if (heroAirDistance#+1100) < spawnActive[i].y
-			SetSpriteColorAlpha(spr, (Min(255, (spawnActive[i].y - (heroAirDistance#+1100))/1.5)))
-		endif
-		//Fade out
-		if (heroAirDistance#+2700) < spawnActive[i].y
-			SetSpriteColorAlpha(spr, (255 + Max(-255, (heroAirDistance#+2700 - spawnActive[i].y)/1.5)))
-		endif
-	next i
-	
-	//Print((heroAirDistance#+3700) - spawnActive[spawnActive.length].y)
-	//Print(heroAirDistance#)
-	//Print(GetSpriteColorAlpha(spawnActive[1].spr))
-	
-endfunction
 
 
 function CollectScrap(area)
@@ -1680,29 +1065,16 @@ function UpdateScrapText()
 endfunction
 
 
-
-function GetCost(i, j)
-	cost = 0
-	up = upgrades[i+1, j+1]
-	
-	if j = 0
-		if up = 0 then cost = 5
-		if up = 1 then cost = 20
-		if up = 2 then cost = 100
-	elseif j = 1
-		if up = 0 then cost = 25
-		if up = 1 then cost = 60
-		if up = 2 then cost = 150
-	else
-		if up = 0 then cost = 50
-		if up = 1 then cost = 120
-		if up = 2 then cost = 300
+function SetInstructionText(sceneL)
+	if sceneL = WATER
+		SetTextString(instruct, "LEFT/RIGHT - Move" + CHR(10) + "SPACE with Full Bar - Row" + CHR(10) + "Collect scrap metal!")
+	elseif sceneL = LAND
+			SetTextString(instruct, "LEFT/RIGHT - Move" + CHR(10) + "UP - Jump" + CHR(10) + "SPACE - Use Boost")
+	elseif sceneL = AIR
+		SetTextString(instruct, "LEFT/RIGHT/UP/DOWN - Move" + CHR(10) + "Hit Tornados?" + CHR(10) + "Get an upgrade!")
+		if upgrades[2, 3] > 0 then SetTextString(instruct, "LEFT/RIGHT/UP/DOWN - Move" + CHR(10) + "Hit Tornados - Boost" + CHR(10) + "Win the race!")
 	endif
-	
-	
-
-	
-endfunction cost
+endfunction
 
 function DeleteScene(scene)
 	

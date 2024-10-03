@@ -160,3 +160,22 @@ function DoUpgrade()
 	endif
 	
 endfunction
+
+function GetCost(i, j)
+	cost = 0
+	up = upgrades[i+1, j+1]
+	
+	if j = 0
+		if up = 0 then cost = 5
+		if up = 1 then cost = 20
+		if up = 2 then cost = 100
+	elseif j = 1
+		if up = 0 then cost = 25
+		if up = 1 then cost = 60
+		if up = 2 then cost = 150
+	else
+		if up = 0 then cost = 50
+		if up = 1 then cost = 120
+		if up = 2 then cost = 300
+	endif
+endfunction cost
