@@ -125,7 +125,6 @@ function DoUpgrade()
 	
 	if Button(startRace)
 		
-		duckDistance# = 60000
 		duckSpeed# = duckSpeedDefault#
 		StopMusicOGG(upgradeM)
 		PlaySound(selectS, volumeS)
@@ -137,8 +136,7 @@ function DoUpgrade()
 		screen = 0
 		//The next three lines are identical to the title screen - should it be combined into a little function? IDK
 		SetRaceQueue(curRaceSet)
-		nextScreen = raceQueue[1]
-		raceQueue.remove(1)
+		
 	endif
 	
 endfunction

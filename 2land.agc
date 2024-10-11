@@ -1,3 +1,4 @@
+#include "main.agc"
 // File: 2land.agc
 // Created: 24-10-03
 
@@ -20,6 +21,120 @@ global activeBoost# = 0
 global boostSpeed# =  8.4
 global boostRecharge# = .0024
 global boostDrain# = .02
+
+function InitLand()
+	
+	
+	SetMusicVolumeOGG(landM, 100)
+	
+	CreateSpriteExpress(hero, 128, 128, w, h, 10)
+	heroX# = w/2
+	heroY# = h*2/3 - 20
+	heroYLow# = heroY#
+	
+	heroImg1 = LoadImage("L_D"+str(1+upgrades[3,2])+"_1.png")
+	heroImg2 = LoadImage("L_D"+str(1+upgrades[3,2])+"_2.png")
+	heroImg3 = LoadImage("L_D"+str(1+upgrades[3,2])+"_3.png")
+	
+	AddSpriteAnimationFrame(hero, heroImg1)
+	AddSpriteAnimationFrame(hero, heroImg3)
+	AddSpriteAnimationFrame(hero, heroImg2)
+	SetSpriteFrame(hero, 1)
+	SetSpriteShape(hero, 3)
+	
+	CreateSpriteExpress(hero2, 128, 128, w, h, 9)
+	
+	hero2Img1 = LoadImage("L_D"+str(1+upgrades[3,2])+"M1_1.png")
+	hero2Img2 = LoadImage("L_D"+str(1+upgrades[3,2])+"M1_2.png")
+	hero2Img3 = LoadImage("L_D"+str(1+upgrades[3,2])+"M1_3.png")
+	hero2Img4 = LoadImage("L_D"+str(1+upgrades[3,2])+"M1_4.png")
+	hero2Img5 = LoadImage("L_D"+str(1+upgrades[3,2])+"M1_5.png")
+	hero2Img6 = LoadImage("L_D"+str(1+upgrades[3,2])+"M1_6.png")
+	AddSpriteAnimationFrame(hero2, hero2Img1)
+	AddSpriteAnimationFrame(hero2, hero2Img2)
+	AddSpriteAnimationFrame(hero2, hero2Img3)
+	AddSpriteAnimationFrame(hero2, hero2Img4)
+	AddSpriteAnimationFrame(hero2, hero2Img5)
+	AddSpriteAnimationFrame(hero2, hero2Img6)
+	PlaySprite(hero2, 15, 1, 1, 2)
+	
+	//Setting the variables based on upgrades
+	//fixedLandSpeed# = 0.7 * (1 + .8*upgrades[1, 2] + .6*upgrades[1, 2]/3) //V5 stats
+	fixedLandSpeed# = 0.6 * (1 + .5*upgrades[1, 2])
+	boostTotal = 3 + 1*upgrades[2, 2] + 1*upgrades[2, 2]/3
+	landSlowDown# = 1 * (1 - .25*upgrades[3, 2] + .15*upgrades[3, 2]/3)
+	boostSpeed# = 4.4 * (1 + 0.6*upgrades[4, 2] + 0.6*upgrades[4, 2]/2 + 2.6*upgrades[4, 2]/3)
+	
+	LoadAnimatedSprite(landBoost1, "bolt", 10)
+	SetSpriteExpress(landBoost1, 50, 50, 300, 630, 5)
+	PlaySprite(landBoost1, 5, 1, 1, 4)
+	for i = landBoost1+1 to landBoost1 - 1 + boostTotal
+		CreateSpriteExistingAnimation(i, landBoost1)
+		SetSpriteExpress(i, 50, 50, 300 + (i-landBoost1)*70, 630, 5)
+		PlaySprite(i, 5, 1, 1, 4)
+	next i
+	
+	
+	
+	areaSeen = Max(areaSeen, 2)
+	
+	LoadAnimatedSprite(duck, "duckl", 2)
+	PlaySprite(duck, 30, 1, 1, 2)
+	SetSpriteDepth(duck, 30)
+	SetSpriteSizeSquare(duck, 70)
+	SetSpriteY(duck, h/2+20)
+	
+	SetSpriteVisible(landS, 1)
+	SetSpriteSizeSquare(landS, w)
+	SetSpriteMiddleScreen(landS)
+	IncSpriteY(landS, -220)
+	SetSpriteDepth(landS, 90)
+	
+	LoadSpriteExpress(rail1, "rail.png", 4000*.6, 140*.6, 0, 240, 40)
+	//LoadSpriteExpress(rail2, "rail.png", 3000*.6, 140*.6, GetSpriteWidth(rail1), 240, 40)
+	
+	//Setting the variables based on upgrades
+	//4th upgrade spot
+							
+	//Spawnables for the land
+	newS as spawn
+	for i = 3 to 22
+		newS.spr = spawnS
+		rnd = Random(1, 9)
+		if rnd <= 2 then newS.cat = GOOD
+		if rnd >= 3 and rnd <= 5 then newS.cat = BAD
+		if rnd >= 6 and rnd <= 9 then newS.cat = SCRAP
+		newS.x = i*landDistance/22 + Random(0, 300) - 2000
+		//newS.y = i*waterDistance/25 + 00 + Random(0, 400)
+		
+		if newS.cat = GOOD
+			CreateSpriteExistingAnimation(spawnS, landBoost1)
+			PlaySprite(spawnS, 5, 1, 1, 4)
+			SetSpriteSizeSquare(spawnS, 70)
+			SetSpriteY(spawnS, Random(250, 480))
+			SetSpriteDepth(spawnS, 8)
+		elseif newS.cat = BAD
+			LoadAnimatedSprite(spawnS, "terrain" + Str(Random(1,3)) + "_", 5)
+			SetSpriteSize(spawnS, 260*1.221, 110*1.221)
+			SetSpritePosition(spawnS, w/2, 480)
+			SetSpriteDepth(spawnS, 20)
+			SetSpriteShape(spawnS, 3)
+		else
+			LoadSpriteExpress(spawnS, "scrap" + Str(1 + Random(1,3)) + ".png", 10, 10, w, h, 8)
+			SetSpriteY(spawnS, Random(250, 480))
+			SetSpriteSizeSquare(spawnS, 50)
+		endif
+		spawnActive.insert(newS)
+		inc spawnS, 1
+	next i
+	
+	
+	//Gameplay setting
+	heroLocalDistance# = landDistance
+
+	boostAmt# = boostTotal
+	
+endfunction
 
 function DoLand()
 	

@@ -1,3 +1,4 @@
+#include "main.agc"
 // File: 3air.agc
 // Created: 24-10-03
 
@@ -14,6 +15,89 @@ global airVelY# = 0
 
 global spinType = 0
 global spinLeft# = 0
+
+function InitAir()
+	
+	SetMusicVolumeOGG(airM, 100)
+	
+	heroX# = w/2
+	heroY# = h*2/3 - 50
+	CreateSpriteExpress(hero, 140, 140, w, h, 10)
+	
+	heroImg1 = LoadImage("S_D"+str(1+upgrades[3,3])+"_1.png")
+	heroImg2 = LoadImage("S_D"+str(1+upgrades[3,3])+"_3.png")
+	heroImg3 = LoadImage("S_D"+str(1+upgrades[3,3])+"_5.png")
+	
+	AddSpriteAnimationFrame(hero, heroImg2)
+	AddSpriteAnimationFrame(hero, heroImg3)
+	AddSpriteAnimationFrame(hero, heroImg2)
+	AddSpriteAnimationFrame(hero, heroImg1)
+	SetSpriteFrame(hero, 4)
+	SetSpriteShape(hero, 3)
+	
+	LoadAnimatedSprite(duck, "duckA", 3)
+	PlaySprite(duck, 15, 1, 1, 3)
+	SetSpriteDepth(duck, 12)
+	
+	SetSpriteVisible(airS, 1)
+	SetSpriteAngle(airS, 0)
+	spinLeft# = 0
+	SetSpriteSizeSquare(airS, w*1.2)
+	SetSpriteMiddleScreen(airS)
+	SetSpriteDepth(airS, 90)
+	IncSpriteY(airS, 150)
+	SetSpriteOffset(airS, GetSpriteWidth(airS)/2, GetSpriteHeight(airS)/2-120)
+	
+	areaSeen = Max(areaSeen, 3)
+	
+	//Setting the variables based on upgrades
+	fixedAirSpeed# = (.31)*(1 + 1*upgrades[1, 3] + 1*upgrades[1, 3]/3) //.31
+	airSpeedMax# = (2)*(1 + 0.5*upgrades[2, 3]/2 + 0.2*upgrades[2, 3]/3)
+	airSpeedX# = (0.39)*(1 + 0.3*upgrades[3, 3] + 0.1*upgrades[3, 3] + 0.2*upgrades[3, 3]/3)
+	airSpeedY# = (0.28)*(1 + 0.2*upgrades[4, 3] + 0.1*upgrades[4, 3] + 0.2*upgrades[4, 3]/3)
+	
+	newS as spawn
+	for i = 4 to 27
+		newS.spr = spawnS
+		rnd = Random(1, 5)
+		if rnd <= 3 then newS.cat = SCRAP
+		if rnd = 4 or rnd = 5 then newS.cat = GOOD
+		newS.x = Random(0, 240)-120
+		newS.y = i*airDistance/27 + 470 + Random(0, 200)
+		
+		if newS.cat = GOOD
+			str$ = "s"
+			newS.cat2 = 1
+			if random(1, 2) = 2
+				if random(1, 2) = 1
+					str$ = "m"
+					newS.cat2 = 2
+				else
+					str$ = "l"
+					newS.cat2 = 3
+				endif
+			endif
+			LoadAnimatedSprite(spawnS, "tornado" + str$, 4)
+			SetSpriteDepth(spawnS, 13)
+			PlaySprite(spawnS, 20, 1, 1, 4)
+			newS.size = 200
+			SetSpriteShape(spawnS, 3)
+			if upgrades[2, 3] < 1 then newS.cat = BAD
+		else
+			LoadSpriteExpress(spawnS, "scrap" + Str(4 + Random(1,3)) + ".png", 10, 10, w, h, 8)
+			newS.size = 30
+		endif
+		spawnActive.insert(newS)
+		inc spawnS, 1
+	next i
+	
+	
+	//Gameplay setting
+	heroLocalDistance# = airDistance
+	airVelX# = 0
+	airVelY# = 0
+	
+endfunction
 
 function DoAir()
 	

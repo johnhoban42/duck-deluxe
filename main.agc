@@ -7,6 +7,7 @@
 #include "5land2.agc"
 #include "6air2.agc"
 #include "7space2.agc"
+#include "constants.agc"
 
 // Project: EvilDuck 
 // Created: 2023-11-27
@@ -20,6 +21,7 @@ SetWindowSize( 1280, 720, 0 )
 SetWindowAllowResize( 1 ) // allow the user to resize the window
 
 global debug = 1
+global nextScreen = WATER2
 
 #constant w 1280
 #constant h 720
@@ -37,29 +39,6 @@ SetScissor(0,0,0,0 ) // use the maximum available screen space, no black borders
 UseNewDefaultFonts( 1 ) // since version 2.0.22 we can use nicer default fonts
 
 SetVSync(1)
-
-#constant WATER 1
-#constant LAND 2
-#constant AIR 3
-#constant WATER2 4
-#constant LAND2 5
-#constant AIR2 6
-#constant SPACE2 7
-
-#constant UPGRADE 8
-#constant TITLE 9
-#constant FINISH 10
-
-global heroImg1
-global heroImg2
-global heroImg3
-
-global hero2Img1
-global hero2Img2
-global hero2Img3
-global hero2Img4
-global hero2Img5
-global hero2Img6
 
 #constant hitS 1
 LoadSoundOGG(hitS, "sounds/hit.ogg")
@@ -96,8 +75,6 @@ LoadSoundOGG(beepGoS, "sounds/beepGo.ogg")
 #constant windBoostS 17
 LoadSoundOGG(windBoostS, "sounds/windBoost.ogg")
 
-global volumeS = 100
-
 #constant introM 1
 LoadMusicOGG(introM, "music/intro.ogg")
 #constant waterM 2
@@ -113,81 +90,7 @@ LoadMusicOGG(endingM, "music/ending.ogg")
 #constant titleM 7
 LoadMusicOGG(titleM, "music/title.ogg")
 SetMusicLoopTimesOGG(titleM, 4.941, 33.030)
-
-
-//Sprite/Image/Audio constants
-#constant hero 1001
-#constant hero2 1002
-
-#constant scrapText 1010
-
-#constant progFront 1011
-#constant progBack 1012
-#constant heroIcon 1013
-#constant duckIcon 1014
-#constant flag1 1015
-#constant flag2 1016
-#constant flag3 1017
-#constant cutsceneSpr 1018
-#constant coverS 1019
-
-#constant waterBarFront 1021
-#constant waterBarBack 1022
-
-
-#constant logo 1023
-#constant startRace 1024
-#constant finishS 1025
-#constant restartS 1026
-
-#constant cutsceneSpr2 1027 //Endig
-#constant cutsceneSpr3 1028	//Intro
-
-#constant landBoost1 1031
-#constant landBoost2 1032
-#constant landBoost3 1033
-#constant landBoost4 1034
-#constant landBoost5 1035
-#constant landBoost6 1036
-#constant landBoost7 1037
-#constant scvs 1038
-#constant rail1 1039
-#constant rail2 1040
-
-#constant tweenSprFadeIn 1019
-#constant tweenSprFadeOut 1020
-#constant tweenFadeLen# .5
-CreateTweenSprite(tweenSprFadeIn, tweenFadeLen#)
-SetTweenSpriteAlpha(tweenSprFadeIn, 0, 255, TweenEaseIn1())
-CreateTweenSprite(tweenSprFadeOut, tweenFadeLen#)
-SetTweenSpriteAlpha(tweenSprFadeOut, 255, 0, TweenEaseIn1())
-
-
-#constant duck 1201
-
-#constant instruct 1202
-#constant vehicle1 1203
-#constant vehicle2 1204
-#constant vehicle3 1205
-#constant vehicle4 1206
-
-#constant superStart 1601
-
-#constant bg 2001
-#constant waterS 2002
-#constant landS 2003
-#constant airS 2004
-#constant bg2 2005
-#constant bg3 2006
-
-#constant upgradeBG 3000
-#constant upgrage1StartSpr 3001
-#constant upgrage2StartSpr 3201
-#constant upgrage3StartSpr 3401
-
-#constant spawnStartS 10001
-global spawnS = spawnStartS
-
+global volumeS = 100
 
 #constant font1I 40001
 #constant font2I 40002
@@ -202,10 +105,14 @@ LoadImage(font4I, "font4.png")
 LoadImage(fontMI, "fontM.png")
 LoadImage(fontGI, "fontG.png")
 
-#constant GOOD 1
-#constant BAD 2
-#constant SCRAP 3
-#constant RAMP 4
+#constant tweenSprFadeIn 1019
+#constant tweenSprFadeOut 1020
+#constant tweenFadeLen# .5
+CreateTweenSprite(tweenSprFadeIn, tweenFadeLen#)
+SetTweenSpriteAlpha(tweenSprFadeIn, 0, 255, TweenEaseIn1())
+CreateTweenSprite(tweenSprFadeOut, tweenFadeLen#)
+SetTweenSpriteAlpha(tweenSprFadeOut, 255, 0, TweenEaseIn1())
+
 type spawn
 	
 	spr as integer
@@ -222,20 +129,19 @@ type spawn
 endtype
 global spawnActive as spawn[0]
 
-global upgrades as integer[4, 3]
+global upgrades as integer[4, 7]
 
 //First piece is the letter, 2nd is the stage, 3rd is the mode
-global words as string[4, 4, 3]
+global words as string[4, 4, 7]
 SetWords()
 
 
-global powers as string[4, 4, 3]
+global powers as string[4, 4, 7]
 SetPowers()
 
 //Overhead variables
 global fpsr# = 100
 global screen = 0
-global nextScreen = TITLE
 
 //Gameplay variables
 global heroX# = 0
@@ -249,6 +155,7 @@ global duckSpeed# = .013
 
 global areaSeen = 1
 global gameTime# = 0
+if debug = 0 then nextScreen = TITLE
 
 CreateSpriteExpress(coverS, w, h, 0, 0, 1)
 SetSpriteColor(coverS, 0, 0, 0, 0)
@@ -273,8 +180,9 @@ SetSpriteVisible(cutsceneSpr2, 0)
 
 //This is the array (technically not a queue) of races to be gone through in a gameplay order
 global raceQueue as integer[0]
-global curRaceSet = 1
-SetRaceQueue(1)
+global curRaceSet = 2
+global raceSize = 0
+if debug = 0 then SetRaceQueue(curRaceSet)
 
 function SetRaceQueue(raceSet)
 	
@@ -294,11 +202,18 @@ function SetRaceQueue(raceSet)
 		raceQueue.insert(AIR2)
 		raceQueue.insert(SPACE2)
 	endif
+	
+	raceSize = raceQueue.length
+	duckDistance# = 20000*raceSize
+	
+	nextScreen = raceQueue[1]
+	raceQueue.remove(1)
 endfunction
 
 
 do
     fpsr# = (60.0/ScreenFPS())*9
+    if fpsr# > 5 then fpsr# = 5 
 	DoInputs()
 	
 	inc gameTime#, fpsr#
@@ -330,6 +245,14 @@ do
 			DoLand()
 		elseif screen = AIR
 			DoAir()
+		elseif screen = WATER2
+			DoWater2()
+		elseif screen = LAND2
+			//DoLand2()
+		elseif screen = AIR2
+			//DoAir2()
+		elseif screen = SPACE2
+			//DoSpace2()
 		endif
 		
 		if heroLocalDistance# <= 0
@@ -371,10 +294,12 @@ do
 			endif
 				
 		endif
-		
+				
 		dec duckDistance#, duckSpeed#*fpsr#
-		if duckDistance# < 40000 and areaSeen = 1 then duckSpeed# = 100
-		if duckDistance# < 20000 and areaSeen = 2 then duckSpeed# = 100
+		if duckDistance# < 20000*(raceSize-areaSeen) then duckSpeed# = 100
+		//Below is the old, hardcoded values for speeding the duck up when he reaches an undiscovered section - the above line is the updated one, though it may not work (needs testing)
+		//if duckDistance# < 40000 and areaSeen = 1 then duckSpeed# = 100
+		//if duckDistance# < 20000 and areaSeen = 2 then duckSpeed# = 100
 		if GetRawKeyPressed(82) then duckSpeed# = 100
 		if GetSpriteExists(cutsceneSpr)
 			if GetSpriteCurrentFrame(cutsceneSpr) <> 4 then inc duckDistance#, duckSpeed#*fpsr#
@@ -450,10 +375,7 @@ do
 				//TODO - change this current race set out to correspond with different menu screen buttons
 				curRaceSet = 1
 				SetRaceQueue(curRaceSet)
-				nextScreen = raceQueue[1]
-				raceQueue.remove(1)
 				
-				duckDistance# = 60000
 				duckSpeed# = duckSpeedDefault#
 				if GetMusicPlayingOGG(introM) then StopMusicOGG(introM)
 				if GetMusicPlayingOGG(titleM) then StopMusicOGG(titleM)
@@ -498,7 +420,6 @@ do
 			DeleteScene(screen)
 			screen = 0
 			nextScreen = UPGRADE
-			duckDistance# = 60000
 			duckSpeed# = duckSpeedDefault#
 		endif
 		
@@ -518,8 +439,7 @@ do
 			WaitFadeTween()
 			DeleteScene(screen)
 			screen = 0
-			nextScreen = WATER
-			duckDistance# = 60000
+			SetRaceQueue(curRaceSet)
 			duckSpeed# = duckSpeedDefault#
 		endif
 		
@@ -534,6 +454,7 @@ do
     		Print(GetSpriteX(Hero))
     		Print(GetSpriteY(Hero))
 	endif
+	Print(duckSpeed#)
     Sync()
 loop
 
@@ -549,8 +470,8 @@ endfunction
 
 
 function HideUIText()
-	SetTextVisible(instruct, 0)
-	SetTextVisible(scrapText, 0)
+	if GetTextExists(instruct) then SetTextVisible(instruct, 0)
+	if GetTextExists(scrapText) then SetTextVisible(scrapText, 0)
 endfunction
 
 global trashBag as integer[0]
@@ -607,9 +528,11 @@ function SetupScene(scene)
 			if i = 2 then str$ = "D"
 			if i = 3 then str$ = "E"
 			
-			if scene = 1 then LoadSpriteExpress(vehicle1+i, "w" + str$ + ".png", 60, 60, 10+i*3, 15 + i*65, 3)
-			if scene = 2 then LoadSpriteExpress(vehicle1+i, "l" + str$ + ".png", 60, 60, 10+i*3, 15 + i*65, 3)
-			if scene = 3 then LoadSpriteExpress(vehicle1+i, "s" + str$ + ".png", 60, 60, 10+i*3, 15 + i*65, 3)
+			if scene = WATER or scene = WATER2 then LoadSpriteExpress(vehicle1+i, "w" + str$ + ".png", 60, 60, 10+i*3, 15 + i*65, 3)
+			if scene = LAND or scene = LAND2 then LoadSpriteExpress(vehicle1+i, "l" + str$ + ".png", 60, 60, 10+i*3, 15 + i*65, 3)
+			if scene = AIR or scene = AIR2 then LoadSpriteExpress(vehicle1+i, "s" + str$ + ".png", 60, 60, 10+i*3, 15 + i*65, 3)
+			if scene = SPACE2 then LoadSpriteExpress(vehicle1+i, "sp" + str$ + ".png", 60, 60, 10+i*3, 15 + i*65, 3)	//TODO: Replace these letters with new space ones
+			
 			CreateTextExpress(vehicle1+i, words[i+1, upgrades[i+1,scene]+1, scene], 48, fontGI, 0, 63+i*3, 35 + i*65, -11, 2)
 		next i
 		
@@ -618,310 +541,23 @@ function SetupScene(scene)
 		//Duck will be the first spawnable object
 		
 		if scene = WATER
-			
-			//SetMusicVolumeOGG(waterM, 100)
-			
-			heroX# = w/2
-			heroY# = h*2/3 - 50
-			CreateSpriteExpress(hero, 140, 140, w, h, 10)
-			
-			activeBoost# = 0
-			boatSpeed# = 0
-			chargeC# = 0
-			
-			heroImg1 = LoadImage("W_D"+str(1+upgrades[3,1])+"_1.png")
-			heroImg2 = LoadImage("W_D"+str(1+upgrades[3,1])+"_3.png")
-			heroImg3 = LoadImage("W_D"+str(1+upgrades[3,1])+"_5.png")
-			
-			AddSpriteAnimationFrame(hero, heroImg2)
-			AddSpriteAnimationFrame(hero, heroImg3)
-			AddSpriteAnimationFrame(hero, heroImg2)
-			AddSpriteAnimationFrame(hero, heroImg1)
-			SetSpriteFrame(hero, 4)
-			SetSpriteShape(hero, 3)
-			
-			LoadAnimatedSprite(duck, "duckW", 3)
-			SetSpriteFrame(duck, 1)
-			SetSpriteDepth(duck, 5)
-			
-			CreateSpriteExpress(waterBarBack, waterBarSize, 49, 0, 610, 9)
-			SetSpriteMiddleScreenX(waterBarBack)
-			SetSpriteColor(waterBarBack, 205, 130, 20, 0)
-			LoadAnimatedSprite(waterBarFront, "waterbar", 29)
-			SetSpriteExpress(waterBarFront, GetSpriteWidth(waterBarBack), GetSpriteHeight(waterBarBack), GetSpriteX(waterBarBack), GetSpriteY(waterBarBack), 7)
-			SetSpriteColor(waterBarFront, 235, 235, 235, 255)
-			
-			SetSpriteVisible(waterS, 1)
-			SetSpriteSizeSquare(waterS, w)
-			SetSpriteMiddleScreen(waterS)
-			SetSpriteDepth(waterS, 90)
-			
-			//Setting the variables based on upgrades
-			fixedWaterSpeed# = (0.092) * (1 + 0.8*upgrades[1, 1] + 0.9*upgrades[1, 1]/2 + 1.7*upgrades[1, 1]/3)	//V5 .88
-			boatSpeedMax = (13) * (1 + .5*upgrades[2, 1] + .3*upgrades[2, 1]/3)	//V5 12
-			chargeSpeed# = (.6) * (1 + 0.2*upgrades[3, 1] + 0.1*upgrades[3, 1]/2 + 0.3*upgrades[3, 1]/3)
-			waterSpeedX# = (0.35) * (1 + 0.3*upgrades[4, 1] + 0.2*upgrades[4, 1]/3)
-			
-			areaSeen = Max(areaSeen, 1)
-			
-			
-			newS as spawn
-			for i = 1 to 60
-				//Bouys
-				newS.spr = spawnS
-				LoadSpriteExpress(spawnS, "buoy2.png", 10, 10, w, h, 8)
-				SetSpriteShape(spawnS, 3)
-				newS.cat = BAD
-				newS.x = -110
-				newS.y = i*waterDistance/50 + 2500
-				newS.size = 100
-				spawnActive.insert(newS)
-				inc spawnS, 1
-			next i
-			
-			
-			for i = 4 to 25
-				newS.spr = spawnS
-				newS.cat = Random(1, SCRAP+1)
-				if newS.cat = SCRAP+1 then newS.cat = SCRAP
-				newS.x = Random(0, 240)-80
-				newS.y = i*waterDistance/25 + 100 + Random(0, 400)
-				
-				if i = 25 then newS.cat = SCRAP
-				
-				if newS.cat = GOOD
-					LoadAnimatedSprite(spawnS, "current", 8)
-					SetSpriteDepth(spawnS, 8)
-					PlaySprite(spawnS, 20, 1, 1, 8)
-					newS.size = 100
-				elseif newS.cat = BAD
-					LoadSpriteExpress(spawnS, "buoy1.png", 10, 10, w, h, 8)
-					SetSpriteShape(spawnS, 3)
-					newS.size = 100
-				else
-					LoadSpriteExpress(spawnS, "scrap1.png", 10, 10, w, h, 8)
-					newS.size = 100
-				endif
-				spawnActive.insert(newS)
-				inc spawnS, 1
-			next i
-
-			newS.spr = spawnS
-			newS.cat = RAMP
-			newS.x = 100
-			newS.y = 3200
-			LoadSprite(spawnS, "ramp.png")
-			SetSpriteDepth(spawnS, 18)
-			newS.size = 100
-			spawnActive.insert(newS)
-			inc spawnS, 1
-			
-			LoadAnimatedSprite(cutsceneSpr, "traffic", 4)
-			SetSpriteMiddleScreen(cutsceneSpr)
-			PlaySprite(cutsceneSpr, 1, 0, 1, 4)
-			SetSpriteDepth(cutsceneSpr, 2)
-			
-			//Gameplay setting
-			heroLocalDistance# = waterDistance
-			waterVelX# = 0
-			
+			InitWater()
 		elseif scene = LAND
-			
-			
-			if duckSpeed# = 100 then duckDistance# = 40000
-			
-			SetMusicVolumeOGG(landM, 100)
-			
-			CreateSpriteExpress(hero, 128, 128, w, h, 10)
-			heroX# = w/2
-			heroY# = h*2/3 - 20
-			heroYLow# = heroY#
-			
-			heroImg1 = LoadImage("L_D"+str(1+upgrades[3,2])+"_1.png")
-			heroImg2 = LoadImage("L_D"+str(1+upgrades[3,2])+"_2.png")
-			heroImg3 = LoadImage("L_D"+str(1+upgrades[3,2])+"_3.png")
-			
-			AddSpriteAnimationFrame(hero, heroImg1)
-			AddSpriteAnimationFrame(hero, heroImg3)
-			AddSpriteAnimationFrame(hero, heroImg2)
-			SetSpriteFrame(hero, 1)
-			SetSpriteShape(hero, 3)
-			
-			CreateSpriteExpress(hero2, 128, 128, w, h, 9)
-			
-			hero2Img1 = LoadImage("L_D"+str(1+upgrades[3,2])+"M1_1.png")
-			hero2Img2 = LoadImage("L_D"+str(1+upgrades[3,2])+"M1_2.png")
-			hero2Img3 = LoadImage("L_D"+str(1+upgrades[3,2])+"M1_3.png")
-			hero2Img4 = LoadImage("L_D"+str(1+upgrades[3,2])+"M1_4.png")
-			hero2Img5 = LoadImage("L_D"+str(1+upgrades[3,2])+"M1_5.png")
-			hero2Img6 = LoadImage("L_D"+str(1+upgrades[3,2])+"M1_6.png")
-			AddSpriteAnimationFrame(hero2, hero2Img1)
-			AddSpriteAnimationFrame(hero2, hero2Img2)
-			AddSpriteAnimationFrame(hero2, hero2Img3)
-			AddSpriteAnimationFrame(hero2, hero2Img4)
-			AddSpriteAnimationFrame(hero2, hero2Img5)
-			AddSpriteAnimationFrame(hero2, hero2Img6)
-			PlaySprite(hero2, 15, 1, 1, 2)
-			
-			//Setting the variables based on upgrades
-			//fixedLandSpeed# = 0.7 * (1 + .8*upgrades[1, 2] + .6*upgrades[1, 2]/3) //V5 stats
-			fixedLandSpeed# = 0.6 * (1 + .5*upgrades[1, 2])
-			boostTotal = 3 + 1*upgrades[2, 2] + 1*upgrades[2, 2]/3
-			landSlowDown# = 1 * (1 - .25*upgrades[3, 2] + .15*upgrades[3, 2]/3)
-			boostSpeed# = 4.4 * (1 + 0.6*upgrades[4, 2] + 0.6*upgrades[4, 2]/2 + 2.6*upgrades[4, 2]/3)
-			
-			LoadAnimatedSprite(landBoost1, "bolt", 10)
-			SetSpriteExpress(landBoost1, 50, 50, 300, 630, 5)
-			PlaySprite(landBoost1, 5, 1, 1, 4)
-			for i = landBoost1+1 to landBoost1 - 1 + boostTotal
-				CreateSpriteExistingAnimation(i, landBoost1)
-				SetSpriteExpress(i, 50, 50, 300 + (i-landBoost1)*70, 630, 5)
-				PlaySprite(i, 5, 1, 1, 4)
-			next i
-			
-			
-			
-			areaSeen = Max(areaSeen, 2)
-			
-			LoadAnimatedSprite(duck, "duckl", 2)
-			PlaySprite(duck, 30, 1, 1, 2)
-			SetSpriteDepth(duck, 30)
-			SetSpriteSizeSquare(duck, 70)
-			SetSpriteY(duck, h/2+20)
-			
-			SetSpriteVisible(landS, 1)
-			SetSpriteSizeSquare(landS, w)
-			SetSpriteMiddleScreen(landS)
-			IncSpriteY(landS, -220)
-			SetSpriteDepth(landS, 90)
-			
-			LoadSpriteExpress(rail1, "rail.png", 4000*.6, 140*.6, 0, 240, 40)
-			//LoadSpriteExpress(rail2, "rail.png", 3000*.6, 140*.6, GetSpriteWidth(rail1), 240, 40)
-			
-			//Setting the variables based on upgrades
-			//4th upgrade spot
-									
-			//Spawnables for the land
-			for i = 3 to 22
-				newS.spr = spawnS
-				rnd = Random(1, 9)
-				if rnd <= 2 then newS.cat = GOOD
-				if rnd >= 3 and rnd <= 5 then newS.cat = BAD
-				if rnd >= 6 and rnd <= 9 then newS.cat = SCRAP
-				newS.x = i*landDistance/22 + Random(0, 300) - 2000
-				//newS.y = i*waterDistance/25 + 00 + Random(0, 400)
-				
-				if newS.cat = GOOD
-					CreateSpriteExistingAnimation(spawnS, landBoost1)
-					PlaySprite(spawnS, 5, 1, 1, 4)
-					SetSpriteSizeSquare(spawnS, 70)
-					SetSpriteY(spawnS, Random(250, 480))
-					SetSpriteDepth(spawnS, 8)
-				elseif newS.cat = BAD
-					LoadAnimatedSprite(spawnS, "terrain" + Str(Random(1,3)) + "_", 5)
-					SetSpriteSize(spawnS, 260*1.221, 110*1.221)
-					SetSpritePosition(spawnS, w/2, 480)
-					SetSpriteDepth(spawnS, 20)
-					SetSpriteShape(spawnS, 3)
-				else
-					LoadSpriteExpress(spawnS, "scrap" + Str(1 + Random(1,3)) + ".png", 10, 10, w, h, 8)
-					SetSpriteY(spawnS, Random(250, 480))
-					SetSpriteSizeSquare(spawnS, 50)
-				endif
-				spawnActive.insert(newS)
-				inc spawnS, 1
-			next i
-			
-			
-			//Gameplay setting
-			heroLocalDistance# = landDistance
-		
-			boostAmt# = boostTotal
-		
+			InitLand()
 		elseif scene = AIR
-			
-			
-			if duckSpeed# = 100 then duckDistance# = 20000
-			
-			SetMusicVolumeOGG(airM, 100)
-			
-			heroX# = w/2
-			heroY# = h*2/3 - 50
-			CreateSpriteExpress(hero, 140, 140, w, h, 10)
-			
-			heroImg1 = LoadImage("S_D"+str(1+upgrades[3,3])+"_1.png")
-			heroImg2 = LoadImage("S_D"+str(1+upgrades[3,3])+"_3.png")
-			heroImg3 = LoadImage("S_D"+str(1+upgrades[3,3])+"_5.png")
-			
-			AddSpriteAnimationFrame(hero, heroImg2)
-			AddSpriteAnimationFrame(hero, heroImg3)
-			AddSpriteAnimationFrame(hero, heroImg2)
-			AddSpriteAnimationFrame(hero, heroImg1)
-			SetSpriteFrame(hero, 4)
-			SetSpriteShape(hero, 3)
-			
-			LoadAnimatedSprite(duck, "duckA", 3)
-			PlaySprite(duck, 15, 1, 1, 3)
-			SetSpriteDepth(duck, 12)
-			
-			SetSpriteVisible(airS, 1)
-			SetSpriteAngle(airS, 0)
-			spinLeft# = 0
-			SetSpriteSizeSquare(airS, w*1.2)
-			SetSpriteMiddleScreen(airS)
-			SetSpriteDepth(airS, 90)
-			IncSpriteY(airS, 150)
-			SetSpriteOffset(airS, GetSpriteWidth(airS)/2, GetSpriteHeight(airS)/2-120)
-			
-			areaSeen = Max(areaSeen, 3)
-			
-			//Setting the variables based on upgrades
-			fixedAirSpeed# = (.31)*(1 + 1*upgrades[1, 3] + 1*upgrades[1, 3]/3) //.31
-			airSpeedMax# = (2)*(1 + 0.5*upgrades[2, 3]/2 + 0.2*upgrades[2, 3]/3)
-			airSpeedX# = (0.39)*(1 + 0.3*upgrades[3, 3] + 0.1*upgrades[3, 3] + 0.2*upgrades[3, 3]/3)
-			airSpeedY# = (0.28)*(1 + 0.2*upgrades[4, 3] + 0.1*upgrades[4, 3] + 0.2*upgrades[4, 3]/3)
-			
-			for i = 4 to 27
-				newS.spr = spawnS
-				rnd = Random(1, 5)
-				if rnd <= 3 then newS.cat = SCRAP
-				if rnd = 4 or rnd = 5 then newS.cat = GOOD
-				newS.x = Random(0, 240)-120
-				newS.y = i*airDistance/27 + 470 + Random(0, 200)
-				
-				if newS.cat = GOOD
-					str$ = "s"
-					newS.cat2 = 1
-					if random(1, 2) = 2
-						if random(1, 2) = 1
-							str$ = "m"
-							newS.cat2 = 2
-						else
-							str$ = "l"
-							newS.cat2 = 3
-						endif
-					endif
-					LoadAnimatedSprite(spawnS, "tornado" + str$, 4)
-					SetSpriteDepth(spawnS, 13)
-					PlaySprite(spawnS, 20, 1, 1, 4)
-					newS.size = 200
-					SetSpriteShape(spawnS, 3)
-					if upgrades[2, 3] < 1 then newS.cat = BAD
-				else
-					LoadSpriteExpress(spawnS, "scrap" + Str(4 + Random(1,3)) + ".png", 10, 10, w, h, 8)
-					newS.size = 30
-				endif
-				spawnActive.insert(newS)
-				inc spawnS, 1
-			next i
-			
-			
-			//Gameplay setting
-			heroLocalDistance# = airDistance
-			airVelX# = 0
-			airVelY# = 0
-		
+			InitAir()
+		elseif scene = WATER2
+			InitWater2()
+		elseif scene = LAND2
+			InitLand2()
+		elseif scene = AIR2
+			InitAir2()
+		elseif scene = SPACE2
+			InitSpace2()
 		endif
+		
+		//Below line might be problematic, it's intention is to make sure the duck starts with you if you discover a new area, and duck is in rapid finish mode
+		if duckSpeed# = 100 then duckDistance# = 20000*(raceSize-areaSeen)
 		
 		
 				
@@ -1041,7 +677,7 @@ function SetBG(scene)
 	if GetSpriteExists(bg3) then DeleteAnimatedSprite(bg3)
 	
 	//TODO: Load these BG images in beforehand
-	if scene = WATER
+	if scene = WATER or scene = WATER2
 		LoadSprite(bg, "bgW.png")
 		SetSpriteExpress(bg, w, w*1.5, 0, -w*0.25, 999)
 		
@@ -1113,81 +749,37 @@ endfunction
 
 function DeleteScene(scene)
 	
-	if scene = WATER
-			DeleteSprite(hero)			
-			DeleteSprite(duck)
-			
-			DeleteSprite(waterBarBack)
-			DeleteSprite(waterBarFront)
-			
-			
-			SetSpriteVisible(waterS, 0)
-			//DeleteAnimatedSprite(waterS)			
-			
-			iMax = spawnActive.length
-			for i = 1 to iMax
-				if spawnActive[1].cat = GOOD
-					DeleteAnimatedSprite(spawnActive[1].spr)
-				else
-					DeleteSprite(spawnActive[1].spr)
-				endif
-				spawnActive.remove(1)
-			next i
-
-			DeleteAnimatedSprite(cutsceneSpr)
-			
-			//Gameplay setting
-			heroLocalDistance# = waterDistance
-
-	elseif scene = LAND
+	if scene < UPGRADE
 		
 		DeleteSprite(hero)
-
-			
-			DeleteSprite(hero2)
-
-			
+		if GetSpriteExists(hero2) then DeleteSprite(hero2)		
+		DeleteAnimatedSprite(duck)
+		
+		if scene = WATER
+			SetSpriteVisible(waterS, 0)
+			DeleteSprite(waterBarBack)
+			DeleteSprite(waterBarFront)
+		endif
+		if scene = LAND
+			SetSpriteVisible(landS, 0)
 			DeleteAnimatedSprite(landBoost1)
 			for i = landBoost1+1 to landBoost1 - 1 + boostTotal
 				DeleteSprite(i)
 			next i
-
-			DeleteAnimatedSprite(duck)
-			
 			DeleteSprite(rail1)
-			
-			SetSpriteVisible(landS, 0)
-			//DeleteAnimatedSprite(landS)
-			
-			iMax = spawnActive.length
-			for i = 1 to iMax
-				if spawnActive[1].cat = BAD
-					DeleteAnimatedSprite(spawnActive[1].spr)
-				else
-					DeleteSprite(spawnActive[1].spr)
-				endif
-				spawnActive.remove(1)
-			next i
-		
-	elseif scene = AIR
-		
-			DeleteSprite(hero)
-			
+		endif
+		if scene = AIR
 			SetSpriteVisible(airS, 0)
-			//DeleteAnimatedSprite(airS)
+		endif
 
-			DeleteAnimatedSprite(duck)
+		
+		iMax = spawnActive.length
+		for i = 1 to iMax
+			DeleteAnimatedSprite(spawnActive[1].spr)
+			spawnActive.remove(1)
+		next i
 			
-			iMax = spawnActive.length
-			for i = 1 to iMax
-				if spawnActive[1].cat = GOOD
-					DeleteAnimatedSprite(spawnActive[1].spr)
-				else
-					DeleteSprite(spawnActive[1].spr)
-				endif
-				spawnActive.remove(1)
-			next i
-			
+		if GetSpriteExists(cutsceneSpr) then DeleteAnimatedSprite(cutsceneSpr)
 			
 	elseif scene = UPGRADE
 		
@@ -1247,3 +839,7 @@ function DeleteScene(scene)
 	if GetTextExists(scrapText) then DeleteText(scrapText)		
 	
 endfunction
+
+
+
+

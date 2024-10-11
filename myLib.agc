@@ -1,3 +1,5 @@
+#include "constants.agc"
+
 global inputSelect = 0
 global inputExit = 0
 global inputSkip = 0
@@ -154,12 +156,14 @@ function DeleteAnimatedSprite(spr)
 	
 	//Checking we got a sprite ID and not an imageID
 	//if Abs(imageA[index] - imageA[index+1]) < 3 then //Find the next one, IDK
-		
-	size = imageA[index+1] + 2
-	for i = 1 to size
-		if i > 1 then DeleteImage(imageA[index])
-		imageA.remove(index)
-	next i
+	
+	if index <> -1
+		size = imageA[index+1] + 2
+		for i = 1 to size
+			if i > 1 then DeleteImage(imageA[index])
+			imageA.remove(index)
+		next i
+	endif
 	
 	//Check that the number after the current number is less than 30, to not accidentally find an image ID as an index
 endfunction

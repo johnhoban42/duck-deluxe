@@ -1,3 +1,5 @@
+#include "main.agc"
+#include "constants.agc"
 // File: 1water.agc
 // Created: 24-10-03
 
@@ -17,6 +19,114 @@ global boatSpeed# = 0
 global boatSpeedLoss# = .01
 global fixedWaterSpeed# = .013
 global frameCheck = 0
+
+function InitWater()
+	
+	heroX# = w/2
+	heroY# = h*2/3 - 50
+	CreateSpriteExpress(hero, 140, 140, w, h, 10)
+	
+	activeBoost# = 0
+	boatSpeed# = 0
+	chargeC# = 0
+	
+	heroImg1 = LoadImage("W_D"+str(1+upgrades[3,1])+"_1.png")
+	heroImg2 = LoadImage("W_D"+str(1+upgrades[3,1])+"_3.png")
+	heroImg3 = LoadImage("W_D"+str(1+upgrades[3,1])+"_5.png")
+	
+	AddSpriteAnimationFrame(hero, heroImg2)
+	AddSpriteAnimationFrame(hero, heroImg3)
+	AddSpriteAnimationFrame(hero, heroImg2)
+	AddSpriteAnimationFrame(hero, heroImg1)
+	SetSpriteFrame(hero, 4)
+	SetSpriteShape(hero, 3)
+	
+	LoadAnimatedSprite(duck, "duckW", 3)
+	SetSpriteFrame(duck, 1)
+	SetSpriteDepth(duck, 5)
+	
+	CreateSpriteExpress(waterBarBack, waterBarSize, 49, 0, 610, 9)
+	SetSpriteMiddleScreenX(waterBarBack)
+	SetSpriteColor(waterBarBack, 205, 130, 20, 0)
+	LoadAnimatedSprite(waterBarFront, "waterbar", 29)
+	SetSpriteExpress(waterBarFront, GetSpriteWidth(waterBarBack), GetSpriteHeight(waterBarBack), GetSpriteX(waterBarBack), GetSpriteY(waterBarBack), 7)
+	SetSpriteColor(waterBarFront, 235, 235, 235, 255)
+	
+	SetSpriteVisible(waterS, 1)
+	SetSpriteSizeSquare(waterS, w)
+	SetSpriteMiddleScreen(waterS)
+	SetSpriteDepth(waterS, 90)
+	
+	//Setting the variables based on upgrades
+	fixedWaterSpeed# = (0.092) * (1 + 0.8*upgrades[1, 1] + 0.9*upgrades[1, 1]/2 + 1.7*upgrades[1, 1]/3)	//V5 .88
+	boatSpeedMax = (13) * (1 + .5*upgrades[2, 1] + .3*upgrades[2, 1]/3)	//V5 12
+	chargeSpeed# = (.6) * (1 + 0.2*upgrades[3, 1] + 0.1*upgrades[3, 1]/2 + 0.3*upgrades[3, 1]/3)
+	waterSpeedX# = (0.35) * (1 + 0.3*upgrades[4, 1] + 0.2*upgrades[4, 1]/3)
+	
+	areaSeen = Max(areaSeen, 1)
+	
+	
+	newS as spawn
+	for i = 1 to 60
+		//Bouys
+		newS.spr = spawnS
+		LoadSpriteExpress(spawnS, "buoy2.png", 10, 10, w, h, 8)
+		SetSpriteShape(spawnS, 3)
+		newS.cat = BAD
+		newS.x = -110
+		newS.y = i*waterDistance/50 + 2500
+		newS.size = 100
+		spawnActive.insert(newS)
+		inc spawnS, 1
+	next i
+	
+	
+	for i = 4 to 25
+		newS.spr = spawnS
+		newS.cat = Random(1, SCRAP+1)
+		if newS.cat = SCRAP+1 then newS.cat = SCRAP
+		newS.x = Random(0, 240)-80
+		newS.y = i*waterDistance/25 + 100 + Random(0, 400)
+		
+		if i = 25 then newS.cat = SCRAP
+		
+		if newS.cat = GOOD
+			LoadAnimatedSprite(spawnS, "current", 8)
+			SetSpriteDepth(spawnS, 8)
+			PlaySprite(spawnS, 20, 1, 1, 8)
+			newS.size = 100
+		elseif newS.cat = BAD
+			LoadSpriteExpress(spawnS, "buoy1.png", 10, 10, w, h, 8)
+			SetSpriteShape(spawnS, 3)
+			newS.size = 100
+		else
+			LoadSpriteExpress(spawnS, "scrap1.png", 10, 10, w, h, 8)
+			newS.size = 100
+		endif
+		spawnActive.insert(newS)
+		inc spawnS, 1
+	next i
+
+	newS.spr = spawnS
+	newS.cat = RAMP
+	newS.x = 100
+	newS.y = 3200
+	LoadSprite(spawnS, "ramp.png")
+	SetSpriteDepth(spawnS, 18)
+	newS.size = 100
+	spawnActive.insert(newS)
+	inc spawnS, 1
+	
+	LoadAnimatedSprite(cutsceneSpr, "traffic", 4)
+	SetSpriteMiddleScreen(cutsceneSpr)
+	PlaySprite(cutsceneSpr, 1, 0, 1, 4)
+	SetSpriteDepth(cutsceneSpr, 2)
+	
+	//Gameplay setting
+	heroLocalDistance# = waterDistance
+	waterVelX# = 0
+	
+endfunction
 
 function DoWater()
 	
