@@ -7,10 +7,12 @@ global inputLeft = 0
 global inputRight = 0
 global inputUp = 0
 global inputDown = 0
+global inputSpace = 0
 global stateLeft = 0
 global stateRight = 0
 global stateUp = 0
 global stateDown = 0
+global stateSpace = 0
 
 global releaseLeft = 0
 global releaseRight = 0
@@ -27,10 +29,12 @@ function DoInputs()
 	stateRight = 0
 	stateUp = 0
 	stateDown = 0
+	stateSpace = 0
 	releaseLeft = 0
 	releaseRight = 0
 	
 	if GetRawKeyPressed(13) or GetRawKeyPressed(32) or GetRawKeyPressed(90) then inputSelect = 1
+	if GetRawKeyPressed(13) or GetRawKeyPressed(32) or GetRawKeyPressed(90) then inputSpace = 1
 	if GetRawKeyPressed(27) or GetRawKeyPressed(8) or GetRawKeyPressed(46) then inputExit = 1
 	if GetRawKeyState(17) then inputSkip = 1
 	if GetRawKeyPressed(37) or GetRawKeyPressed(65) then inputLeft = 1
@@ -42,6 +46,7 @@ function DoInputs()
 	if GetRawKeyState(39) or GetRawKeyState(68) then stateRight = 1
 	if GetRawKeyState(38) or GetRawKeyState(87) then stateUp = 1
 	if GetRawKeyState(40) or GetRawKeyState(83) then stateDown = 1
+	if GetRawKeyState(13) or GetRawKeyState(32) or GetRawKeyState(90) then stateSpace = 1
 	
 	
 	if GetRawKeyReleased(37) or GetRawKeyReleased(65) then releaseLeft = 1
