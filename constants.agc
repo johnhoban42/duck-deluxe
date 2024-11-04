@@ -93,6 +93,18 @@ global hero2Img6
 #constant upgrage2StartSpr 3201
 #constant upgrage3StartSpr 3401
 
+//The start point for the extra sprites to make water tiles in the swamp
+#constant water2TileS = 4001
+global water2TileE
+global numCross	//The number of tiles across that the water texture tiles will go
+global tileEH	//Tile extra height, expanded to make them look connected together
+#constant diveVisAngle 50
+#constant waterTileAlpha 200
+
+
+global tileI1
+global tileI2
+
 #constant spawnStartS 10001
 global spawnS = spawnStartS
 

@@ -161,16 +161,26 @@ CreateSpriteExpress(coverS, w, h, 0, 0, 1)
 SetSpriteColor(coverS, 0, 0, 0, 0)
 
 //Loading in the heavy hitters all at once
+if debug
+	CreateSprite(cutsceneSpr2, 0)
+	CreateSprite(cutsceneSpr3, 0)
+	CreateSprite(airS, 0)
+endif
+
+
 LoadAnimatedSprite(waterS, "wBG/w", 52)
 SetSpriteVisible(waterS, 0)
 LoadAnimatedSprite(landS, "lBG/l", 60)
 SetSpriteVisible(landS, 0)
-LoadAnimatedSprite(airS, "sBG/s", 52)
+if debug = 0 then LoadAnimatedSprite(airS, "sBG/s", 52)
 SetSpriteVisible(airS, 0)
-LoadAnimatedSprite(cutsceneSpr3, "intro/intro", 60)
+if debug = 0 then LoadAnimatedSprite(cutsceneSpr3, "intro/intro", 60)
 SetSpriteVisible(cutsceneSpr3, 0)
-LoadAnimatedSprite(cutsceneSpr2, "ending/end", 89)
+if debug = 0 then LoadAnimatedSprite(cutsceneSpr2, "ending/end", 89)
 SetSpriteVisible(cutsceneSpr2, 0)
+
+tileI1 = LoadImage("waterTile1.png")
+tileI2 = LoadImage("waterTile2.png")
 
 
 //CreateTextExpress(superStart, "Game loaded." + chr(10) + "Please click"+chr(10)+"to start.", 52, fontGI, 1, w/2, h/2-52, -10, 3)
@@ -446,15 +456,20 @@ do
 	endif
 	
 
-    //Print( ScreenFPS() )
+    
     UpdateAllTweens(GetFrameTime())
-    //Print(GetRawLastKey())
-    Print(HeroX#)
-    if GetSpriteExists(hero)
-    		Print(GetSpriteX(Hero))
-    		Print(GetSpriteY(Hero))
+    
+    if debug = 1
+    		//Print( ScreenFPS() )
+	    Print(GetRawLastKey())
+	    //Print(HeroX#)
+	    //if GetSpriteExists(hero)
+	    //		Print(GetSpriteX(Hero))
+	    //		Print(GetSpriteY(Hero))
+		//endif
+		Print(duckSpeed#)
+		
 	endif
-	Print(duckSpeed#)
     Sync()
 loop
 
@@ -492,9 +507,9 @@ function SetupScene(scene)
 
 	if GetSpriteExists(hero)
 		DeleteSprite(hero)
-		DeleteImage(heroImg1)
-		DeleteImage(heroImg2)
-		DeleteImage(heroImg3)
+		if GetImageExists(heroImg1) then DeleteImage(heroImg1)
+		if GetImageExists(heroImg2) then DeleteImage(heroImg2)
+		if GetImageExists(heroImg3) then DeleteImage(heroImg3)
 		if GetImageExists(hero2Img1) then DeleteImage(hero2Img1)
 		if GetImageExists(hero2Img2) then DeleteImage(hero2Img2)
 		if GetImageExists(hero2Img3) then DeleteImage(hero2Img3)
@@ -772,6 +787,11 @@ function DeleteScene(scene)
 			SetSpriteVisible(airS, 0)
 		endif
 
+		if scene = WATER2
+			for i = water2TileS to water2TileE
+				if GetSpriteExists(i) then DeleteSprite(i)
+			next i
+		endif
 		
 		iMax = spawnActive.length
 		for i = 1 to iMax
