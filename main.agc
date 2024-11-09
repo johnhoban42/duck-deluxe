@@ -203,9 +203,9 @@ function SetRaceQueue(raceSet)
 	raceQueueRef.length = -1
 	
 	if raceSet = 1 //Race Against a Duck order
-		raceQueue.insert(AIR)
 		raceQueue.insert(WATER)
 		raceQueue.insert(LAND)
+		raceQueue.insert(AIR)
 	elseif raceSet = 2 //Race Against a Duck 2 order
 		raceQueue.insert(WATER2)
 		raceQueue.insert(LAND2)
