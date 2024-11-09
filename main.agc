@@ -20,7 +20,7 @@ SetWindowTitle("Race Against a Duck")
 SetWindowSize( 1280, 720, 0 )
 SetWindowAllowResize( 1 ) // allow the user to resize the window
 
-global debug = 1
+global debug = 0
 global nextScreen = WATER2
 
 #constant w 1280
@@ -151,7 +151,7 @@ global damageAmt# = 0
 global scrapTotal = 0
 global duckDistance# = 60000
 global duckSpeed# = .013
-#constant duckSpeedDefault# 2.2
+#constant duckSpeedDefault# 100
 
 global areaSeen = 1
 global gameTime# = 0
@@ -190,34 +190,35 @@ tileI2 = LoadImage("waterTile2.png")
 
 //This is the array (technically not a queue) of races to be gone through in a gameplay order
 global raceQueue as integer[0]
-global curRaceSet = 2
+global raceQueueRef as integer[0]
+global curRaceSet = 1
 global raceSize = 0
 if debug = 0 then SetRaceQueue(curRaceSet)
 
 function SetRaceQueue(raceSet)
 	
 	//First, clearing the current race queue
-	endI = raceQueue.length
-	for i = 1 to endI
-		raceQueue.remove(0)
-	next i
+	raceQueue.length = -1  // according to AGK docs this frees the memory
+	// Also clear the "reference" race queue, which does not change by area
+	raceQueueRef.length = -1
 	
 	if raceSet = 1 //Race Against a Duck order
+		raceQueue.insert(AIR)
 		raceQueue.insert(WATER)
 		raceQueue.insert(LAND)
-		raceQueue.insert(AIR)
 	elseif raceSet = 2 //Race Against a Duck 2 order
 		raceQueue.insert(WATER2)
 		raceQueue.insert(LAND2)
 		raceQueue.insert(AIR2)
 		raceQueue.insert(SPACE2)
 	endif
+	raceQueueRef = raceQueue
 	
 	raceSize = raceQueue.length
 	duckDistance# = 20000*raceSize
 	
-	nextScreen = raceQueue[1]
-	raceQueue.remove(1)
+	nextScreen = raceQueue[0]
+	raceQueue.remove(0)
 endfunction
 
 
