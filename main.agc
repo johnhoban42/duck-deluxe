@@ -20,7 +20,7 @@ SetWindowTitle("Race Against a Duck")
 SetWindowSize( 1280, 720, 0 )
 SetWindowAllowResize( 1 ) // allow the user to resize the window
 
-global debug = 0
+global debug = 1
 global nextScreen = WATER2
 
 #constant w 1280
@@ -151,7 +151,7 @@ global damageAmt# = 0
 global scrapTotal = 0
 global duckDistance# = 60000
 global duckSpeed# = .013
-#constant duckSpeedDefault# 100
+#constant duckSpeedDefault# 2.2
 
 global areaSeen = 1
 global gameTime# = 0

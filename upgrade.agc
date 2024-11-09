@@ -5,8 +5,6 @@
 
 #include "constants.agc"
 
-global upgradeQueue as integer[4, 4]
-
 function InitializeFromRaceQueue()
 	// Fetch upgrade properties for the areas defined by the race queue.
 	SetRaceQueue(curRaceSet)
