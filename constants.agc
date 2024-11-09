@@ -2,7 +2,8 @@
 // Created: 24-10-03
 
 global UPGRADE_CHARS as string[4] = ["M", "O", "D", "E"]
-global AREA_CHARS as string[3] = ["W", "L", "S"]
+// todo - we'll need new chars for water 2, land 2, etc. if we want new letter sprites
+global AREA_CHARS as string[7] = ["W", "L", "S", "W", "L", "S", "Z"]
 
 
 #constant WATER 1

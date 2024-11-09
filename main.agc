@@ -190,17 +190,17 @@ tileI2 = LoadImage("waterTile2.png")
 
 //This is the array (technically not a queue) of races to be gone through in a gameplay order
 global raceQueue as integer[0]
-global curRaceSet = 2
+global raceQueueRef as integer[0]
+global curRaceSet = 1
 global raceSize = 0
 if debug = 0 then SetRaceQueue(curRaceSet)
 
 function SetRaceQueue(raceSet)
 	
 	//First, clearing the current race queue
-	endI = raceQueue.length
-	for i = 1 to endI
-		raceQueue.remove(0)
-	next i
+	raceQueue.length = -1  // according to AGK docs this frees the memory
+	// Also clear the "reference" race queue, which does not change by area
+	raceQueueRef.length = -1
 	
 	if raceSet = 1 //Race Against a Duck order
 		raceQueue.insert(WATER)
@@ -212,12 +212,13 @@ function SetRaceQueue(raceSet)
 		raceQueue.insert(AIR2)
 		raceQueue.insert(SPACE2)
 	endif
+	raceQueueRef = raceQueue
 	
 	raceSize = raceQueue.length
 	duckDistance# = 20000*raceSize
 	
-	nextScreen = raceQueue[1]
-	raceQueue.remove(1)
+	nextScreen = raceQueue[0]
+	raceQueue.remove(0)
 endfunction
 
 
