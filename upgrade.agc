@@ -5,16 +5,24 @@
 
 #include "constants.agc"
 
+global upgradeQueue as integer[4, 4]
+
+function InitializeFromRaceQueue()
+	// Fetch upgrade properties for the areas defined by the race queue.
+	SetRaceQueue(curRaceSet)
+
+endfunction
+
 function CreateUpgradePod(row, col)
 	// Create a single upgrade pod.
 	
 	spr = upgrage1StartSpr + 200*col + row*10
-	LoadSpriteExpress(spr, "shopbox" + str(col+1) + ".png", 362, 154, 10 + col*360, 80 + row*156, 20)
+	LoadSpriteExpress(spr, "shopbox" + str(raceQueueRef[col]) + ".png", 362, 154, 10 + col*360, 80 + row*156, 20)
 	
 	LoadSpriteExpress(spr + 1, "shopPlate.png", 240, 75, GetSpriteX(spr) + 72, GetSpriteY(spr) + 60, 14)
 	SetSpriteColor(spr+1, 110, 110, 110, 255)
 	
-	LoadSpriteExpress(spr + 2, "icon" + str(col+1) + "bg.png", 40, 40, GetSpriteX(spr) + 16, GetSpriteY(spr) + 92, 14)
+	LoadSpriteExpress(spr + 2, "icon" + str(raceQueueRef[col]) + "bg.png", 40, 40, GetSpriteX(spr) + 16, GetSpriteY(spr) + 92, 14)
 	
 	for k = 0 to 2
 		if k = 0 then CreateTextExpress(spr + k, "", 96, fontMI, 1, GetSpriteX(spr) + 30, GetSpriteY(spr) + 2, 0, 15)
@@ -22,16 +30,17 @@ function CreateUpgradePod(row, col)
 		if k = 2 then CreateTextExpress(spr + k, "", 24, fontMI, 1, GetSpriteMiddleX(spr+1), GetSpriteY(spr) + 73, -4, 10)
 	next k
 	
-	areaChr$ = AREA_CHARS[col]
+	areaChr$ = AREA_CHARS[raceQueueRef[col] - 1]
 	upgradeChr$ = UPGRADE_CHARS[row]
 	
+	// upgrade letter sprite
 	LoadSpriteExpress(spr + 3, Lower(areaChr$) + upgradeChr$ + ".png", 75, 75, GetSpriteX(spr)-5, GetSpriteY(spr)-10, 20)
 	
 	if upgrades[row+1, col+1] <> 3
-		SetTextString(spr + 1, words[row+1, upgrades[row+1,col+1]+1, col+1])
-		SetTextString(spr + 2, upgradeChr$ + words[row+1, upgrades[row+1,col+1]+2, col+1] + "- " + Str(GetCost(row,col)) + "~" + chr(10) + powers[row+1, upgrades[row+1,col+1]+2, col+1])
+		SetTextString(spr + 1, words[row+1, upgrades[row+1,col+1]+1, raceQueueRef[col]])
+		SetTextString(spr + 2, upgradeChr$ + words[row+1, upgrades[row+1,col+1]+2, raceQueueRef[col]] + "- " + Str(GetCost(row,col)) + "~" + chr(10) + powers[row+1, upgrades[row+1,col+1]+2, raceQueueRef[col]])
 	else
-		SetTextString(spr + 1, words[row+1, 4, col+1])
+		SetTextString(spr + 1, words[row+1, 4, raceQueueRef[col]])
 		SetTextString(spr + 2, "")
 		SetSpriteVisible(spr+1, 0)
 		IncTextY(spr+1, 40)
@@ -42,12 +51,15 @@ function CreateUpgradePod(row, col)
 
 	if GetCost(row,col) > scrapTotal then SetTextColor(spr + 2, 160, 160, 160, 255)
 
+	// upgrade part sprite
 	LoadSpriteExpress(spr + 4, areaChr$ + upgradeChr$ + str(1+upgrades[row+1,col+1]) + ".png", GetSpriteWidth(spr+2), GetSpriteHeight(spr+2), GetSPriteX(spr+2), GetSpriteY(spr+2), GetSpriteDepth(spr+2)-1)
 	
 endfunction
 
 
 function CreateUpgrade()
+
+	InitializeFromRaceQueue()
 	
 	CreateSpriteExpress(instruct, 320, 320, w/2+180 + (areaSeen-1)*56, h/2 - 30, 60)
 	img1 = LoadImage("upgradeR1.png")
@@ -60,7 +72,7 @@ function CreateUpgrade()
 	LoadSpriteExpress(vehicle4, "upgradeV" + str(areaSeen) + ".png", GetSpriteWidth(instruct), GetSpriteWidth(instruct), GetSpriteX(instruct), GetSpriteY(instruct), 70)
 	
 	for col = 0 to areaSeen - 1
-		LoadSpriteExpress(vehicle1 + col, "mode" + str(1+col) + ".png", 395*0.6, 80*0.6, 70 + col*(360), 25, 30)
+		LoadSpriteExpress(vehicle1 + col, "mode" + str(raceQueueRef[col]) + ".png", 395*0.6, 80*0.6, 70 + col*(360), 25, 30)
 	next col
 	
 	LoadSpriteExpress(upgradeBG, "upgradebg" + str(areaSeen) + ".png", w, h, 0, 0, 99)	
@@ -94,10 +106,10 @@ function DoUpgradePod(row, col)
 		UpdateScrapText()
 		
 		if upgrades[row+1, col+1] <> 3
-			SetTextString(spr + 1, words[row+1, upgrades[row+1,col+1]+1, col+1])
-			SetTextString(spr + 2, UPGRADE_CHARS[row] + words[row+1, upgrades[row+1,col+1]+2, col+1] + "- " + Str(cost) + "~" + chr(10) + powers[row+1, upgrades[row+1,col+1]+2, col+1])
+			SetTextString(spr + 1, words[row+1, upgrades[row+1,col+1]+1, raceQueueRef[col]])
+			SetTextString(spr + 2, UPGRADE_CHARS[row] + words[row+1, upgrades[row+1,col+1]+2, raceQueueRef[col]] + "- " + Str(cost) + "~" + chr(10) + powers[row+1, upgrades[row+1,col+1]+2, col+1])
 		else
-			SetTextString(spr + 1, words[row+1, 4, col+1])
+			SetTextString(spr + 1, words[row+1, 4, raceQueueRef[col]])
 			SetTextString(spr + 2, "")
 			SetSpriteVisible(spr+1, 0)
 			IncTextY(spr+1, 40)
