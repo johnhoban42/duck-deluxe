@@ -179,6 +179,12 @@ SetSpriteVisible(cutsceneSpr3, 0)
 if debug = 0 then LoadAnimatedSprite(cutsceneSpr2, "ending/end", 89)
 SetSpriteVisible(cutsceneSpr2, 0)
 
+//Duck 2 sprites
+LoadAnimatedSprite(water2S, "w2BG/sw", 60)
+SetSpriteVisible(water2S, 0)
+LoadAnimatedSprite(water2TileS, "w2BG/2sw", 60)
+SetSpriteVisible(water2TileS, 0)
+
 tileI1 = LoadImage("waterTile1.png")
 tileI2 = LoadImage("waterTile2.png")
 
@@ -676,11 +682,8 @@ function SetupScene(scene)
 		//SetTextColor(scrapText, 0, 0, 0, 255)
 	endif
 	
-	
-	
 	screen = scene
 	
-
 endfunction
 
 
@@ -693,7 +696,7 @@ function SetBG(scene)
 	if GetSpriteExists(bg3) then DeleteAnimatedSprite(bg3)
 	
 	//TODO: Load these BG images in beforehand
-	if scene = WATER or scene = WATER2
+	if scene = WATER// or scene = WATER2
 		LoadSprite(bg, "bgW.png")
 		SetSpriteExpress(bg, w, w*1.5, 0, -w*0.25, 999)
 		
@@ -729,7 +732,7 @@ endfunction
 function CollectScrap(area)
 	PlaySound(scrapS, volumeS)
 	
-	if area = WATER
+	if area = WATER or area = WATER2
 		num = Random(3, 5)
 		if scrapTotal = 0 then num = 5
 		inc scrapTotal, num
@@ -789,7 +792,10 @@ function DeleteScene(scene)
 		endif
 
 		if scene = WATER2
-			for i = water2TileS to water2TileE
+			SetSpriteVisible(water2S, 0)
+			SetSpriteVisible(water2TileS, 0)
+			DeleteParticles(lightP)
+			for i = water2TileS+1 to water2TileE
 				if GetSpriteExists(i) then DeleteSprite(i)
 			next i
 		endif
@@ -858,6 +864,8 @@ function DeleteScene(scene)
 	endif
 	
 	if GetTextExists(scrapText) then DeleteText(scrapText)		
+	
+	EmptyTrashBag()
 	
 endfunction
 

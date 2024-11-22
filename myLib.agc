@@ -994,6 +994,9 @@ function TurnOffSelect()
 	next i
 endfunction
 
+function MatchSpriteColor(spr, sprOrigin)
+	SetSpriteColor(spr, GetSpriteColorRed(sprOrigin), GetSpriteColorGreen(sprOrigin), GetSpriteColorBlue(sprOrigin), GetSpriteColorAlpha(sprOrigin))
+endfunction
 
 function SetWords()
 	words[1, 1, 1] = "opey"
