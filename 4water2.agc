@@ -15,6 +15,10 @@ global diveDeepTimer# = 0
 global diveDeepTimerMax# = .75	//Upgrade variable
 global diveLevel = 1		//Upgrade variable
 
+global diveBoost# = 0
+global diveBoostQueue = 0
+global diveBoostSlow# = .0008
+
 //Water tile visibility could be an upgrade variable?
 //waterTileAlpha
 
@@ -43,9 +47,10 @@ function InitWater2()
 	heroLocalDistance# = water2Distance
 	waterVelX# = 0
 	
-	fixedWater2Speed# = .2 * (1 + upgrades[1, 4] + 7)	//Adding 7 should be the maximum
+	fixedWater2Speed# = .2 * (1 + upgrades[1, 4] + 3)	//Adding 7 should be the maximum
 	
 	diveVelMax# = .4 * (1 + upgrades[2, 4] + 2)
+	diveRise# = .01 * (1 + upgrades[2, 4] + 3)
 	
 	diveLevel = 3 + upgrades[3, 4]
 	
@@ -54,7 +59,7 @@ function InitWater2()
 	if diveLevel = 3 then diveDeepTimerMax# = 0.55/(diveVelMax#)
 	if diveLevel = 4 then diveDeepTimerMax# = 0.69/(diveVelMax#)
 	
-	diveRise# = .02 * (1 + upgrades[4, 4])
+	diveBoostSlow# = .0018 / (1 + upgrades[4, 4])
 
 	
 	SetSpriteVisible(water2S, 1)
@@ -132,8 +137,9 @@ function InitWater2()
 	iEnd = 25 + 10*diveLevel //+ (.5*diveLevel*diveLevel)
 	for i = 1 to iEnd
 		newS.spr = spawnS
-		newS.cat = Random(SCRAP, SCRAP+1)
-		if newS.cat = SCRAP+1 then newS.cat = SCRAP
+		newS.cat = Random(GOOD, SCRAP+1)
+		
+		if newS.cat = SCRAP+1 or newS.cat = BAD then newS.cat = SCRAP
 		newS.x = i*water2Distance/iEnd + 100 + Random(0, 400)
 		newS.y = GetSpriteY(water2TileS) + Random(60, 420-(4-diveLevel)*80)
 		
@@ -141,14 +147,13 @@ function InitWater2()
 		if i = iEnd then newS.cat = SCRAP
 		
 		if newS.cat = GOOD
-			//LoadAnimatedSprite(spawnS, "current", 8)
-			//SetSpriteDepth(spawnS, 8)
-			//PlaySprite(spawnS, 20, 1, 1, 8)
-			//newS.size = 100
+			LoadSpriteExpress(spawnS, "bolt1.png", 10, 10, w, h, 8)
+			newS.size = 50
+			SetSpriteSizeSquare(spawnS, newS.size)
 		elseif newS.cat = BAD
-			LoadSpriteExpress(spawnS, "buoy1.png", 10, 10, w, h, 8)
-			SetSpriteShape(spawnS, 3)
-			newS.size = 100
+			//LoadSpriteExpress(spawnS, "buoy1.png", 10, 10, w, h, 8)
+			//SetSpriteShape(spawnS, 3)
+			//newS.size = 100
 		else
 			LoadSpriteExpress(spawnS, "scrap1.png", 10, 10, w, h, 8)
 			newS.size = 50
@@ -249,14 +254,20 @@ function DoWater2()
 		diveVelY# = 0
 		heroY# = 0
 		SetSpriteAngle(hero, 0)
+		if diveBoostQueue <> 0
+			PlaySound(WindSS)
+			inc diveBoost#, diveBoostQueue
+			diveBoostQueue = 0
+		endif
 	endif
 	
 	inc heroY#, diveVelY#*fpsr#
 	
-	Print(heroY#)
-	Print(diveDeepTimer#)
-	Print(diveDeepTimerMax#)
-	Print(GetSpriteAngle(hero))
+	//Print(heroY#)
+	Print(diveBoost#)
+	//Print(diveDeepTimer#)
+	//Print(diveDeepTimerMax#)
+	//Print(GetSpriteAngle(hero))
 	
 	
 	SetSpriteFrame(water2S, 1+Mod(Round(landDistance-heroLocalDistance#)/6, 60))
@@ -278,7 +289,12 @@ function DoWater2()
 	//	endif
 	//endif
 	dec heroLocalDistance#, fixedWater2Speed#*fpsr#
-	
+	if diveBoost# > 0
+		dec heroLocalDistance#, fixedWater2Speed#*fpsr# * diveBoost#
+		dec diveBoost#, diveBoostSlow#*fpsr#
+	endif
+		
+		
 	//SetSpriteFrame(bg3, 1+8.0*(Round(waterDistance-heroLocalDistance#)/(1.0*waterDistance)))
 	
 	SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(waterDistance - heroLocalDistance#)/waterDistance)/areaSeen)
@@ -292,8 +308,9 @@ function DoWater2()
 			if GetSpriteCollision(spr, hero) and Abs((GetSpriteY(hero) - GetSpriteY(spr))) < 80
 				
 				if spawnActive[i].cat = GOOD
+					inc diveBoostQueue, 1
 					//boatSpeed# = Max(boatSpeed#, sqrt(Min(boatSpeedMax, 20)*1.5))
-					//PlaySound(WindSS)
+					
 					//PlaySound(rowGoodS, VolumeS*.8)
 				elseif spawnActive[i].cat = BAD
 					//if damageAmt# <= 0
