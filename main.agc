@@ -14,6 +14,7 @@
 
 // show all errors
 SetErrorMode(2)
+SetErrorMode(2)
 
 // set window properties
 SetWindowTitle("Race Against a Duck")
@@ -21,6 +22,7 @@ SetWindowSize( 1280, 720, 0 )
 SetWindowAllowResize( 1 ) // allow the user to resize the window
 
 global debug = 1
+if debug = 0 then SetErrorMode(1)
 global nextScreen = WATER2
 
 #constant w 1280
@@ -179,6 +181,12 @@ SetSpriteVisible(cutsceneSpr3, 0)
 if debug = 0 then LoadAnimatedSprite(cutsceneSpr2, "ending/end", 89)
 SetSpriteVisible(cutsceneSpr2, 0)
 
+//Duck 2 sprites
+LoadAnimatedSprite(water2S, "w2BG/sw", 60)
+SetSpriteVisible(water2S, 0)
+LoadAnimatedSprite(water2TileS, "w2BG/2sw", 60)
+SetSpriteVisible(water2TileS, 0)
+
 tileI1 = LoadImage("waterTile1.png")
 tileI2 = LoadImage("waterTile2.png")
 
@@ -263,7 +271,7 @@ do
 		elseif screen = AIR2
 			//DoAir2()
 		elseif screen = SPACE2
-			//DoSpace2()
+			DoSpace2()
 		endif
 		
 		if heroLocalDistance# <= 0
@@ -547,7 +555,7 @@ function SetupScene(scene)
 			if scene = WATER or scene = WATER2 then LoadSpriteExpress(vehicle1+i, "w" + str$ + ".png", 60, 60, 10+i*3, 15 + i*65, 3)
 			if scene = LAND or scene = LAND2 then LoadSpriteExpress(vehicle1+i, "l" + str$ + ".png", 60, 60, 10+i*3, 15 + i*65, 3)
 			if scene = AIR or scene = AIR2 then LoadSpriteExpress(vehicle1+i, "s" + str$ + ".png", 60, 60, 10+i*3, 15 + i*65, 3)
-			if scene = SPACE2 then LoadSpriteExpress(vehicle1+i, "sp" + str$ + ".png", 60, 60, 10+i*3, 15 + i*65, 3)	//TODO: Replace these letters with new space ones
+			if scene = SPACE2 then LoadSpriteExpress(vehicle1+i, "s" + str$ + ".png", 60, 60, 10+i*3, 15 + i*65, 3)	//TODO: Replace these letters with new space ones
 			
 			CreateTextExpress(vehicle1+i, words[i+1, upgrades[i+1,scene]+1, scene], 48, fontGI, 0, 63+i*3, 35 + i*65, -11, 2)
 		next i
@@ -676,11 +684,8 @@ function SetupScene(scene)
 		//SetTextColor(scrapText, 0, 0, 0, 255)
 	endif
 	
-	
-	
 	screen = scene
 	
-
 endfunction
 
 
@@ -693,7 +698,7 @@ function SetBG(scene)
 	if GetSpriteExists(bg3) then DeleteAnimatedSprite(bg3)
 	
 	//TODO: Load these BG images in beforehand
-	if scene = WATER or scene = WATER2
+	if scene = WATER// or scene = WATER2
 		LoadSprite(bg, "bgW.png")
 		SetSpriteExpress(bg, w, w*1.5, 0, -w*0.25, 999)
 		
@@ -729,7 +734,7 @@ endfunction
 function CollectScrap(area)
 	PlaySound(scrapS, volumeS)
 	
-	if area = WATER
+	if area = WATER or area = WATER2
 		num = Random(3, 5)
 		if scrapTotal = 0 then num = 5
 		inc scrapTotal, num
@@ -789,7 +794,10 @@ function DeleteScene(scene)
 		endif
 
 		if scene = WATER2
-			for i = water2TileS to water2TileE
+			SetSpriteVisible(water2S, 0)
+			SetSpriteVisible(water2TileS, 0)
+			DeleteParticles(lightP)
+			for i = water2TileS+1 to water2TileE
 				if GetSpriteExists(i) then DeleteSprite(i)
 			next i
 		endif
@@ -858,6 +866,8 @@ function DeleteScene(scene)
 	endif
 	
 	if GetTextExists(scrapText) then DeleteText(scrapText)		
+	
+	EmptyTrashBag()
 	
 endfunction
 

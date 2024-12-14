@@ -89,6 +89,13 @@ global hero2Img6
 #constant bg2 2005
 #constant bg3 2006
 
+#constant water2S 2007
+#constant water2BG 2008
+
+//#constant land2S 2008
+//#constant air2S 2009
+//#constant space2S 2009
+
 #constant upgradeBG 3000
 #constant upgrage1StartSpr 3001
 #constant upgrage2StartSpr 3201
@@ -101,6 +108,7 @@ global numCross	//The number of tiles across that the water texture tiles will g
 global tileEH	//Tile extra height, expanded to make them look connected together
 #constant diveVisAngle 50
 #constant waterTileAlpha 200
+#constant water2Trees 4051
 
 
 global tileI1
@@ -109,7 +117,9 @@ global tileI2
 #constant spawnStartS 10001
 global spawnS = spawnStartS
 
-
+//Particles
+#constant lightP 1
+#constant splashP 2
 
 
 #constant GOOD 1
