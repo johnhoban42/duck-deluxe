@@ -119,7 +119,7 @@ global spawnS = spawnStartS
 
 //Particles
 #constant lightP 1
-
+#constant splashP 2
 
 
 #constant GOOD 1

@@ -272,6 +272,15 @@ function SetSpriteExpress(spr, wid, hei, x, y, depth)
 	SetSpriteDepth(spr, depth)
 endfunction
 
+function CreateParticlesExpress(ID, depth, maximum, size, angle, freq)
+	CreateParticles(ID, 0, 0)
+	SetParticlesDepth(ID, depth)
+	SetParticlesMax(ID, maximum)
+	SetParticlesSize(ID, size)
+	SetParticlesAngle(ID, angle)
+	SetParticlesFrequency(ID, freq)
+endfunction
+
 function CreateTextExpress(txt, content$, size, fontI, alignment, x, y, spacing, depth)
 	CreateText(txt, content$)
 	SetTextSize(txt, size)

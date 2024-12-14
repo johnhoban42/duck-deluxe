@@ -118,7 +118,29 @@ function InitWater2()
 	AddParticlesColorKeyFrame(lightP, life#/4, 230, 230, 0, 210)
 	AddParticlesColorKeyFrame(lightP, life#*4/5, 230, 230, 0, 230)
 	AddParticlesColorKeyFrame(lightP, life#, 230, 230, 0, 0)
-	 
+	
+	
+	CreateParticlesExpress(splashP, 10, 10, 4, 170, 500)
+	img = LoadImage("splash.png")
+	SetParticlesImage(splashP, img)
+	trashBag.insert(img)
+	SetParticlesStartZone(splashP, -10, -1, 10, 1)
+	SetParticlesPosition(splashP, 9999, 9999)
+	SetParticlesDirection(splashP, 0, -200)
+	life# = .2
+	SetParticlesLife(splashP, life#)
+	r = 60
+	g = 190
+	b = 220
+	AddParticlesColorKeyFrame(splashP, 0, r, g, b, 255)
+	AddParticlesColorKeyFrame(splashP, life#*4/5, r, g, b, 255)
+	AddParticlesColorKeyFrame(splashP, life#, r, g, b, 0)
+	AddParticlesForce(splashP, 0, life#, 0, 1000)
+	
+	
+	//AddParticlesForce(featherP, life#/4, life#, -400, 0)
+	
+	
 	//Land moving image is 160 across
 	//It's also 60 frames
 	//Every frame, we will shift the water images over by 160/w*60
@@ -215,6 +237,11 @@ function DoWater2()
 	inc heroX#, waterVelX#
 	
 	//Diving
+	if stateSpace and heroY# <= 0
+		//Diving sound
+		SetParticlesPosition(splashP, GetSpriteMiddleX(hero), (GetSpriteMiddleY(water2S)) + GetSpriteHeight(hero)/2)
+		ResetParticleCount(splashP)
+	endif
 	if stateSpace
 		
 		if heroY# <= 0

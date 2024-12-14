@@ -14,6 +14,7 @@
 
 // show all errors
 SetErrorMode(2)
+SetErrorMode(2)
 
 // set window properties
 SetWindowTitle("Race Against a Duck")
@@ -21,6 +22,7 @@ SetWindowSize( 1280, 720, 0 )
 SetWindowAllowResize( 1 ) // allow the user to resize the window
 
 global debug = 1
+if debug = 0 then SetErrorMode(1)
 global nextScreen = WATER2
 
 #constant w 1280
@@ -269,7 +271,7 @@ do
 		elseif screen = AIR2
 			//DoAir2()
 		elseif screen = SPACE2
-			//DoSpace2()
+			DoSpace2()
 		endif
 		
 		if heroLocalDistance# <= 0
@@ -553,7 +555,7 @@ function SetupScene(scene)
 			if scene = WATER or scene = WATER2 then LoadSpriteExpress(vehicle1+i, "w" + str$ + ".png", 60, 60, 10+i*3, 15 + i*65, 3)
 			if scene = LAND or scene = LAND2 then LoadSpriteExpress(vehicle1+i, "l" + str$ + ".png", 60, 60, 10+i*3, 15 + i*65, 3)
 			if scene = AIR or scene = AIR2 then LoadSpriteExpress(vehicle1+i, "s" + str$ + ".png", 60, 60, 10+i*3, 15 + i*65, 3)
-			if scene = SPACE2 then LoadSpriteExpress(vehicle1+i, "sp" + str$ + ".png", 60, 60, 10+i*3, 15 + i*65, 3)	//TODO: Replace these letters with new space ones
+			if scene = SPACE2 then LoadSpriteExpress(vehicle1+i, "s" + str$ + ".png", 60, 60, 10+i*3, 15 + i*65, 3)	//TODO: Replace these letters with new space ones
 			
 			CreateTextExpress(vehicle1+i, words[i+1, upgrades[i+1,scene]+1, scene], 48, fontGI, 0, 63+i*3, 35 + i*65, -11, 2)
 		next i
