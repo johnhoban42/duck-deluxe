@@ -6,12 +6,16 @@
 #constant land2Distance 20000
 
 // Upgrade variables
-global land2nLanes = 2  // number of lanes
+global land2nLanes = 5  // number of lanes
 global land2baseSpeed# = 0  // non-boosted speed
 global land2boostSpeed# = 0  // boosted speed
 global land2boostSpawnRate# = 0  // rate at which boost panels spawn?
 
+// hero movement
 global land2heroSpeed# = 1  // pixels per frame of speed
+global land2currentLane = 2  // current lane, 1 = leftmost lane
+global land2laneChangeFrame = 0  // frames remaining in lane change, max 10
+global land2laneChangeDirection = 0  // -1 -> left, 1 -> right
 
 function InitLand2()
 	
@@ -25,6 +29,12 @@ function InitLand2()
     LoadAnimatedSprite(land2sprStreet, "cbg/fivelane/c5", 40)
     SetSpriteSize(land2sprStreet, w, h)
     PlaySprite(land2sprStreet, 60)
+
+    // load hero sprite
+    LoadAnimatedSprite(hero, "duckl", 2)
+    SetSpriteSize(hero, 70, 70)
+    SetSpritePosition(hero, 500, 300)
+    PlaySprite(hero, 10)
 
     heroLocalDistance# = land2Distance
 
@@ -40,6 +50,25 @@ function DoLand2()
             SetSpritePosition(land2sprBuildings + i, 200 + 2*w, 2.0 / 3 * h)
         endif
     next i
+
+    // hero movement
+    DoInputs()
+    // start turning left
+    if inputLeft and land2laneChangeFrame = 0 and land2currentLane > 1
+        land2currentLane = max(1, land2currentLane - 1)
+        land2laneChangeFrame = 10
+        land2laneChangeDirection = -1
+    // start turning right
+    elseif inputRight and land2laneChangeFrame = 0 and land2currentLane < land2nLanes
+        land2currentLane = min(land2nLanes, land2currentLane + 1)
+        land2laneChangeFrame = 10
+        land2laneChangeDirection = 1
+    endif
+    if land2laneChangeFrame
+        inc land2laneChangeFrame, -1
+    endif
+
+    SetSpritePosition(hero, 310 + 90 * land2currentLane - 9 * land2laneChangeDirection * land2laneChangeFrame, 300)
     inc heroLocalDistance#, -1 * land2heroSpeed#
 
 endfunction
