@@ -68,8 +68,8 @@ function DoInputs()
 endfunction
 
 //Volume for music and sound effects
-global volumeM = 100
-global volumeSE = 100
+global volumeM = 0
+global volumeSE = 0
 
 //Core functions that are used in the app, and possible future apps
 function SyncG()
