@@ -23,7 +23,7 @@ SetWindowAllowResize( 1 ) // allow the user to resize the window
 
 global debug = 1
 if debug = 0 then SetErrorMode(1)
-global nextScreen = LAND2
+global nextScreen = WATER2
 
 #constant w 1280
 #constant h 720
@@ -92,7 +92,7 @@ LoadMusicOGG(endingM, "music/ending.ogg")
 #constant titleM 7
 LoadMusicOGG(titleM, "music/title.ogg")
 SetMusicLoopTimesOGG(titleM, 4.941, 33.030)
-global volumeS = 0
+global volumeS = 100
 
 #constant font1I 40001
 #constant font2I 40002
