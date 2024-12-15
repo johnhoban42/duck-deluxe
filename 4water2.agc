@@ -18,6 +18,9 @@ global diveLevel = 1		//Upgrade variable
 global diveBoost# = 0
 global diveBoostQueue = 0
 global diveBoostSlow# = .0008
+#constant diveHopRise .01
+global diveHop# = 0
+global diveDamage = 0
 
 //Water tile visibility could be an upgrade variable?
 //waterTileAlpha
@@ -30,19 +33,21 @@ function InitWater2()
 	
 	heroX# = w/5
 	heroY# = 0
-	CreateSpriteExpress(hero, 140, 140, w, h, 50)
-	
+	//CreateSpriteExpress(hero, 140, 140, w, h, 50)
+	LoadAnimatedSprite(hero, "duckw2", 7)
+	SetSpriteSizeSquare(hero, 60)
+	SetSpriteDepth(hero, 50)
 	activeBoost# = 0
 	boatSpeed# = 0
 	chargeC# = 0
 	
-	heroImg2 = LoadImage("duckl1.png")
+	//heroImg2 = LoadImage("duckl1.png")
 	
-	AddSpriteAnimationFrame(hero, heroImg2)
-	SetSpriteSize(hero, 60, 60)
+	//AddSpriteAnimationFrame(hero, heroImg2)
 	
 	LoadAnimatedSprite(duck, "duckW", 3)
-
+	PlaySprite(hero, 10, 1, 1, 4)
+	
 	//Gameplay setting
 	heroLocalDistance# = water2Distance
 	waterVelX# = 0
@@ -52,15 +57,16 @@ function InitWater2()
 	diveVelMax# = .4 * (1 + upgrades[2, 4] + 2)
 	diveRise# = .01 * (1 + upgrades[2, 4] + 3)
 	
-	diveLevel = 3 + upgrades[3, 4]
+	diveLevel = 4 + upgrades[3, 4]
 	
 	if diveLevel = 1 then diveDeepTimerMax# = 0.28/(diveVelMax#)
 	if diveLevel = 2 then diveDeepTimerMax# = 0.41/(diveVelMax#)
 	if diveLevel = 3 then diveDeepTimerMax# = 0.55/(diveVelMax#)
 	if diveLevel = 4 then diveDeepTimerMax# = 0.69/(diveVelMax#)
 	
-	diveBoostSlow# = .0018 / (1 + upgrades[4, 4])
-
+	diveBoostSlow# = .0018 / (1 + upgrades[4, 4] + 5)
+	
+	SetViewZoom(1/((4+diveLevel*1.5)/10.0))
 	
 	SetSpriteVisible(water2S, 1)
 	SetSpriteSize(water2S, w, w/1000*75)
@@ -159,11 +165,13 @@ function InitWater2()
 	iEnd = 25 + 10*diveLevel //+ (.5*diveLevel*diveLevel)
 	for i = 1 to iEnd
 		newS.spr = spawnS
-		newS.cat = Random(GOOD, SCRAP+1)
+		newS.cat = Random(1, 7)
+		if newS.cat <= 3 then newS.cat = SCRAP
+		if newS.cat = 4 or newS.cat = 5 then newS.cat = GOOD
+		if newS.cat = 6 or newS.cat = 7 then newS.cat = BAD
 		
-		if newS.cat = SCRAP+1 or newS.cat = BAD then newS.cat = SCRAP
 		newS.x = i*water2Distance/iEnd + 100 + Random(0, 400)
-		newS.y = GetSpriteY(water2TileS) + Random(60, 420-(4-diveLevel)*80)
+		newS.y = GetSpriteY(water2TileS) + Random(60, 400-(4-diveLevel)*70)
 		
 		
 		if i = iEnd then newS.cat = SCRAP
@@ -173,9 +181,10 @@ function InitWater2()
 			newS.size = 50
 			SetSpriteSizeSquare(spawnS, newS.size)
 		elseif newS.cat = BAD
-			//LoadSpriteExpress(spawnS, "buoy1.png", 10, 10, w, h, 8)
-			//SetSpriteShape(spawnS, 3)
-			//newS.size = 100
+			LoadSpriteExpress(spawnS, "buoy1.png", 10, 10, w, h, 8)
+			SetSpriteShape(spawnS, 3)
+			newS.size = 100
+			SetSpriteSizeSquare(spawnS, newS.size)
 		else
 			LoadSpriteExpress(spawnS, "scrap1.png", 10, 10, w, h, 8)
 			newS.size = 50
@@ -189,6 +198,34 @@ function InitWater2()
 		
 	next i
 	
+//~	iEnd = 10
+//~	for i = 1 to iEnd
+//~		newS.spr = spawnS
+//~		newS.cat = BAD
+//~		
+//~		newS.x = i*water2Distance/iEnd + 100 + Random(0, 400)
+//~		newS.y = GetSpriteY(water2TileS) + Random(60, 400-(4-diveLevel)*20)
+//~		
+//~			CreateSpriteExpress(spawnS, 30, 700, w, h, 8)
+//~			SetSpriteShape(spawnS, 3)
+
+//~		
+//~		spawnActive.insert(newS)
+//~		inc spawnS, 1
+//~		
+//~		
+//~	next i
+	
+	//The end lamppost
+	newS.spr = spawnS
+	newS.cat = RAMP
+	newS.x = water2Distance+370
+	newS.y = 100
+	CreateSprite(spawnS, 0)
+	SetSpriteDepth(spawnS, 18)
+	SetSpriteSize(spawnS, 20, 700)
+	spawnActive.insert(newS)
+	inc spawnS, 1
 	
 	
 	
@@ -201,19 +238,22 @@ function DoWater2()
 	//IncSpriteY(cutsceneSpr, -2*fpsr#)
 	//waterXMax = -
 	heroX# = Min(Max(heroX#, 70), 420)
-	SetSpritePosition(hero, heroX#, heroY# + (GetSpriteMiddleY(water2S)) - GetSpriteHeight(hero) + 30 + 10*Abs(sin(gameTime#/8)) + 6*Abs(cos(gameTime#/3)))
-	
-	
-	
+	SetSpritePosition(hero, heroX#, heroY# + 18 + (GetSpriteMiddleY(water2S)) - GetSpriteHeight(hero) + 30 + 4*Abs(sin(gameTime#/8)) + 2*Abs(cos(gameTime#/3)))
+	if diveBoost# > 0 and heroY# <= 0
+		IncSpriteY(hero, (1-diveHop#)*(-diveBoost#*36 - 10))
+		SetSpriteAngle(hero, Min(-5, -diveBoost#*15 + 20))
+		
+	else
+		SetSpriteAngle(hero, 0)
+	endif
+	if diveHop# > 0 then diveHop# = GlideNumToZero(diveHop#, 44)
+	//inc diveHop#, diveHopRise*fpsr#
+	Print(diveHop#)
 	if inputLeft
 		inc heroX#, -waterSpeedX#*1.5*fpsr#
-		PlaySprite(hero, 5, 0, 1, 2)
-		//SetSpriteFlip(hero, 1, 0)
 	endif
 	if inputRight
 		inc heroX#, waterSpeedX#*1.5*fpsr#
-		PlaySprite(hero, 5, 0, 1, 2)
-		//SetSpriteFlip(hero, 0, 0)
 	endif
 	
 	if stateRight
@@ -222,69 +262,83 @@ function DoWater2()
 		//SetSpriteFlip(hero, 1, 0)
 	endif
 	
-	if (releaseLeft and stateRight = 0) or (releaseRight and stateLeft = 0) then PlaySprite(hero, 10, 0, 3, 4)
+	//if (releaseLeft and stateRight = 0) or (releaseRight and stateLeft = 0) then PlaySprite(hero, 10, 0, 3, 4)
 		
 	if Abs(waterVelX#) < .01
 		waterVelX# = 0
 	else
-		
 		waterVelX# =  (((waterVelX#)*((64.0)^fpsr#))/(65.0)^fpsr#)
 	endif
 	//GlideNumToZero(waterVelX#, 40)
 	
 	if stateLeft then waterVelX# = -waterSpeedX#*fpsr#
 	if stateRight then waterVelX# = waterSpeedX#*fpsr#
+
 	inc heroX#, waterVelX#
 	
-	//Diving
-	if stateSpace and heroY# <= 0
-		//Diving sound
-		SetParticlesPosition(splashP, GetSpriteMiddleX(hero), (GetSpriteMiddleY(water2S)) + GetSpriteHeight(hero)/2)
-		ResetParticleCount(splashP)
-	endif
-	if stateSpace
-		
-		if heroY# <= 0
-			diveDeepTimer# = 0
+	if diveDamage
+		SetSpriteAngle(hero, Mod(heroY#*7, 360))
+		diveVelY# = -0.4
+		inc heroLocalDistance#, fixedWater2Speed#*fpsr#*2/3
+		SetSpriteColor(hero, 255, 100, 100, 255)
+		if heroY# < 0
+			diveDamage = 0
+			SetSpriteColor(hero, 255, 255, 255, 255)
 		endif
-		
-		if ((heroY# > 0 and diveVelY# >= (diveVelMax#-diveVelY#)) or heroY# <= 0) and diveDeepTimer# < diveDeepTimerMax#
-			//Setting the dive to the max strength, but only when above water OR when currently underwater and diving
-			diveVelY# = diveVelMax# +  diveVelMax#*0.2*(diveDeepTimerMax#-diveDeepTimer#)
-			
-			SetSpriteAngle(hero, diveVisAngle)
-			
+	else
+		//Diving
+		if stateSpace and heroY# <= 0
+			//Diving sound
+			SetParticlesPosition(splashP, GetSpriteMiddleX(hero), (GetSpriteMiddleY(water2S)) + GetSpriteHeight(hero)/2)
+			ResetParticleCount(splashP)
 		endif
-		
-		inc diveDeepTimer#, GetFrameTime()
-		
-		//Print(boatSpeed#)
-		//Sync()
-		//Sleep(1000)
-	endif
-	if heroY# > 0
-		//Rising the duck back up, if space is no longer held
-		if (diveDeepTimer# >= diveDeepTimerMax#) or stateSpace = 0 then diveVelY# = diveVelY# - diveRise#*fpsr#
-		
-		SetSpriteAngle(hero, diveVisAngle*diveVelY#)
-		if diveVelY# < 0 and GetSpriteAngle(hero) < 360-diveVisAngle then SetSpriteAngle(hero, -diveVisAngle)
-		
-		dec heroLocalDistance#, fixedWater2Speed#*fpsr#/2.5
-	endif
-	if heroY# < 0
-		//if diveVelY# < -5 then diveVelY# = -5
-		
-		//diveVelY# = diveVelY# + diveRise#*fpsr#*4
-		//For being airborne
-		
-		//For now, leaving the water will just cancel movement
-		diveVelY# = 0
-		heroY# = 0
-		SetSpriteAngle(hero, 0)
-		if diveBoostQueue <> 0
-			PlaySound(WindSS)
-			inc diveBoost#, diveBoostQueue
-			diveBoostQueue = 0
+		if stateSpace
+			
+			if heroY# <= 0
+				diveDeepTimer# = 0
+			endif
+			
+			if ((heroY# > 0 and diveVelY# >= (diveVelMax#-diveVelY#)) or heroY# <= 0) and diveDeepTimer# < diveDeepTimerMax#
+				//Setting the dive to the max strength, but only when above water OR when currently underwater and diving
+				diveVelY# = diveVelMax# +  diveVelMax#*0.2*(diveDeepTimerMax#-diveDeepTimer#)
+				
+				SetSpriteAngle(hero, diveVisAngle)
+				
+			endif
+			
+			diveHop# = 1
+			inc diveDeepTimer#, GetFrameTime()
+			
+			//Print(boatSpeed#)
+			//Sync()
+			//Sleep(1000)
+		endif
+		if heroY# > 0
+			//Rising the duck back up, if space is no longer held
+			if (diveDeepTimer# >= diveDeepTimerMax#) or stateSpace = 0 then diveVelY# = diveVelY# - diveRise#*fpsr#
+			
+			SetSpriteAngle(hero, diveVisAngle*diveVelY#)
+			if diveVelY# < 0 and GetSpriteAngle(hero) < 360-diveVisAngle then SetSpriteAngle(hero, -diveVisAngle)
+			
+			dec heroLocalDistance#, fixedWater2Speed#*fpsr#/2.5
+		endif
+		if heroY# < 0
+			//if diveVelY# < -5 then diveVelY# = -5
+			
+			//diveVelY# = diveVelY# + diveRise#*fpsr#*4
+			//For being airborne
+			
+			//For now, leaving the water will just cancel movement
+			diveVelY# = 0
+			heroY# = 0
+			SetSpriteAngle(hero, 0)
+			if diveBoostQueue <> 0
+				PlaySound(WindSS)
+				inc diveBoost#, diveBoostQueue
+				diveBoostQueue = 0
+				diveHop# = 1
+				PlaySprite(hero, 10, 1, 5, 7)
+			endif
 		endif
 	endif
 	
@@ -322,6 +376,14 @@ function DoWater2()
 	endif
 		
 		
+	if heroY# > 0 and diveBoost# <= 0
+		StopSprite(hero)
+		SetSpriteFrame(hero, 5)
+	elseif diveBoost# <= 0
+		if GetSpriteCurrentFrame(hero) > 4 then PlaySprite(hero, 10, 1, 1, 4)
+		
+	endif
+		
 	//SetSpriteFrame(bg3, 1+8.0*(Round(waterDistance-heroLocalDistance#)/(1.0*waterDistance)))
 	
 	SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(waterDistance - heroLocalDistance#)/waterDistance)/areaSeen)
@@ -330,6 +392,7 @@ function DoWater2()
 	deleted = 0
 	for i = 1 to spawnActive.length
 		spr = spawnActive[i].spr
+		if i = spawnActive.length then spawnActive[i].x = water2Distance-30+heroX#
 		SetSpritePosition(spr, spawnActive[i].x-(water2Distance-heroLocalDistance#), spawnActive[i].y)
 		if GetSpriteVisible(spr)
 			if GetSpriteCollision(spr, hero) and Abs((GetSpriteY(hero) - GetSpriteY(spr))) < 80
@@ -340,6 +403,9 @@ function DoWater2()
 					
 					//PlaySound(rowGoodS, VolumeS*.8)
 				elseif spawnActive[i].cat = BAD
+					
+					diveDamage = 1
+					if GetSpriteColorGreen(hero) = 255 then PlaySound(hitS, volumeS)
 					//if damageAmt# <= 0
 					//	damageAmt# = 255
 					//	boatSpeed# = 0
@@ -350,13 +416,18 @@ function DoWater2()
 				else //SCRAP
 					CollectScrap(WATER2)
 				endif
-				if spawnActive[i].cat <> RAMP
+				if spawnActive[i].cat <> RAMP and GetSpriteWidth(spr) = GetSpriteHeight(spr)
 					deleted = i
 					i = spawnActive.length
 				endif
 				
 			endif
+			if spawnActive[i].cat = BAD and GetSpriteX(spawnActive[i].spr) < w and GetSpriteWidth(spr) = GetSpriteHeight(spr)
+				SetSpriteAngle(spr, 6.0*cos(gameTime#))
+				spawnActive[i].x = spawnActive[i].x - 0.2*diveLevel*fpsr#
+			endif
 		endif
+		
 	next i
 	if deleted <> 0
 		if spawnActive[deleted].cat = GOOD

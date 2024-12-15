@@ -110,6 +110,7 @@ global tileEH	//Tile extra height, expanded to make them look connected together
 #constant waterTileAlpha 200
 #constant water2Trees 4051
 
+
 #constant land2sprStreet 5000
 #constant land2sprBuildings 5010  // reserved 5010 - 5019 for building sprites
 
@@ -118,6 +119,11 @@ global tileI2
 
 #constant spawnStartS 10001
 global spawnS = spawnStartS
+
+
+//Start point for extra space sprites: mash inputs
+#constant mashSprS 7001
+global arrowI
 
 //Particles
 #constant lightP 1
