@@ -23,7 +23,7 @@ SetWindowAllowResize( 1 ) // allow the user to resize the window
 
 global debug = 1
 if debug = 0 then SetErrorMode(1)
-global nextScreen = SPACE2
+global nextScreen = Water2
 
 #constant w 1280
 #constant h 720
