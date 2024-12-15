@@ -5,6 +5,8 @@
 
 #constant land2Distance 20000
 
+#constant land2heroY 300
+
 // Upgrade variables
 global land2nLanes = 5  // number of lanes
 global land2baseSpeed# = 0  // non-boosted speed
@@ -14,8 +16,44 @@ global land2boostSpawnRate# = 0  // rate at which boost panels spawn?
 // hero movement
 global land2heroSpeed# = 1  // pixels per frame of speed
 global land2currentLane = 2  // current lane, 1 = leftmost lane
-global land2laneChangeFrame = 0  // frames remaining in lane change, max 10
+global land2laneChangeFrame = 0  // frames remaining in lane change, max 5
 global land2laneChangeDirection = 0  // -1 -> left, 1 -> right
+
+function LaneToX(lane as integer)
+    // calculate the current x-coordinate from a lane number at the hero y-coordinate
+    x# = LaneToXWithOffset(lane, land2heroY)
+endfunction x#
+
+function LaneToXWithOffset(lane as integer, yOffset as float)
+    // calculate the current x-coordinate from a lane number and y-coordinate
+endfunction -20 + (yoffset * 4.0 / 3) + 90 * (lane - 1)
+
+function InitBoostPanels()
+    // load spawnable boost panels
+    // panels come in runs of 4-7, and shift left or right one lane at a time
+    // panels can spawn in all 5 lanes before the player unlocks more lanes,
+    // which is the incentive for that upgrade
+    sprBoostID = spawnStartS
+    for i = 0 to 9
+        panelX = Random(1, 5)  // x coordinate -> which lane boost spawns in
+        panelY# = (i / 10.0) * land2Distance + Random(500, 1000)  // race distance
+        for panel = 0 to 9
+            // set panel properties
+            sprBoost as spawn
+            sprBoost.spr = sprBoostID
+            sprBoost.cat = GOOD
+            sprBoost.x = panelX
+            sprBoost.y = panelY#
+            sprBoost.size = 50
+            LoadSpriteExpress(sprBoost.spr, "buoy2.png", sprBoost.size, sprBoost.size, sprBoost.x, sprBoost.y, 10)
+            spawnActive.insert(sprBoost)
+            // prepare the next panel's properties
+            inc sprBoostID, 1
+            panelX = min(5, max(1, panelX + Random(0, 2) - 1))
+            inc panelY#, 40
+        next panel
+    next i
+endfunction
 
 function InitLand2()
 	
@@ -33,11 +71,22 @@ function InitLand2()
     // load hero sprite
     LoadAnimatedSprite(hero, "duckl", 2)
     SetSpriteSize(hero, 70, 70)
-    SetSpritePosition(hero, 500, 300)
+    SetSpritePosition(hero, 500, land2heroY)
     PlaySprite(hero, 10)
-
     heroLocalDistance# = land2Distance
 
+    // create "spawnables" (boosts/obstacles)
+    spawnActive.length = -1
+    InitBoostPanels()
+
+endfunction
+
+function DoSpawnables()
+    // process movement for all spawnables (boosts, obstacles)
+    for i = 0 to spawnActive.length - 1
+        inc spawnActive[i].y, -4
+        SetSpritePosition(spawnActive[i].spr, LaneToXWithOffset(spawnActive[i].x, spawnActive[i].y), spawnActive[i].y)
+    next i
 endfunction
 
 function DoLand2()
@@ -56,19 +105,20 @@ function DoLand2()
     // start turning left
     if inputLeft and land2laneChangeFrame = 0 and land2currentLane > 1
         land2currentLane = max(1, land2currentLane - 1)
-        land2laneChangeFrame = 10
+        land2laneChangeFrame = 5
         land2laneChangeDirection = -1
     // start turning right
     elseif inputRight and land2laneChangeFrame = 0 and land2currentLane < land2nLanes
         land2currentLane = min(land2nLanes, land2currentLane + 1)
-        land2laneChangeFrame = 10
+        land2laneChangeFrame = 5
         land2laneChangeDirection = 1
     endif
     if land2laneChangeFrame
         inc land2laneChangeFrame, -1
     endif
-
-    SetSpritePosition(hero, 310 + 90 * land2currentLane - 9 * land2laneChangeDirection * land2laneChangeFrame, 300)
+    SetSpritePosition(hero, LaneToX(land2currentLane) - 9 * land2laneChangeDirection * land2laneChangeFrame, 300)
     inc heroLocalDistance#, -1 * land2heroSpeed#
+
+    DoSpawnables()
 
 endfunction
