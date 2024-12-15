@@ -48,9 +48,17 @@ function InitBoostPanels()
             LoadSpriteExpress(sprBoost.spr, "buoy2.png", sprBoost.size, sprBoost.size, sprBoost.x, sprBoost.y, 10)
             spawnActive.insert(sprBoost)
             // prepare the next panel's properties
+            // when shifting the next panel left or right, give it a greater probability
+            // of turning out of the leftmost and rightmost lanes
             inc sprBoostID, 1
-            panelX = min(5, max(1, panelX + Random(0, 2) - 1))
-            inc panelY#, 40
+            if panelX = 1
+                inc panelX, Random(0, 1)
+            elseif panelX = land2nLanes
+                inc panelX, -1 * Random(0, 1)
+            else
+                inc panelX, Random(0, 2) - 1
+            endif
+            inc panelY#, 80
         next panel
     next i
 endfunction
