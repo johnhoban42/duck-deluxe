@@ -6,4 +6,12 @@
 
 function InitAir2()
 	
+	heroLocalDistance# = air2Distance
+	
+endfunction
+
+function DoAir2()
+	
+	dec heroLocalDistance#, 0.1*fpsr#
+	
 endfunction

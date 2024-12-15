@@ -268,7 +268,7 @@ do
 		elseif screen = LAND2
 			//DoLand2()
 		elseif screen = AIR2
-			//DoAir2()
+			DoAir2()
 		elseif screen = SPACE2
 			DoSpace2()
 		endif
@@ -512,6 +512,7 @@ function SetupScene(scene)
 
 
 	EmptyTrashBag()
+	SetViewZoom(1)
 
 	if GetSpriteExists(hero)
 		DeleteSprite(hero)
@@ -541,7 +542,7 @@ function SetupScene(scene)
 		SetMusicVolumeOGG(airM, 0)
 		
 		CreateTextExpress(instruct, "", 44, fontGI, 2, w-20, 580, -13, 2)
-		
+		FixTextToScreen(instruct, 1)
 		SetBG(scene)
 		
 		//LoadSpriteExpress(instruct, "mode" + str(scene) + ".png", 395*0.6, 80*0.6, 60, 20, 3)
@@ -557,6 +558,8 @@ function SetupScene(scene)
 			if scene = SPACE2 then LoadSpriteExpress(vehicle1+i, "s" + str$ + ".png", 60, 60, 10+i*3, 15 + i*65, 3)	//TODO: Replace these letters with new space ones
 			
 			CreateTextExpress(vehicle1+i, words[i+1, upgrades[i+1,scene]+1, scene], 48, fontGI, 0, 63+i*3, 35 + i*65, -11, 2)
+			FixSpriteToScreen(vehicle1+i, 1)
+			FixTextToScreen(vehicle1+i, 1)
 		next i
 		
 		SetInstructionText(scene)
@@ -594,7 +597,6 @@ function SetupScene(scene)
 		LoadSpriteExpress(heroIcon, "heroIcon.png", 40, 40, GetSpriteX(progBack)-20, GetSpriteMiddleY(progBack)-20, 5)
 		LoadSpriteExpress(duckIcon, "duckIcon.png", 40, 40, GetSpriteX(progBack)-20, GetSpriteMiddleY(progBack)-20, 6)
 		
-	
 		
 		LoadAnimatedSprite(flag1, "flag", 7)
 		LoadAnimatedSprite(flag2, "flag", 7)
@@ -613,6 +615,15 @@ function SetupScene(scene)
 		
 		SetSpriteColor(coverS, 255, 255, 255, 255)
 		PlayTweenSprite(tweenSprFadeOut, coverS, 0)
+		
+		
+		FixSpriteToScreen(progBack, 1)
+		FixSpriteToScreen(progFront, 1)
+		FixSpriteToScreen(heroIcon, 1)
+		FixSpriteToScreen(duckIcon, 1)
+		FixSpriteToScreen(flag1, 1)
+		FixSpriteToScreen(flag2, 1)
+		FixSpriteToScreen(flag3, 1)
 		
 	elseif scene = UPGRADE
 		CreateUpgrade()
@@ -680,6 +691,7 @@ function SetupScene(scene)
 	
 	if scene <> TITLE and scene <> FINISH
 		CreateTextExpress(scrapText, "Scrap: " + str(scrapTotal) + " ~", 50, fontGI, 0, 1000, 30, -12, 5)
+		FixTextToScreen(scrapText, 1)
 		//SetTextColor(scrapText, 0, 0, 0, 255)
 	endif
 	
