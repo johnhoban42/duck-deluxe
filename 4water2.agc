@@ -52,14 +52,14 @@ function InitWater2()
 	diveVelMax# = .4 * (1 + upgrades[2, 4] + 2)
 	diveRise# = .01 * (1 + upgrades[2, 4] + 3)
 	
-	diveLevel = 3 + upgrades[3, 4]
+	diveLevel = 4 + upgrades[3, 4]
 	
 	if diveLevel = 1 then diveDeepTimerMax# = 0.28/(diveVelMax#)
 	if diveLevel = 2 then diveDeepTimerMax# = 0.41/(diveVelMax#)
 	if diveLevel = 3 then diveDeepTimerMax# = 0.55/(diveVelMax#)
 	if diveLevel = 4 then diveDeepTimerMax# = 0.69/(diveVelMax#)
 	
-	diveBoostSlow# = .0018 / (1 + upgrades[4, 4])
+	diveBoostSlow# = .0008 / (1 + upgrades[4, 4])
 
 	
 	SetSpriteVisible(water2S, 1)

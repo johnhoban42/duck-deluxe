@@ -23,7 +23,7 @@ SetWindowAllowResize( 1 ) // allow the user to resize the window
 
 global debug = 1
 if debug = 0 then SetErrorMode(1)
-global nextScreen = WATER2
+global nextScreen = SPACE2
 
 #constant w 1280
 #constant h 720
@@ -92,7 +92,6 @@ LoadMusicOGG(endingM, "music/ending.ogg")
 #constant titleM 7
 LoadMusicOGG(titleM, "music/title.ogg")
 SetMusicLoopTimesOGG(titleM, 4.941, 33.030)
-global volumeS = 100
 
 #constant font1I 40001
 #constant font2I 40002
@@ -800,6 +799,10 @@ function DeleteScene(scene)
 			for i = water2TileS+1 to water2TileE
 				if GetSpriteExists(i) then DeleteSprite(i)
 			next i
+		endif
+		
+		if scene = SPACE2
+			DeleteMashSequence()
 		endif
 		
 		iMax = spawnActive.length

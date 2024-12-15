@@ -69,7 +69,7 @@ endfunction
 
 //Volume for music and sound effects
 global volumeM = 100
-global volumeSE = 100
+global volumeS = 100
 
 //Core functions that are used in the app, and possible future apps
 function SyncG()
@@ -975,7 +975,7 @@ global selectActive = 0
 #constant SPR_SELECT4 10004
 
 function CreateSelectButtons()
-	SetFolder("/media/ui")
+	//SetFolder("/media/ui")
 	img = LoadImage("select.png")
 	for i = 1 to 4
 		spr = SPR_SELECT1-1+i
