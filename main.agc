@@ -266,7 +266,7 @@ do
 		elseif screen = WATER2
 			DoWater2()
 		elseif screen = LAND2
-			//DoLand2()
+			DoLand2()
 		elseif screen = AIR2
 			DoAir2()
 		elseif screen = SPACE2
