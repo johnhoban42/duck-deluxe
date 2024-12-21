@@ -8,7 +8,8 @@
 #constant land2heroY 300
 
 // Upgrade variables
-global land2nLanes = 5  // number of lanes
+global land2nLanes = 2  // current number of lanes unlocked
+global land2maxLanes = 5  // maximum possible number of lanes
 global land2baseSpeed# = 0  // non-boosted speed
 global land2boostSpeed# = 0  // boosted speed
 global land2boostSpawnRate# = 0  // rate at which boost panels spawn?
@@ -72,12 +73,17 @@ function InitLand2()
     next i
     
     // load street sprites
-    for lane = 0 to 4
+    for lane = 0 to land2maxLanes - 1
         sprLane = land2sprStreet + lane
         LoadAnimatedSprite(sprLane, "cbg/onelanegrey/c1", 40)
         SetSpriteSize(sprLane, 1200, 820)
         SetSpritePosition(sprLane, -80 + 100 * lane, 0)
-        SetSpriteColor(sprLane, 180, 120, 190, 255)
+        // gray out unavailable lanes
+        if lane < land2nLanes
+            SetSpriteColor(sprLane, 180, 120, 190, 255)
+        else
+            SetSpriteColor(sprLane, 50, 50, 50, 255)
+        endif
         PlaySprite(sprLane, 60)
         if mod(lane, 2) = 0
             SetSpriteFrame(sprLane, 1)
