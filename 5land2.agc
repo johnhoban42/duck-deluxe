@@ -26,7 +26,7 @@ endfunction x#
 
 function LaneToXWithOffset(lane as integer, yOffset as float)
     // calculate the current x-coordinate from a lane number and y-coordinate
-endfunction -20 + (yoffset * 4.0 / 3) + 90 * (lane - 1)
+endfunction (yoffset * 4.0 / 3) + 100 * (lane - 1)
 
 function InitBoostPanels()
     // load spawnable boost panels
@@ -71,14 +71,24 @@ function InitLand2()
         CreateSpriteExpressImage(land2sprBuildings + i, imgbuildings, w, 3*h, 200 + w*i, (-2 + 4.0 / 3 * i) * h, 99)
     next i
     
-    // load street sprite
-    LoadAnimatedSprite(land2sprStreet, "cbg/fivelane/c5", 40)
-    SetSpriteSize(land2sprStreet, w, h)
-    PlaySprite(land2sprStreet, 60)
+    // load street sprites
+    for lane = 0 to 4
+        sprLane = land2sprStreet + lane
+        LoadAnimatedSprite(sprLane, "cbg/onelanegrey/c1", 40)
+        SetSpriteSize(sprLane, 1200, 820)
+        SetSpritePosition(sprLane, -80 + 100 * lane, 0)
+        SetSpriteColor(sprLane, 180, 120, 190, 255)
+        PlaySprite(sprLane, 60)
+        if mod(lane, 2) = 0
+            SetSpriteFrame(sprLane, 1)
+        else
+            SetSpriteFrame(sprLane, 21)
+        endif
+    next lane
 
     // load hero sprite
     LoadAnimatedSprite(hero, "duckl", 2)
-    SetSpriteSize(hero, 70, 70)
+    SetSpriteSize(hero, 50, 50)
     SetSpritePosition(hero, 500, land2heroY)
     PlaySprite(hero, 10)
     heroLocalDistance# = land2Distance
