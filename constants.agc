@@ -29,6 +29,20 @@ global hero2Img4
 global hero2Img5
 global hero2Img6
 
+//ScrapNum, FrameNum, SetNum
+global scrapImgs as integer[3,4,4]
+function LoadScrapImages()
+	for i = 1 to 3	//ScrapNum
+		for j = 1 to 4	//FrameNum
+			for k = 1 to 4	//SetNum
+				scrapImgs[i,j,k] = LoadImageR("scrap" + str(i) + "_" + str(k) + "_" + str(j) + ".png")
+			next k
+		next j
+	next i
+endfunction
+global fish1I
+global fish2I
+global fish3I
 
 //Sprite/Image/Audio constants
 #constant hero 1001
@@ -109,7 +123,6 @@ global tileEH	//Tile extra height, expanded to make them look connected together
 #constant diveVisAngle 50
 #constant waterTileAlpha 200
 #constant water2Trees 4051
-
 
 #constant land2sprStreet 5000
 #constant land2sprBuildings 5010  // reserved 5010 - 5019 for building sprites

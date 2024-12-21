@@ -180,11 +180,14 @@ SetSpriteVisible(cutsceneSpr3, 0)
 if debug = 0 then LoadAnimatedSprite(cutsceneSpr2, "ending/end", 89)
 SetSpriteVisible(cutsceneSpr2, 0)
 
+
 //Duck 2 sprites
 LoadAnimatedSprite(water2S, "w2BG/sw", 60)
 SetSpriteVisible(water2S, 0)
 LoadAnimatedSprite(water2TileS, "w2BG/2sw", 60)
 SetSpriteVisible(water2TileS, 0)
+
+LoadScrapImages()
 
 tileI1 = LoadImage("waterTile1.png")
 tileI2 = LoadImage("waterTile2.png")
@@ -266,7 +269,7 @@ do
 		elseif screen = WATER2
 			DoWater2()
 		elseif screen = LAND2
-			DoLand2()
+			//DoLand2()
 		elseif screen = AIR2
 			DoAir2()
 		elseif screen = SPACE2

@@ -64,8 +64,7 @@ function InitWater2()
 	if diveLevel = 3 then diveDeepTimerMax# = 0.55/(diveVelMax#)
 	if diveLevel = 4 then diveDeepTimerMax# = 0.69/(diveVelMax#)
 	
-	diveBoostSlow# = .0018 / (1 + upgrades[4, 4] + 5)
-	
+	diveBoostSlow# = .0018 / (1 + upgrades[4, 4] + 1)
 	SetViewZoom(1/((4+diveLevel*1.5)/10.0))
 	
 	SetSpriteVisible(water2S, 1)
@@ -161,6 +160,10 @@ function InitWater2()
 	SetSpriteColor(water2BG, 10, 20, 80, 255)
 	SetSpriteColor(water2Trees, 110, 120, 180, 255)
 	
+	fish1I = LoadImage("robofish1.png")
+	fish2I = LoadImage("robofish2.png")
+	fish3I = LoadImage("robofish3.png")
+	
 	newS as spawn
 	iEnd = 25 + 10*diveLevel //+ (.5*diveLevel*diveLevel)
 	for i = 1 to iEnd
@@ -169,9 +172,11 @@ function InitWater2()
 		if newS.cat <= 3 then newS.cat = SCRAP
 		if newS.cat = 4 or newS.cat = 5 then newS.cat = GOOD
 		if newS.cat = 6 or newS.cat = 7 then newS.cat = BAD
+		if i < 4 and newS.cat = BAD then newS.cat = SCRAP
 		
-		newS.x = i*water2Distance/iEnd + 100 + Random(0, 400)
-		newS.y = GetSpriteY(water2TileS) + Random(60, 400-(4-diveLevel)*70)
+		
+		newS.x = i*water2Distance/(iEnd+2) + 100 + Random(0, 340)
+		newS.y = GetSpriteY(water2TileS) - 50 + Random(60, 350-(4-diveLevel)*70)
 		
 		
 		if i = iEnd then newS.cat = SCRAP
@@ -181,14 +186,25 @@ function InitWater2()
 			newS.size = 50
 			SetSpriteSizeSquare(spawnS, newS.size)
 		elseif newS.cat = BAD
-			LoadSpriteExpress(spawnS, "buoy1.png", 10, 10, w, h, 8)
+			CreateSpriteExpress(spawnS, 10, 10, w, h, 8)
+			AddSpriteAnimationFrame(spawnS, fish1I)
+			AddSpriteAnimationFrame(spawnS, fish2I)
+			AddSpriteAnimationFrame(spawnS, fish2I)
+			AddSpriteAnimationFrame(spawnS, fish3I)
+			PlaySprite(spawnS, 3, 1, 1, 2)
 			SetSpriteShape(spawnS, 3)
-			newS.size = 100
+			newS.size = 90
 			SetSpriteSizeSquare(spawnS, newS.size)
+			SetSpriteFlip(spawnS, 1, 0)
 		else
-			LoadSpriteExpress(spawnS, "scrap1.png", 10, 10, w, h, 8)
+			CreateSpriteExpress(spawnS, 10, 10, w, h, 8)
+			for j = 1 to 4
+				AddSpriteAnimationFrame(spawnS, scrapImgs[1, j, 1])//First index will be a random
+			next j
+			PlaySprite(spawnS, 3+Random(1,3))
 			newS.size = 50
 			SetSpriteSizeSquare(spawnS, newS.size)
+			
 		endif
 		SetSpriteDepth(spawnS, 50)
 		
@@ -241,8 +257,8 @@ function DoWater2()
 	SetSpritePosition(hero, heroX#, heroY# + 18 + (GetSpriteMiddleY(water2S)) - GetSpriteHeight(hero) + 30 + 4*Abs(sin(gameTime#/8)) + 2*Abs(cos(gameTime#/3)))
 	if diveBoost# > 0 and heroY# <= 0
 		IncSpriteY(hero, (1-diveHop#)*(-diveBoost#*36 - 10))
-		SetSpriteAngle(hero, Min(-5, -diveBoost#*15 + 20))
-		
+		SetSpriteAngle(hero, Max(-5, -diveBoost#*15 + 20))
+		Print(GetSpriteAngle(hero))
 	else
 		SetSpriteAngle(hero, 0)
 	endif
@@ -406,6 +422,8 @@ function DoWater2()
 					
 					diveDamage = 1
 					if GetSpriteColorGreen(hero) = 255 then PlaySound(hitS, volumeS)
+					diveBoost# = 0
+					diveBoostQueue = 0
 					//if damageAmt# <= 0
 					//	damageAmt# = 255
 					//	boatSpeed# = 0
@@ -422,9 +440,10 @@ function DoWater2()
 				endif
 				
 			endif
-			if spawnActive[i].cat = BAD and GetSpriteX(spawnActive[i].spr) < w and GetSpriteWidth(spr) = GetSpriteHeight(spr)
+			if spawnActive[i].cat = BAD and GetSpriteX(spawnActive[i].spr) < (w/5 + w/6*diveLevel)
 				SetSpriteAngle(spr, 6.0*cos(gameTime#))
 				spawnActive[i].x = spawnActive[i].x - 0.2*diveLevel*fpsr#
+				if GetSpriteCurrentFrame(spr) <= 2 then PlaySprite(spr, 10, 1, 3, 4)
 			endif
 		endif
 		
