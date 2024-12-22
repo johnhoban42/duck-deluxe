@@ -15,10 +15,15 @@ global land2boostSpeed# = 0  // boosted speed
 global land2boostSpawnRate# = 0  // rate at which boost panels spawn?
 
 // hero movement
-global land2heroSpeed# = 1  // pixels per frame of speed
+global land2heroSpeed# = 1  // equal to FPS of background scrolling
 global land2currentLane = 2  // current lane, 1 = leftmost lane
 global land2laneChangeFrame = 0  // frames remaining in lane change, max 5
 global land2laneChangeDirection = 0  // -1 -> left, 1 -> right
+
+function LoadSpriteFromSpawnable(spr as spawn, imagePath as string, depth as integer)
+    // load a sprite from a spawnable's properties
+    LoadSpriteExpress(spr.spr, imagePath, spr.size, spr.size, spr.x, spr.y, depth)
+endfunction
 
 function LaneToX(lane as integer)
     // calculate the current x-coordinate from a lane number at the hero y-coordinate
@@ -29,12 +34,28 @@ function LaneToXWithOffset(lane as integer, yOffset as float)
     // calculate the current x-coordinate from a lane number and y-coordinate
 endfunction (yoffset * 4.0 / 3) + 100 * (lane - 1)
 
+function InitObstacles()
+    // load spawnable obstacles (cars and cones)
+    sprID = land2sprCones
+    for i = 0 to 59
+        sprCone as spawn
+        sprCone.spr = sprID
+        sprCone.cat = BAD
+        sprCone.x = Random(1, 5)  // lane number
+        sprCone.y = 50 * i + Random(0, 80) - 40
+        sprCone.size = 30
+        LoadSpriteFromSpawnable(sprCone, "cone.png", 10)
+        spawnActive.insert(sprCone)
+        inc sprID, 1
+    next i
+endfunction
+
 function InitBoostPanels()
     // load spawnable boost panels
     // panels come in runs of 4-7, and shift left or right one lane at a time
     // panels can spawn in all 5 lanes before the player unlocks more lanes,
     // which is the incentive for that upgrade
-    sprBoostID = spawnStartS
+    sprBoostID = land2sprBoostPanels
     for i = 0 to 9
         panelX = Random(1, 5)  // x coordinate -> which lane boost spawns in
         panelY# = (i / 10.0) * land2Distance + Random(500, 1000)  // race distance
@@ -46,7 +67,7 @@ function InitBoostPanels()
             sprBoost.x = panelX
             sprBoost.y = panelY#
             sprBoost.size = 50
-            LoadSpriteExpress(sprBoost.spr, "buoy2.png", sprBoost.size, sprBoost.size, sprBoost.x, sprBoost.y, 10)
+            LoadSpriteFromSpawnable(sprBoost, "buoy2.png", 10)
             spawnActive.insert(sprBoost)
             // prepare the next panel's properties
             // when shifting the next panel left or right, give it a greater probability
@@ -102,6 +123,7 @@ function InitLand2()
     // create "spawnables" (boosts/obstacles)
     spawnActive.length = -1
     InitBoostPanels()
+    InitObstacles()
 
 endfunction
 
