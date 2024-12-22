@@ -111,7 +111,7 @@ global tileEH	//Tile extra height, expanded to make them look connected together
 #constant water2Trees 4051
 
 
-#constant land2sprStreet 5000
+#constant land2sprStreet 5000  // 5000 - 5004 for 5 lanes
 #constant land2sprBuildings 5010  // reserved 5010 - 5019 for building sprites
 
 global tileI1

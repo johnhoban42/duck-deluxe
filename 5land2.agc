@@ -8,7 +8,8 @@
 #constant land2heroY 300
 
 // Upgrade variables
-global land2nLanes = 5  // number of lanes
+global land2nLanes = 2  // current number of lanes unlocked
+global land2maxLanes = 5  // maximum possible number of lanes
 global land2baseSpeed# = 0  // non-boosted speed
 global land2boostSpeed# = 0  // boosted speed
 global land2boostSpawnRate# = 0  // rate at which boost panels spawn?
@@ -26,7 +27,7 @@ endfunction x#
 
 function LaneToXWithOffset(lane as integer, yOffset as float)
     // calculate the current x-coordinate from a lane number and y-coordinate
-endfunction -20 + (yoffset * 4.0 / 3) + 90 * (lane - 1)
+endfunction (yoffset * 4.0 / 3) + 100 * (lane - 1)
 
 function InitBoostPanels()
     // load spawnable boost panels
@@ -71,14 +72,29 @@ function InitLand2()
         CreateSpriteExpressImage(land2sprBuildings + i, imgbuildings, w, 3*h, 200 + w*i, (-2 + 4.0 / 3 * i) * h, 99)
     next i
     
-    // load street sprite
-    LoadAnimatedSprite(land2sprStreet, "cbg/fivelane/c5", 40)
-    SetSpriteSize(land2sprStreet, w, h)
-    PlaySprite(land2sprStreet, 60)
+    // load street sprites
+    for lane = 0 to land2maxLanes - 1
+        sprLane = land2sprStreet + lane
+        LoadAnimatedSprite(sprLane, "cbg/onelanegrey/c1", 40)
+        SetSpriteSize(sprLane, 1200, 820)
+        SetSpritePosition(sprLane, -80 + 100 * lane, 0)
+        // gray out unavailable lanes
+        if lane < land2nLanes
+            SetSpriteColor(sprLane, 180, 120, 190, 255)
+        else
+            SetSpriteColor(sprLane, 50, 50, 50, 255)
+        endif
+        PlaySprite(sprLane, 60)
+        if mod(lane, 2) = 0
+            SetSpriteFrame(sprLane, 1)
+        else
+            SetSpriteFrame(sprLane, 21)
+        endif
+    next lane
 
     // load hero sprite
     LoadAnimatedSprite(hero, "duckl", 2)
-    SetSpriteSize(hero, 70, 70)
+    SetSpriteSize(hero, 50, 50)
     SetSpritePosition(hero, 500, land2heroY)
     PlaySprite(hero, 10)
     heroLocalDistance# = land2Distance
