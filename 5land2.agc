@@ -131,6 +131,11 @@ function DoSpawnables()
     // process movement for all spawnables (boosts, obstacles)
     for i = 0 to spawnActive.length - 1
         inc spawnActive[i].y, -4
+        // recycle obstacle spawnables once they scroll offscreen
+        if spawnActive[i].cat = BAD and spawnActive[i].y < -100
+            spawnActive[i].x = Random(1, 5)
+            inc spawnActive[i].y, 3000
+        endif
         SetSpritePosition(spawnActive[i].spr, LaneToXWithOffset(spawnActive[i].x, spawnActive[i].y), spawnActive[i].y)
     next i
 endfunction
