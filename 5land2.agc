@@ -19,6 +19,8 @@ global land2heroSpeed# = 1  // current hero speed, including boosts/slowdowns
 global land2heroSpeedMax# = 1  // max hero speed without boosts/slowdowns
 global land2heroIFrames# = 0  // hero invincibility frames after hitting an obstacle
 global land2heroIFramesMax = 120
+global land2heroBoostFrames# = 0  // current remaining frames of boost
+global land2heroBoostFramesMax = 60
 global land2currentLane = 2  // current lane, 1 = leftmost lane
 global land2laneChangeFrame = 0  // frames remaining in lane change, max 5
 global land2laneChangeDirection = 0  // -1 -> left, 1 -> right
@@ -173,15 +175,18 @@ function DoLand2()
         land2currentLane = min(land2nLanes, land2currentLane + 1)
         land2laneChangeFrame = 5
         land2laneChangeDirection = 1
+    elseif stateSpace
+        land2heroBoostFrames# = land2heroBoostFramesMax
     endif
     if land2laneChangeFrame
         inc land2laneChangeFrame, -1
     endif
     
     // hero movement
-    if land2heroIFrames# > 0
-        inc land2heroIFrames#, -1
-        land2heroSpeed# = land2heroSpeedMax# - 0.5 * (land2heroIFrames# / land2heroIFramesMax)
+    if land2heroIFrames# > 0 or land2heroBoostFrames# > 0
+        land2heroIFrames# = max(0, land2heroIFrames# - 1)
+        land2heroBoostFrames# = max(0, land2heroBoostFrames# - 1)
+        land2heroSpeed# = land2heroSpeedMax# - 0.5 * (land2heroIFrames# / land2heroIFramesMax) + 1.5 * (land2heroBoostFrames# / land2heroBoostFramesMax)
         // slow down lanes to match hero slowdown
         for lane = 0 to land2maxLanes - 1
             SetSpriteSpeed(land2sprStreet + lane, 60 * land2heroSpeed#)
@@ -191,6 +196,7 @@ function DoLand2()
     SetSpritePosition(hero, LaneToX(land2currentLane) - 9 * land2laneChangeDirection * land2laneChangeFrame, 300)
     inc heroLocalDistance#, -1 * land2heroSpeed#
 
+    Print(land2heroBoostFrames#)
     DoSpawnables()
 
 endfunction
