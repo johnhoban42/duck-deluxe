@@ -19,6 +19,8 @@ global land2heroSpeed# = 1  // current hero speed, including boosts/slowdowns
 global land2heroSpeedMax# = 1  // max hero speed without boosts/slowdowns
 global land2heroIFrames# = 0  // hero invincibility frames after hitting an obstacle
 global land2heroIFramesMax = 120
+global land2heroBoostCharges# = 0
+global land2heroBoostChargesMax = 10
 global land2heroBoostFrames# = 0  // current remaining frames of boost
 global land2heroBoostFramesMax = 60
 global land2currentLane = 2  // current lane, 1 = leftmost lane
@@ -118,6 +120,11 @@ function InitLand2()
         endif
     next lane
 
+    // load boost meter
+    // for now, just a basic rectangle that stretches with additional boosts
+    CreateSpriteExpress(land2sprBoostMeter, 0, 30, 100, 600, 10)
+    SetSpriteColor(land2sprBoostMeter, 255, 0, 0, 255)
+
     // load hero sprite
     LoadAnimatedSprite(hero, "duckl", 2)
     SetSpriteSize(hero, 50, 50)
@@ -134,9 +141,21 @@ endfunction
 
 function DoSpawnables()
     // process movement for all spawnables (boosts, obstacles)
+    idx_to_delete = -1
     for i = 0 to spawnActive.length - 1
         inc spawnActive[i].y, -4 * land2heroSpeed#
-        if spawnActive[i].cat = BAD 
+        if spawnActive[i].cat = GOOD
+            // check for collecting a boost
+            if GetSpriteCollision(spawnActive[i].spr, hero)
+                idx_to_delete = i
+                land2heroBoostCharges# = min(land2heroBoostCharges# + 1, land2heroBoostChargesMax)
+                SetSpriteSize(land2sprBoostMeter, 20 * land2heroBoostCharges#, 20)
+                if land2heroBoostCharges# = land2heroBoostChargesMax
+                    SetSpriteColor(land2sprBoostMeter, 0, 255, 0, 255)
+                endif
+                PlaySound(boostChargeS)
+            endif
+        elseif spawnActive[i].cat = BAD 
             // check for collisions
             if GetSpriteCollision(spawnActive[i].spr, hero) and land2HeroIFrames# = 0
                 land2HeroIFrames# = land2heroIFramesMax
@@ -150,6 +169,11 @@ function DoSpawnables()
         endif
         SetSpritePosition(spawnActive[i].spr, LaneToXWithOffset(spawnActive[i].x, spawnActive[i].y), spawnActive[i].y)
     next i
+    // delete any collected boosts
+    if idx_to_delete <> -1
+        DeleteSprite(spawnActive[idx_to_delete].spr)
+        spawnActive.remove(idx_to_delete)
+    endif
 endfunction
 
 function DoLand2()
@@ -175,8 +199,13 @@ function DoLand2()
         land2currentLane = min(land2nLanes, land2currentLane + 1)
         land2laneChangeFrame = 5
         land2laneChangeDirection = 1
-    elseif stateSpace
+    // use boost once meter is fully charged
+    elseif stateSpace and land2heroBoostCharges# = land2heroBoostChargesMax
         land2heroBoostFrames# = land2heroBoostFramesMax
+        land2heroBoostCharges# = 0
+        SetSpriteSize(land2sprBoostMeter, 0, 20)
+        SetSpriteColor(land2sprBoostMeter, 255, 0, 0, 255)
+        PlaySound(boostS)
     endif
     if land2laneChangeFrame
         inc land2laneChangeFrame, -1
@@ -196,7 +225,6 @@ function DoLand2()
     SetSpritePosition(hero, LaneToX(land2currentLane) - 9 * land2laneChangeDirection * land2laneChangeFrame, 300)
     inc heroLocalDistance#, -1 * land2heroSpeed#
 
-    Print(land2heroBoostFrames#)
     DoSpawnables()
 
 endfunction
