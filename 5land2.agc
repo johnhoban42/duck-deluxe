@@ -15,7 +15,10 @@ global land2boostSpeed# = 0  // boosted speed
 global land2boostSpawnRate# = 0  // rate at which boost panels spawn?
 
 // hero movement
-global land2heroSpeed# = 1  // equal to FPS of background scrolling
+global land2heroSpeed# = 1  // current hero speed, including boosts/slowdowns
+global land2heroSpeedMax# = 1  // max hero speed without boosts/slowdowns
+global land2heroIFrames# = 0  // hero invincibility frames after hitting an obstacle
+global land2heroIFramesMax = 120
 global land2currentLane = 2  // current lane, 1 = leftmost lane
 global land2laneChangeFrame = 0  // frames remaining in lane change, max 5
 global land2laneChangeDirection = 0  // -1 -> left, 1 -> right
@@ -37,12 +40,12 @@ endfunction (yoffset * 4.0 / 3) + 100 * (lane - 1)
 function InitObstacles()
     // load spawnable obstacles (cars and cones)
     sprID = land2sprCones
-    for i = 0 to 59
+    for i = 0 to 39
         sprCone as spawn
         sprCone.spr = sprID
         sprCone.cat = BAD
         sprCone.x = Random(1, 5)  // lane number
-        sprCone.y = 50 * i + Random(0, 80) - 40
+        sprCone.y = 75 * i + Random(0, 80) - 40
         sprCone.size = 30
         LoadSpriteFromSpawnable(sprCone, "cone.png", 10)
         spawnActive.insert(sprCone)
@@ -105,7 +108,7 @@ function InitLand2()
         else
             SetSpriteColor(sprLane, 50, 50, 50, 255)
         endif
-        PlaySprite(sprLane, 60)
+        PlaySprite(sprLane, 60 * land2heroSpeed#)
         if mod(lane, 2) = 0
             SetSpriteFrame(sprLane, 1)
         else
@@ -130,11 +133,18 @@ endfunction
 function DoSpawnables()
     // process movement for all spawnables (boosts, obstacles)
     for i = 0 to spawnActive.length - 1
-        inc spawnActive[i].y, -4
-        // recycle obstacle spawnables once they scroll offscreen
-        if spawnActive[i].cat = BAD and spawnActive[i].y < -100
-            spawnActive[i].x = Random(1, 5)
-            inc spawnActive[i].y, 3000
+        inc spawnActive[i].y, -4 * land2heroSpeed#
+        if spawnActive[i].cat = BAD 
+            // check for collisions
+            if GetSpriteCollision(spawnActive[i].spr, hero) and land2HeroIFrames# = 0
+                land2HeroIFrames# = land2heroIFramesMax
+                PlaySound(hitS, volumeS)
+            endif
+            // recycle obstacle spawnables once they scroll offscreen
+            if spawnActive[i].y < -100
+                spawnActive[i].x = Random(1, 5)
+                inc spawnActive[i].y, 3000
+            endif
         endif
         SetSpritePosition(spawnActive[i].spr, LaneToXWithOffset(spawnActive[i].x, spawnActive[i].y), spawnActive[i].y)
     next i
@@ -145,13 +155,13 @@ function DoLand2()
     // scroll buildings
     // once a building passes the top of the screen, reset its position to below the screen
     for i = 0 to 2
-        IncSpritePosition(land2sprBuildings + i, -4.75, -4.75 * 0.75)
+        IncSpritePosition(land2sprBuildings + i, -4.75 * land2heroSpeed#, -4.75 * 0.75 * land2heroSpeed#)
         if GetSpriteY(land2sprBuildings + i) < -3 * h
             SetSpritePosition(land2sprBuildings + i, 200 + 2*w, 2.0 / 3 * h)
         endif
     next i
 
-    // hero movement
+    // hero inputs
     DoInputs()
     // start turning left
     if inputLeft and land2laneChangeFrame = 0 and land2currentLane > 1
@@ -167,6 +177,17 @@ function DoLand2()
     if land2laneChangeFrame
         inc land2laneChangeFrame, -1
     endif
+    
+    // hero movement
+    if land2heroIFrames# > 0
+        inc land2heroIFrames#, -1
+        land2heroSpeed# = land2heroSpeedMax# - 0.5 * (land2heroIFrames# / land2heroIFramesMax)
+        // slow down lanes to match hero slowdown
+        for lane = 0 to land2maxLanes - 1
+            SetSpriteSpeed(land2sprStreet + lane, 60 * land2heroSpeed#)
+        next lane
+    endif
+    SetSpriteColor(hero, 255, 255 - 2*land2heroIFrames#, 255 - 2*land2heroIFrames#, 255)
     SetSpritePosition(hero, LaneToX(land2currentLane) - 9 * land2laneChangeDirection * land2laneChangeFrame, 300)
     inc heroLocalDistance#, -1 * land2heroSpeed#
 
