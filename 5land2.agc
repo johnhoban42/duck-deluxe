@@ -63,7 +63,7 @@ function InitBoostPanels()
     // panels can spawn in all 5 lanes before the player unlocks more lanes,
     // which is the incentive for that upgrade
     sprBoostID = land2sprBoostPanels
-    for i = 0 to 19
+    for i = 0 to 24
         panelX = Random(1, 5)  // x coordinate -> which lane boost spawns in
         panelY# = (i / 20.0) * land2Distance + Random(500, 750)  // race distance
         for panel = 0 to 4
@@ -73,8 +73,8 @@ function InitBoostPanels()
             sprBoost.cat = GOOD
             sprBoost.x = panelX
             sprBoost.y = panelY#
-            sprBoost.size = 50
-            LoadSpriteFromSpawnable(sprBoost, "buoy2.png", 10)
+            sprBoost.size = 30
+            LoadSpriteFromSpawnable(sprBoost, "land2boost.png", 10)
             spawnActive.insert(sprBoost)
             // prepare the next panel's properties
             // when shifting the next panel left or right, give it a greater probability
@@ -127,7 +127,7 @@ function InitLand2()
 
     // load hero sprite
     LoadAnimatedSprite(hero, "duckl", 2)
-    SetSpriteSize(hero, 50, 50)
+    SetSpriteSize(hero, 40, 40)
     SetSpritePosition(hero, 500, land2heroY)
     PlaySprite(hero, 10)
     heroLocalDistance# = land2Distance
