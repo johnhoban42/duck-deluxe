@@ -49,7 +49,7 @@ function InitObstacles()
         sprCone.spr = sprID
         sprCone.cat = BAD
         sprCone.x = Random(1, 5)  // lane number
-        sprCone.y = 75 * i + Random(0, 80) - 40
+        sprCone.y = 600 + 90 * i + Random(0, 80)
         sprCone.size = 30
         LoadSpriteFromSpawnable(sprCone, "cone.png", 10)
         spawnActive.insert(sprCone)
@@ -63,10 +63,10 @@ function InitBoostPanels()
     // panels can spawn in all 5 lanes before the player unlocks more lanes,
     // which is the incentive for that upgrade
     sprBoostID = land2sprBoostPanels
-    for i = 0 to 9
+    for i = 0 to 19
         panelX = Random(1, 5)  // x coordinate -> which lane boost spawns in
-        panelY# = (i / 10.0) * land2Distance + Random(500, 1000)  // race distance
-        for panel = 0 to 9
+        panelY# = (i / 20.0) * land2Distance + Random(500, 750)  // race distance
+        for panel = 0 to 4
             // set panel properties
             sprBoost as spawn
             sprBoost.spr = sprBoostID
@@ -164,7 +164,7 @@ function DoSpawnables()
             // recycle obstacle spawnables once they scroll offscreen
             if spawnActive[i].y < -100
                 spawnActive[i].x = Random(1, 5)
-                inc spawnActive[i].y, 3000
+                inc spawnActive[i].y, 3600
             endif
         endif
         SetSpritePosition(spawnActive[i].spr, LaneToXWithOffset(spawnActive[i].x, spawnActive[i].y), spawnActive[i].y)
