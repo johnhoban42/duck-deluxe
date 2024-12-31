@@ -41,6 +41,20 @@ function LaneToXWithOffset(lane as integer, yOffset as float)
     // calculate the current x-coordinate from a lane number and y-coordinate
 endfunction (yoffset * 4.0 / 3) + 100 * (lane - 1)
 
+function SetObstacleLane(obstacle as spawn)
+    // given a obstacle's y-coordinate, assign it a lane such that
+    // it isn't overlapping with a boost panel
+    hitUpper = land2sprBoostPanels
+    hitLower = land2sprBoostPanels
+    while ((land2sprBoostPanels <= hitUpper and hitUpper < land2sprBoostPanels + 200) or (land2sprBoostPanels <= hitLower and hitLower < land2sprBoostPanels + 200))
+        x = Random2(1, 5)
+        SetSpritePosition(obstacle.spr, LaneToXWithOffset(x, obstacle.y), obstacle.y)
+        // check upper and lower corners
+        hitUpper = GetSpriteHit(GetSpriteX(obstacle.spr), GetSpriteY(obstacle.spr))
+        hitLower = GetSpriteHit(GetSpriteX(obstacle.spr) + obstacle.size, GetSpriteY(obstacle.spr) + obstacle.size)
+    endwhile
+endfunction x
+
 function InitObstacles()
     // load spawnable obstacles (cars and cones)
     sprID = land2sprCones
@@ -48,10 +62,10 @@ function InitObstacles()
         sprCone as spawn
         sprCone.spr = sprID
         sprCone.cat = BAD
-        sprCone.x = Random(1, 5)  // lane number
-        sprCone.y = 75 * i + Random(0, 80) - 40
         sprCone.size = 30
         LoadSpriteFromSpawnable(sprCone, "cone.png", 10)
+        sprCone.y = 600 + 90 * i + Random2(0, 55)
+        sprCone.x = SetObstacleLane(sprCone)
         spawnActive.insert(sprCone)
         inc sprID, 1
     next i
@@ -63,29 +77,34 @@ function InitBoostPanels()
     // panels can spawn in all 5 lanes before the player unlocks more lanes,
     // which is the incentive for that upgrade
     sprBoostID = land2sprBoostPanels
-    for i = 0 to 9
-        panelX = Random(1, 5)  // x coordinate -> which lane boost spawns in
-        panelY# = (i / 10.0) * land2Distance + Random(500, 1000)  // race distance
-        for panel = 0 to 9
+    for i = 0 to 24
+        panelX = Random2(1, 5)  // x coordinate -> which lane boost spawns in
+        panelY# = (i / 20.0) * land2Distance + Random2(500, 750)  // race distance
+        for panel = 0 to 4
             // set panel properties
             sprBoost as spawn
             sprBoost.spr = sprBoostID
             sprBoost.cat = GOOD
             sprBoost.x = panelX
             sprBoost.y = panelY#
-            sprBoost.size = 50
-            LoadSpriteFromSpawnable(sprBoost, "buoy2.png", 10)
+            sprBoost.size = 30
+            LoadSpriteFromSpawnable(sprBoost, "land2boost.png", 1)
             spawnActive.insert(sprBoost)
+            // set the panel's underlying sprite's position.
+            // we need to do this so we can check for overlaps when spawning
+            // obstacles in the "SetObstacleLane" function.
+            // this will also be done each frame in the game loop
+            SetSpritePosition(sprBoost.spr, LaneToXWithOffset(sprBoost.x, sprBoost.y), sprBoost.y)
             // prepare the next panel's properties
             // when shifting the next panel left or right, give it a greater probability
             // of turning out of the leftmost and rightmost lanes
             inc sprBoostID, 1
             if panelX = 1
-                inc panelX, Random(0, 1)
-            elseif panelX = land2nLanes
-                inc panelX, -1 * Random(0, 1)
+                inc panelX, Random2(0, 1)
+            elseif panelX = land2maxLanes
+                inc panelX, Random2(-1, 0)
             else
-                inc panelX, Random(0, 2) - 1
+                inc panelX, Random2(-1, 1)
             endif
             inc panelY#, 80
         next panel
@@ -127,7 +146,7 @@ function InitLand2()
 
     // load hero sprite
     LoadAnimatedSprite(hero, "duckl", 2)
-    SetSpriteSize(hero, 50, 50)
+    SetSpriteSize(hero, 40, 40)
     SetSpritePosition(hero, 500, land2heroY)
     PlaySprite(hero, 10)
     heroLocalDistance# = land2Distance
@@ -163,8 +182,8 @@ function DoSpawnables()
             endif
             // recycle obstacle spawnables once they scroll offscreen
             if spawnActive[i].y < -100
-                spawnActive[i].x = Random(1, 5)
-                inc spawnActive[i].y, 3000
+                inc spawnActive[i].y, 3600
+                spawnActive[i].x = SetObstacleLane(spawnActive[i])
             endif
         endif
         SetSpritePosition(spawnActive[i].spr, LaneToXWithOffset(spawnActive[i].x, spawnActive[i].y), spawnActive[i].y)
