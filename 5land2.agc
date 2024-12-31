@@ -41,6 +41,22 @@ function LaneToXWithOffset(lane as integer, yOffset as float)
     // calculate the current x-coordinate from a lane number and y-coordinate
 endfunction (yoffset * 4.0 / 3) + 100 * (lane - 1)
 
+function SetObstacleLane(obstacle as spawn)
+    // given a obstacle's y-coordinate, assign it a lane such that
+    // it isn't overlapping with a boost panel
+    hitUpper = land2sprBoostPanels
+    hitLower = land2sprBoostPanels
+    while ((land2sprBoostPanels <= hitUpper and hitUpper < land2sprBoostPanels + 200) or (land2sprBoostPanels <= hitLower and hitLower < land2sprBoostPanels + 200))
+        x = Random(1, 5)
+        SetSpritePosition(obstacle.spr, LaneToXWithOffset(x, obstacle.y), obstacle.y)
+        // check upper and lower corners
+        hitUpper = GetSpriteHit(GetSpriteX(obstacle.spr), GetSpriteY(obstacle.spr))
+        hitLower = GetSpriteHit(GetSpriteX(obstacle.spr) + obstacle.size, GetSpriteY(obstacle.spr) + obstacle.size)
+    endwhile
+    Print(hitUpper)
+    Print(hitLower)
+endfunction x
+
 function InitObstacles()
     // load spawnable obstacles (cars and cones)
     sprID = land2sprCones
@@ -48,10 +64,10 @@ function InitObstacles()
         sprCone as spawn
         sprCone.spr = sprID
         sprCone.cat = BAD
-        sprCone.x = Random(1, 5)  // lane number
-        sprCone.y = 600 + 90 * i + Random(0, 80)
         sprCone.size = 30
         LoadSpriteFromSpawnable(sprCone, "cone.png", 10)
+        sprCone.y = 600 + 90 * i + Random(0, 55)
+        sprCone.x = SetObstacleLane(sprCone)
         spawnActive.insert(sprCone)
         inc sprID, 1
     next i
@@ -74,15 +90,20 @@ function InitBoostPanels()
             sprBoost.x = panelX
             sprBoost.y = panelY#
             sprBoost.size = 30
-            LoadSpriteFromSpawnable(sprBoost, "land2boost.png", 10)
+            LoadSpriteFromSpawnable(sprBoost, "land2boost.png", 1)
             spawnActive.insert(sprBoost)
+            // set the panel's underlying sprite's position.
+            // we need to do this so we can check for overlaps when spawning
+            // obstacles in the "SetObstacleLane" function.
+            // this will also be done each frame in the game loop
+            SetSpritePosition(sprBoost.spr, LaneToXWithOffset(sprBoost.x, sprBoost.y), sprBoost.y)
             // prepare the next panel's properties
             // when shifting the next panel left or right, give it a greater probability
             // of turning out of the leftmost and rightmost lanes
             inc sprBoostID, 1
             if panelX = 1
                 inc panelX, Random(0, 1)
-            elseif panelX = land2nLanes
+            elseif panelX = land2maxLanes
                 inc panelX, -1 * Random(0, 1)
             else
                 inc panelX, Random(0, 2) - 1
@@ -163,8 +184,8 @@ function DoSpawnables()
             endif
             // recycle obstacle spawnables once they scroll offscreen
             if spawnActive[i].y < -100
-                spawnActive[i].x = Random(1, 5)
                 inc spawnActive[i].y, 3600
+                spawnActive[i].x = SetObstacleLane(spawnActive[i])
             endif
         endif
         SetSpritePosition(spawnActive[i].spr, LaneToXWithOffset(spawnActive[i].x, spawnActive[i].y), spawnActive[i].y)
