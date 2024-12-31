@@ -47,14 +47,12 @@ function SetObstacleLane(obstacle as spawn)
     hitUpper = land2sprBoostPanels
     hitLower = land2sprBoostPanels
     while ((land2sprBoostPanels <= hitUpper and hitUpper < land2sprBoostPanels + 200) or (land2sprBoostPanels <= hitLower and hitLower < land2sprBoostPanels + 200))
-        x = Random(1, 5)
+        x = Random2(1, 5)
         SetSpritePosition(obstacle.spr, LaneToXWithOffset(x, obstacle.y), obstacle.y)
         // check upper and lower corners
         hitUpper = GetSpriteHit(GetSpriteX(obstacle.spr), GetSpriteY(obstacle.spr))
         hitLower = GetSpriteHit(GetSpriteX(obstacle.spr) + obstacle.size, GetSpriteY(obstacle.spr) + obstacle.size)
     endwhile
-    Print(hitUpper)
-    Print(hitLower)
 endfunction x
 
 function InitObstacles()
@@ -66,7 +64,7 @@ function InitObstacles()
         sprCone.cat = BAD
         sprCone.size = 30
         LoadSpriteFromSpawnable(sprCone, "cone.png", 10)
-        sprCone.y = 600 + 90 * i + Random(0, 55)
+        sprCone.y = 600 + 90 * i + Random2(0, 55)
         sprCone.x = SetObstacleLane(sprCone)
         spawnActive.insert(sprCone)
         inc sprID, 1
@@ -80,8 +78,8 @@ function InitBoostPanels()
     // which is the incentive for that upgrade
     sprBoostID = land2sprBoostPanels
     for i = 0 to 24
-        panelX = Random(1, 5)  // x coordinate -> which lane boost spawns in
-        panelY# = (i / 20.0) * land2Distance + Random(500, 750)  // race distance
+        panelX = Random2(1, 5)  // x coordinate -> which lane boost spawns in
+        panelY# = (i / 20.0) * land2Distance + Random2(500, 750)  // race distance
         for panel = 0 to 4
             // set panel properties
             sprBoost as spawn
@@ -102,11 +100,11 @@ function InitBoostPanels()
             // of turning out of the leftmost and rightmost lanes
             inc sprBoostID, 1
             if panelX = 1
-                inc panelX, Random(0, 1)
+                inc panelX, Random2(0, 1)
             elseif panelX = land2maxLanes
-                inc panelX, -1 * Random(0, 1)
+                inc panelX, Random2(-1, 0)
             else
-                inc panelX, Random(0, 2) - 1
+                inc panelX, Random2(-1, 1)
             endif
             inc panelY#, 80
         next panel
