@@ -23,7 +23,7 @@ SetWindowAllowResize( 1 ) // allow the user to resize the window
 
 global debug = 1
 if debug = 0 then SetErrorMode(1)
-global nextScreen = Water2
+global nextScreen = WATER2
 
 #constant w 1280
 #constant h 720
@@ -76,6 +76,12 @@ LoadSoundOGG(beepReadyS, "sounds/beepReady.ogg")
 LoadSoundOGG(beepGoS, "sounds/beepGo.ogg")
 #constant windBoostS 17
 LoadSoundOGG(windBoostS, "sounds/windBoost.ogg")
+#constant bubbleS 18
+LoadSoundOGG(bubbleS, "sounds/bubbles.ogg")
+#constant flyoutS 19
+LoadSoundOGG(flyoutS, "sounds/flyout.ogg")
+#constant collectS 20
+LoadSoundOGG(collectS, "sounds/collect.ogg")
 
 #constant introM 1
 LoadMusicOGG(introM, "music/intro.ogg")
@@ -533,6 +539,14 @@ function SetupScene(scene)
 	damageAmt# = 0
 	duckSpeed# = duckSpeedDefault# //This will change depending on how many upgrades you have
 
+	//Loading in gameplay images that will be used forever
+	if GetImageExists(featherImg1) = 0 
+		featherImg1 = LoadImage("feather1.png")
+		featherImg2 = LoadImage("feather2.png")
+		featherImg3 = LoadImage("feather3.png")
+		featherImg4 = LoadImage("feather4.png")
+	endif
+
 	if scene < UPGRADE
 
 		
@@ -811,6 +825,7 @@ function DeleteScene(scene)
 			SetSpriteVisible(water2S, 0)
 			SetSpriteVisible(water2TileS, 0)
 			DeleteParticles(lightP)
+			DeleteParticles(featherP)
 			for i = water2TileS+1 to water2TileE
 				if GetSpriteExists(i) then DeleteSprite(i)
 			next i
@@ -823,6 +838,7 @@ function DeleteScene(scene)
 		iMax = spawnActive.length
 		for i = 1 to iMax
 			DeleteAnimatedSprite(spawnActive[1].spr)
+			if GetTweenExists(spawnActive[1].spr) then DeleteTween(spawnActive[1].spr)
 			spawnActive.remove(1)
 		next i
 			

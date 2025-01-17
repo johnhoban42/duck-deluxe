@@ -12,6 +12,8 @@ endfunction
 
 function DoAir2()
 	
+	//SetSpritePosition(hero, heroX#, 500)
+	
 	dec heroLocalDistance#, 0.1*fpsr#
 	
 endfunction

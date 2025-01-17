@@ -29,6 +29,11 @@ global hero2Img4
 global hero2Img5
 global hero2Img6
 
+global featherImg1
+global featherImg2
+global featherImg3
+global featherImg4
+
 //ScrapNum, FrameNum, SetNum
 global scrapImgs as integer[3,4,4]
 function LoadScrapImages()
@@ -141,6 +146,7 @@ global arrowI
 //Particles
 #constant lightP 1
 #constant splashP 2
+#constant featherP 3
 
 
 #constant GOOD 1
