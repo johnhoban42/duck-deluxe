@@ -36,9 +36,9 @@ global land2laneChangeDirection = 0  // -1 -> left, 1 -> right
 function InitUpgradeValues()
     // assign values to upgradeable attributes based on purchased levels 
     land2nLanes = 2 + upgrades[attrnLanes, LAND2]
-    land2heroSpeedMax# = 1.3 + 0.2 * upgrades[attrnLanes, LAND2]
+    land2heroSpeedMax# = 1.25 + 0.25 * upgrades[attrnLanes, LAND2]
     land2heroBoostFramesMax = 60 + 30 * upgrades[attrBoostFrames, LAND2]
-    land2boostGroupLength = 4 + 2 * upgrades[attrBoostGroupLength, LAND2]
+    land2boostGroupLength = 5 + upgrades[attrBoostGroupLength, LAND2] + 2 * (upgrades[attrBoostGroupLength, LAND2] / 2)
 
     land2heroSpeed# = land2heroSpeedMax#
 
@@ -97,7 +97,7 @@ function InitBoostPanels()
     for i = 0 to 24
         panelX = Random2(1, 5)  // x coordinate -> which lane boost spawns in
         panelY# = (i / 20.0) * land2Distance + Random2(500, 750)  // race distance
-        for panel = 0 to land2boostGroupLength
+        for panel = 0 to land2boostGroupLength - 1
             // set panel properties
             sprBoost as spawn
             sprBoost.spr = sprBoostID
