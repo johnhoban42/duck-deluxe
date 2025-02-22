@@ -46,26 +46,27 @@ function InitWater2()
 	
 	//AddSpriteAnimationFrame(hero, heroImg2)
 	
-	LoadAnimatedSprite(duck, "duckW", 3)
-	SetSpriteVisible(duck, 0)
+	LoadSpriteExpress(duck, "L_D4_1.png", 120, 120, 999, 999, 60)
 	
 	//Gameplay setting
 	heroLocalDistance# = water2Distance
 	waterVelX# = 0
 	
-	fixedWater2Speed# = .2 * (1 + upgrades[1, 4] + 3)	//Adding 7 should be the maximum
+	//upgrades[1, 4] = 
 	
-	diveVelMax# = .4 * (1 + upgrades[2, 4] + 2)
-	diveRise# = .01 * (1 + upgrades[2, 4] + 3)
+	fixedWater2Speed# = .2 * (1 + upgrades[1, 4] + 7)	//Adding 7 should be the maximum
 	
-	diveLevel = 3 + upgrades[3, 4]
+	diveVelMax# = .4 * (1 + upgrades[2, 4] + 4)//2)
+	diveRise# = .01 * (1 + upgrades[2, 4] + 4)//3)
+	
+	diveLevel = 4 + upgrades[3, 4]
 	
 	if diveLevel = 1 then diveDeepTimerMax# = 0.28/(diveVelMax#)
 	if diveLevel = 2 then diveDeepTimerMax# = 0.41/(diveVelMax#)
 	if diveLevel = 3 then diveDeepTimerMax# = 0.55/(diveVelMax#)
 	if diveLevel = 4 then diveDeepTimerMax# = 0.69/(diveVelMax#)
 	
-	diveBoostSlow# = .0058 / (1 + upgrades[4, 4] + 2)
+	diveBoostSlow# = .0058 / (1 + upgrades[4, 4] + 5) //2)
 	SetViewZoom(1/((4+diveLevel*1.5)/10.0))
 	
 	SetSpriteVisible(water2S, 1)
@@ -426,7 +427,11 @@ function DoWater2()
 		if GetSpriteCurrentFrame(hero) > 4 then PlaySprite(hero, 10, 1, 1, 4)
 		
 	endif
-		
+	
+	SetSpritePosition(duck, -1*(duckDistance# - 20000*(raceQueue.length+1)) - (water2Distance-heroLocalDistance#), 110+4*cos(gameTime#*2))
+	Print(GetSPriteX(duck))
+	Print(raceSize)
+	Print(raceQueue.length)
 	//SetSpriteFrame(bg3, 1+8.0*(Round(waterDistance-heroLocalDistance#)/(1.0*waterDistance)))
 	
 	SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(waterDistance - heroLocalDistance#)/waterDistance)/areaSeen)

@@ -23,7 +23,9 @@ SetWindowAllowResize( 1 ) // allow the user to resize the window
 
 global debug = 1
 if debug = 0 then SetErrorMode(1)
-global nextScreen = WATER2
+global nextScreen = AIR2
+
+
 
 #constant w 1280
 #constant h 720
@@ -236,6 +238,25 @@ function SetRaceQueue(raceSet)
 	nextScreen = raceQueue[0]
 	raceQueue.remove(0)
 endfunction
+
+//This is the debug race list - this can be set to whatever is needed at the moment
+if debug
+	raceQueue.length = -1
+	raceQueueRef.length = -1
+	//These should in theory be set to 0, but theres a weird thing with arrays and elements in AGK
+	
+	raceQueue.insert(Water2)
+	raceQueue.insert(WATER2)
+	raceQueue.insert(AIR2)
+	raceQueue.insert(SPACE2)
+	raceQueueRef = raceQueue
+	
+	raceSize = raceQueue.length
+	duckDistance# = 20000*raceSize
+	
+	nextScreen = raceQueue[0]
+	raceQueue.remove(0)
+endif
 
 
 do
@@ -886,7 +907,7 @@ function DeleteScene(scene)
 	next i
 		
 		
-	if scene = WATER or scene = LAND or scene = AIR
+	if scene = WATER or scene = LAND or scene = AIR or scene = WATER2 or scene = LAND2 or scene = AIR2 or scene = SPACE2
 		//These are deleted for every gameplay section
 		DeleteSprite(progBack)
 		DeleteSprite(progFront)
