@@ -129,8 +129,12 @@ global tileEH	//Tile extra height, expanded to make them look connected together
 #constant waterTileAlpha 200
 #constant water2Trees 4051
 
-#constant land2sprStreet 5000
+
+#constant land2sprStreet 5000  // 5000 - 5004 for 5 lanes
 #constant land2sprBuildings 5010  // reserved 5010 - 5019 for building sprites
+#constant land2sprBoostMeter 5100
+#constant land2sprCones 5700  // reserved 5700 - 5799 for cone sprites
+#constant land2sprBoostPanels 5800  // reserved 5800 - 5999 for boost panel sprites
 
 global tileI1
 global tileI2
