@@ -23,7 +23,9 @@ SetWindowAllowResize( 1 ) // allow the user to resize the window
 
 global debug = 1
 if debug = 0 then SetErrorMode(1)
-global nextScreen = Water2
+global nextScreen = AIR2
+
+
 
 #constant w 1280
 #constant h 720
@@ -76,6 +78,12 @@ LoadSoundOGG(beepReadyS, "sounds/beepReady.ogg")
 LoadSoundOGG(beepGoS, "sounds/beepGo.ogg")
 #constant windBoostS 17
 LoadSoundOGG(windBoostS, "sounds/windBoost.ogg")
+#constant bubbleS 18
+LoadSoundOGG(bubbleS, "sounds/bubbles.ogg")
+#constant flyoutS 19
+LoadSoundOGG(flyoutS, "sounds/flyout.ogg")
+#constant collectS 20
+LoadSoundOGG(collectS, "sounds/collect.ogg")
 
 #constant introM 1
 LoadMusicOGG(introM, "music/intro.ogg")
@@ -180,11 +188,14 @@ SetSpriteVisible(cutsceneSpr3, 0)
 if debug = 0 then LoadAnimatedSprite(cutsceneSpr2, "ending/end", 89)
 SetSpriteVisible(cutsceneSpr2, 0)
 
+
 //Duck 2 sprites
 LoadAnimatedSprite(water2S, "w2BG/sw", 60)
 SetSpriteVisible(water2S, 0)
 LoadAnimatedSprite(water2TileS, "w2BG/2sw", 60)
 SetSpriteVisible(water2TileS, 0)
+
+LoadScrapImages()
 
 tileI1 = LoadImage("waterTile1.png")
 tileI2 = LoadImage("waterTile2.png")
@@ -228,6 +239,25 @@ function SetRaceQueue(raceSet)
 	raceQueue.remove(0)
 endfunction
 
+//This is the debug race list - this can be set to whatever is needed at the moment
+if debug
+	raceQueue.length = -1
+	raceQueueRef.length = -1
+	//These should in theory be set to 0, but theres a weird thing with arrays and elements in AGK
+	
+	raceQueue.insert(Water2)
+	raceQueue.insert(WATER2)
+	raceQueue.insert(AIR2)
+	raceQueue.insert(SPACE2)
+	raceQueueRef = raceQueue
+	
+	raceSize = raceQueue.length
+	duckDistance# = 20000*raceSize
+	
+	nextScreen = raceQueue[0]
+	raceQueue.remove(0)
+endif
+
 
 do
     fpsr# = (60.0/ScreenFPS())*9
@@ -266,7 +296,7 @@ do
 		elseif screen = WATER2
 			DoWater2()
 		elseif screen = LAND2
-			DoLand2()
+			//DoLand2()
 		elseif screen = AIR2
 			DoAir2()
 		elseif screen = SPACE2
@@ -529,6 +559,14 @@ function SetupScene(scene)
 
 	damageAmt# = 0
 	duckSpeed# = duckSpeedDefault# //This will change depending on how many upgrades you have
+
+	//Loading in gameplay images that will be used forever
+	if GetImageExists(featherImg1) = 0 
+		featherImg1 = LoadImage("feather1.png")
+		featherImg2 = LoadImage("feather2.png")
+		featherImg3 = LoadImage("feather3.png")
+		featherImg4 = LoadImage("feather4.png")
+	endif
 
 	if scene < UPGRADE
 
@@ -808,6 +846,7 @@ function DeleteScene(scene)
 			SetSpriteVisible(water2S, 0)
 			SetSpriteVisible(water2TileS, 0)
 			DeleteParticles(lightP)
+			DeleteParticles(featherP)
 			for i = water2TileS+1 to water2TileE
 				if GetSpriteExists(i) then DeleteSprite(i)
 			next i
@@ -820,6 +859,7 @@ function DeleteScene(scene)
 		iMax = spawnActive.length
 		for i = 1 to iMax
 			DeleteAnimatedSprite(spawnActive[1].spr)
+			if GetTweenExists(spawnActive[1].spr) then DeleteTween(spawnActive[1].spr)
 			spawnActive.remove(1)
 		next i
 			
@@ -867,7 +907,7 @@ function DeleteScene(scene)
 	next i
 		
 		
-	if scene = WATER or scene = LAND or scene = AIR
+	if scene = WATER or scene = LAND or scene = AIR or scene = WATER2 or scene = LAND2 or scene = AIR2 or scene = SPACE2
 		//These are deleted for every gameplay section
 		DeleteSprite(progBack)
 		DeleteSprite(progFront)

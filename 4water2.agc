@@ -35,6 +35,7 @@ function InitWater2()
 	heroY# = 0
 	//CreateSpriteExpress(hero, 140, 140, w, h, 50)
 	LoadAnimatedSprite(hero, "duckw2", 7)
+	PlaySprite(hero, 10, 1, 1, 4)
 	SetSpriteSizeSquare(hero, 60)
 	SetSpriteDepth(hero, 50)
 	activeBoost# = 0
@@ -45,17 +46,18 @@ function InitWater2()
 	
 	//AddSpriteAnimationFrame(hero, heroImg2)
 	
-	LoadAnimatedSprite(duck, "duckW", 3)
-	PlaySprite(hero, 10, 1, 1, 4)
+	LoadSpriteExpress(duck, "L_D4_1.png", 120, 120, 999, 999, 60)
 	
 	//Gameplay setting
 	heroLocalDistance# = water2Distance
 	waterVelX# = 0
 	
-	fixedWater2Speed# = .2 * (1 + upgrades[1, 4] + 3)	//Adding 7 should be the maximum
+	//upgrades[1, 4] = 
 	
-	diveVelMax# = .4 * (1 + upgrades[2, 4] + 2)
-	diveRise# = .01 * (1 + upgrades[2, 4] + 3)
+	fixedWater2Speed# = .2 * (1 + upgrades[1, 4] + 7)	//Adding 7 should be the maximum
+	
+	diveVelMax# = .4 * (1 + upgrades[2, 4] + 4)//2)
+	diveRise# = .01 * (1 + upgrades[2, 4] + 4)//3)
 	
 	diveLevel = 4 + upgrades[3, 4]
 	
@@ -64,8 +66,7 @@ function InitWater2()
 	if diveLevel = 3 then diveDeepTimerMax# = 0.55/(diveVelMax#)
 	if diveLevel = 4 then diveDeepTimerMax# = 0.69/(diveVelMax#)
 	
-	diveBoostSlow# = .0018 / (1 + upgrades[4, 4] + 5)
-	
+	diveBoostSlow# = .0058 / (1 + upgrades[4, 4] + 5) //2)
 	SetViewZoom(1/((4+diveLevel*1.5)/10.0))
 	
 	SetSpriteVisible(water2S, 1)
@@ -143,6 +144,20 @@ function InitWater2()
 	AddParticlesColorKeyFrame(splashP, life#, r, g, b, 0)
 	AddParticlesForce(splashP, 0, life#, 0, 1000)
 	
+	CreateParticlesExpress(featherP, 10, 8, 20*GetViewZoom()/1, 50, 80)
+	SetParticlesImage(featherP, featherImg1)
+	SetParticlesStartZone(featherP, -10, -1, 10, 1)
+	//SetParticlesPosition(featherP, 9999, 9999)
+	SetParticlesDirection(featherP, -200, 100)
+	life# = .3
+	SetParticlesLife(featherP, life#)
+	r = 255
+	g = 255
+	b = 255
+	AddParticlesColorKeyFrame(featherP, 0, r, g, b, 255)
+	AddParticlesColorKeyFrame(featherP, life#*4/5, r, g, b*3/4, 255)
+	AddParticlesColorKeyFrame(featherP, life#, r, g, b/2, 0)
+	AddParticlesForce(featherP, 0, life#, -100, 5)
 	
 	//AddParticlesForce(featherP, life#/4, life#, -400, 0)
 	
@@ -161,6 +176,10 @@ function InitWater2()
 	SetSpriteColor(water2BG, 10, 20, 80, 255)
 	SetSpriteColor(water2Trees, 110, 120, 180, 255)
 	
+	fish1I = LoadImage("robofish1.png")
+	fish2I = LoadImage("robofish2.png")
+	fish3I = LoadImage("robofish3.png")
+	
 	newS as spawn
 	iEnd = 25 + 10*diveLevel //+ (.5*diveLevel*diveLevel)
 	for i = 1 to iEnd
@@ -169,26 +188,47 @@ function InitWater2()
 		if newS.cat <= 3 then newS.cat = SCRAP
 		if newS.cat = 4 or newS.cat = 5 then newS.cat = GOOD
 		if newS.cat = 6 or newS.cat = 7 then newS.cat = BAD
+		if i < 4 and newS.cat = BAD then newS.cat = SCRAP
 		
-		newS.x = i*water2Distance/iEnd + 100 + Random(0, 400)
-		newS.y = GetSpriteY(water2TileS) + Random(60, 400-(4-diveLevel)*70)
+		
+		newS.x = i*water2Distance/(iEnd+2) + 100 + Random(0, 340)
+		newS.y = GetSpriteY(water2TileS) - 50 + Random(60, 350-(4-diveLevel)*70)
 		
 		
 		if i = iEnd then newS.cat = SCRAP
 		
 		if newS.cat = GOOD
-			LoadSpriteExpress(spawnS, "bolt1.png", 10, 10, w, h, 8)
-			newS.size = 50
+			CreateSpriteExpress(spawnS, 10, 10, w, h, 8)
+			AddSpriteAnimationFrame(spawnS, featherImg1)
+			AddSpriteAnimationFrame(spawnS, featherImg2)
+			AddSpriteAnimationFrame(spawnS, featherImg2)
+			AddSpriteAnimationFrame(spawnS, featherImg3)
+			AddSpriteAnimationFrame(spawnS, featherImg4)
+			AddSpriteAnimationFrame(spawnS, featherImg4)
+			PlaySprite(spawnS, 6)
+			SetSpriteFrame(spawnS, Random(1, 6))
+			newS.size = 60
 			SetSpriteSizeSquare(spawnS, newS.size)
 		elseif newS.cat = BAD
-			LoadSpriteExpress(spawnS, "buoy1.png", 10, 10, w, h, 8)
+			CreateSpriteExpress(spawnS, 10, 10, w, h, 8)
+			AddSpriteAnimationFrame(spawnS, fish1I)
+			AddSpriteAnimationFrame(spawnS, fish2I)
+			AddSpriteAnimationFrame(spawnS, fish2I)
+			AddSpriteAnimationFrame(spawnS, fish3I)
+			PlaySprite(spawnS, 3, 1, 1, 2)
 			SetSpriteShape(spawnS, 3)
-			newS.size = 100
+			newS.size = 90
 			SetSpriteSizeSquare(spawnS, newS.size)
+			SetSpriteFlip(spawnS, 1, 0)
 		else
-			LoadSpriteExpress(spawnS, "scrap1.png", 10, 10, w, h, 8)
-			newS.size = 50
+			CreateSpriteExpress(spawnS, 10, 10, w, h, 8)
+			for j = 1 to 4
+				AddSpriteAnimationFrame(spawnS, scrapImgs[1, j, 1])//First index will be a random
+			next j
+			PlaySprite(spawnS, 3+Random(1,3))
+			newS.size = 60
 			SetSpriteSizeSquare(spawnS, newS.size)
+			
 		endif
 		SetSpriteDepth(spawnS, 50)
 		
@@ -241,8 +281,8 @@ function DoWater2()
 	SetSpritePosition(hero, heroX#, heroY# + 18 + (GetSpriteMiddleY(water2S)) - GetSpriteHeight(hero) + 30 + 4*Abs(sin(gameTime#/8)) + 2*Abs(cos(gameTime#/3)))
 	if diveBoost# > 0 and heroY# <= 0
 		IncSpriteY(hero, (1-diveHop#)*(-diveBoost#*36 - 10))
-		SetSpriteAngle(hero, Min(-5, -diveBoost#*15 + 20))
-		
+		SetSpriteAngle(hero, Max(-5, -diveBoost#*15 + 20))
+		Print(GetSpriteAngle(hero))
 	else
 		SetSpriteAngle(hero, 0)
 	endif
@@ -289,6 +329,7 @@ function DoWater2()
 		//Diving
 		if stateSpace and heroY# <= 0
 			//Diving sound
+			PlaySound(bubbleS, volumeS/2)
 			SetParticlesPosition(splashP, GetSpriteMiddleX(hero), (GetSpriteMiddleY(water2S)) + GetSpriteHeight(hero)/2)
 			ResetParticleCount(splashP)
 		endif
@@ -338,6 +379,9 @@ function DoWater2()
 				diveBoostQueue = 0
 				diveHop# = 1
 				PlaySprite(hero, 10, 1, 5, 7)
+				SetParticlesPosition(featherP, GetSpriteX(hero), GetSpriteMiddleY(hero))
+				ResetParticleCount(featherP)
+				PlaySound(flyoutS, volumeS/2)
 			endif
 		endif
 	endif
@@ -371,7 +415,7 @@ function DoWater2()
 	//endif
 	dec heroLocalDistance#, fixedWater2Speed#*fpsr#
 	if diveBoost# > 0
-		dec heroLocalDistance#, fixedWater2Speed#*fpsr# * diveBoost#
+		dec heroLocalDistance#, fixedWater2Speed#*fpsr# * diveBoost#*1.8
 		dec diveBoost#, diveBoostSlow#*fpsr#
 	endif
 		
@@ -383,7 +427,11 @@ function DoWater2()
 		if GetSpriteCurrentFrame(hero) > 4 then PlaySprite(hero, 10, 1, 1, 4)
 		
 	endif
-		
+	
+	SetSpritePosition(duck, -1*(duckDistance# - 20000*(raceQueue.length+1)) - (water2Distance-heroLocalDistance#), 110+4*cos(gameTime#*2))
+	Print(GetSPriteX(duck))
+	Print(raceSize)
+	Print(raceQueue.length)
 	//SetSpriteFrame(bg3, 1+8.0*(Round(waterDistance-heroLocalDistance#)/(1.0*waterDistance)))
 	
 	SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(waterDistance - heroLocalDistance#)/waterDistance)/areaSeen)
@@ -393,19 +441,22 @@ function DoWater2()
 	for i = 1 to spawnActive.length
 		spr = spawnActive[i].spr
 		if i = spawnActive.length then spawnActive[i].x = water2Distance-30+heroX#
-		SetSpritePosition(spr, spawnActive[i].x-(water2Distance-heroLocalDistance#), spawnActive[i].y)
+		SetSpriteX(spr, spawnActive[i].x-(water2Distance-heroLocalDistance#))
+		if GetSpriteGroup(spr) <> SCRAP then SetSpriteY(spr, spawnActive[i].y)
 		if GetSpriteVisible(spr)
 			if GetSpriteCollision(spr, hero) and Abs((GetSpriteY(hero) - GetSpriteY(spr))) < 80
 				
 				if spawnActive[i].cat = GOOD
-					inc diveBoostQueue, 1
+					if GetSpriteColorGreen(hero) <> 100 then inc diveBoostQueue, 1
+					PlaySound(collectS, volumeS)
 					//boatSpeed# = Max(boatSpeed#, sqrt(Min(boatSpeedMax, 20)*1.5))
 					
 					//PlaySound(rowGoodS, VolumeS*.8)
 				elseif spawnActive[i].cat = BAD
-					
 					diveDamage = 1
 					if GetSpriteColorGreen(hero) = 255 then PlaySound(hitS, volumeS)
+					diveBoost# = 0
+					diveBoostQueue = 0
 					//if damageAmt# <= 0
 					//	damageAmt# = 255
 					//	boatSpeed# = 0
@@ -413,18 +464,30 @@ function DoWater2()
 					//endif
 					//Sound effect
 					//SetSpriteColor(hero, 255, 100, 100, 255)
-				else //SCRAP
+				elseif GetTweenExists(spr) = 0 //SCRAP
 					CollectScrap(WATER2)
+					SetSpriteGroup(spr, SCRAP)
+					PlaySprite(spr, 30)
+					CreateTweenSprite(spr, .6)
+					SetTweenSpriteY(spr, GetSpriteY(spr), GetSpriteY(spr) - GetSpriteHeight(spr)*1.5, TweenSmooth1())
+					//SetTweenSpriteAlpha(spr, 255, 0, TweenEaseOut2())
+					PlayTweenSprite(spr, spr, 0)
+					PlayTweenSprite(tweenSprFadeOut, spr, .1)
 				endif
-				if spawnActive[i].cat <> RAMP and GetSpriteWidth(spr) = GetSpriteHeight(spr)
+				if spawnActive[i].cat <> RAMP and GetSpriteWidth(spr) = GetSpriteHeight(spr) and GetSpriteGroup(spr) <> SCRAP
 					deleted = i
 					i = spawnActive.length
 				endif
 				
+				
 			endif
-			if spawnActive[i].cat = BAD and GetSpriteX(spawnActive[i].spr) < w and GetSpriteWidth(spr) = GetSpriteHeight(spr)
+			if spawnActive[i].cat = BAD and GetSpriteX(spawnActive[i].spr) < (w/5 + w/6*diveLevel)
 				SetSpriteAngle(spr, 6.0*cos(gameTime#))
 				spawnActive[i].x = spawnActive[i].x - 0.2*diveLevel*fpsr#
+				if GetSpriteCurrentFrame(spr) <= 2 then PlaySprite(spr, 10, 1, 3, 4)
+			endif
+			if spawnActive[i].cat = GOOD
+				SetSpriteColorBlue(spr, 185 + 70*sin( spawnActive[i].x-heroLocalDistance#))
 			endif
 		endif
 		
