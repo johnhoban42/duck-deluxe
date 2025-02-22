@@ -190,6 +190,8 @@ function DoSpawnables()
                 land2heroBoostCharges# = min(land2heroBoostCharges# + 1, land2heroBoostChargesMax)
                 SetSpriteSize(land2sprBoostMeter, 20 * land2heroBoostCharges#, 20)
                 if land2heroBoostCharges# = land2heroBoostChargesMax
+                    SetSpriteColor(land2sprBoostMeter, 255, 215, 0, 255)
+                elseif land2heroBoostCharges# >= 5
                     SetSpriteColor(land2sprBoostMeter, 0, 255, 0, 255)
                 endif
                 PlaySound(boostChargeS)
@@ -238,9 +240,15 @@ function DoLand2()
         land2currentLane = min(land2nLanes, land2currentLane + 1)
         land2laneChangeFrame = 5
         land2laneChangeDirection = 1
-    // use boost once meter is fully charged
-    elseif stateSpace and land2heroBoostCharges# = land2heroBoostChargesMax
-        land2heroBoostFrames# = land2heroBoostFramesMax
+    // use boost once meter with at least 5 charges held
+    // boost time is proportionate to the number of charges held
+    // if the boost meter is full (10 charges), the boost is extra long
+    elseif stateSpace and land2heroBoostCharges# >= 5
+        if land2heroBoostCharges# = land2heroBoostChargesMax
+            land2heroBoostFrames# = land2heroBoostFramesMax * 1.5
+        else
+            land2heroBoostFrames# = land2heroBoostFramesMax * (land2heroBoostCharges# / land2heroBoostChargesMax)
+        endif
         land2heroBoostCharges# = 0
         SetSpriteSize(land2sprBoostMeter, 0, 20)
         SetSpriteColor(land2sprBoostMeter, 255, 0, 0, 255)
