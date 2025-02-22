@@ -7,12 +7,18 @@
 
 #constant land2heroY 300
 
+// upgrade attribute identifiers
+#constant attrnLanes 1
+#constant attrBaseSpeed 2
+#constant attrBoostFrames 3
+#constant attrBoostGroupLength 4
+
 // Upgrade variables
-global land2nLanes = 2  // current number of lanes unlocked
+global land2nLanes = 0  // current number of lanes unlocked
 global land2maxLanes = 5  // maximum possible number of lanes
 global land2baseSpeed# = 0  // non-boosted speed
 global land2boostSpeed# = 0  // boosted speed
-global land2boostSpawnRate# = 0  // rate at which boost panels spawn?
+global land2boostGroupLength = 0  // rate at which boost panels spawn?
 
 // hero movement
 global land2heroSpeed# = 1  // current hero speed, including boosts/slowdowns
@@ -26,6 +32,17 @@ global land2heroBoostFramesMax = 60
 global land2currentLane = 2  // current lane, 1 = leftmost lane
 global land2laneChangeFrame = 0  // frames remaining in lane change, max 5
 global land2laneChangeDirection = 0  // -1 -> left, 1 -> right
+
+function InitUpgradeValues()
+    // assign values to upgradeable attributes based on purchased levels 
+    land2nLanes = 2 + upgrades[attrnLanes, LAND2]
+    land2heroSpeedMax# = 1.3 + 0.2 * upgrades[attrnLanes, LAND2]
+    land2heroBoostFramesMax = 60 + 30 * upgrades[attrBoostFrames, LAND2]
+    land2boostGroupLength = 4 + 2 * upgrades[attrBoostGroupLength, LAND2]
+
+    land2heroSpeed# = land2heroSpeedMax#
+
+endfunction
 
 function LoadSpriteFromSpawnable(spr as spawn, imagePath as string, depth as integer)
     // load a sprite from a spawnable's properties
@@ -58,13 +75,13 @@ endfunction x
 function InitObstacles()
     // load spawnable obstacles (cars and cones)
     sprID = land2sprCones
-    for i = 0 to 39
+    for i = 0 to 19
         sprCone as spawn
         sprCone.spr = sprID
         sprCone.cat = BAD
         sprCone.size = 30
         LoadSpriteFromSpawnable(sprCone, "cone.png", 10)
-        sprCone.y = 600 + 90 * i + Random2(0, 55)
+        sprCone.y = 600 + 180 * i + Random2(0, 100)
         sprCone.x = SetObstacleLane(sprCone)
         spawnActive.insert(sprCone)
         inc sprID, 1
@@ -80,7 +97,7 @@ function InitBoostPanels()
     for i = 0 to 24
         panelX = Random2(1, 5)  // x coordinate -> which lane boost spawns in
         panelY# = (i / 20.0) * land2Distance + Random2(500, 750)  // race distance
-        for panel = 0 to 4
+        for panel = 0 to land2boostGroupLength
             // set panel properties
             sprBoost as spawn
             sprBoost.spr = sprBoostID
@@ -112,6 +129,9 @@ function InitBoostPanels()
 endfunction
 
 function InitLand2()
+
+    // apply upgrade values
+    InitUpgradeValues()
 	
     // load building sprites
     imgBuildings = LoadImage("cbg/citytop1010.png")
