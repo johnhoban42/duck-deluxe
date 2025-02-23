@@ -174,8 +174,8 @@ function InitLand2()
     SetSpriteColor(land2sprBoostMeter, 255, 0, 0, 255)
 
     // load hero sprite
-    LoadAnimatedSprite(hero, "duckl", 2)
-    SetSpriteSize(hero, 50, 50)
+    LoadAnimatedSprite(hero, "duckc", 3)
+    SetSpriteSize(hero, 40, 40)
     SetSpritePosition(hero, 500, land2heroY)
     SetSpriteDepth(hero, 1)
     PlaySprite(hero, 10)
