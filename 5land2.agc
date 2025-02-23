@@ -58,6 +58,10 @@ function LaneToXWithOffset(lane as integer, yOffset as float)
     // calculate the current x-coordinate from a lane number and y-coordinate
 endfunction (yoffset * 4.0 / 3) + 100 * (lane - 1)
 
+function LaneToXWithOffsetBoost(lane as integer, yOffset as float)
+    // calculate the current x-coordinate from a lane number, specific to boost panels
+endfunction -70 + (yoffset * 4.0 / 3) + 100 * (lane - 1)
+
 function SetObstacleLane(obstacle as spawn)
     // given a obstacle's y-coordinate, assign it a lane such that
     // it isn't overlapping with a boost panel
@@ -104,8 +108,13 @@ function InitBoostPanels()
             sprBoost.cat = GOOD
             sprBoost.x = panelX
             sprBoost.y = panelY#
-            sprBoost.size = 30
-            LoadSpriteFromSpawnable(sprBoost, "land2boost.png", 1)
+            sprBoost.size = 200
+            // todo - write something like LoadAnimatedSpriteFromSpawnable?
+            LoadAnimatedSprite(sprBoost.spr, "land2booster", 18)
+            SetSpriteSize(sprBoost.spr, sprBoost.size, sprBoost.size * 0.4)
+            SetSpritePosition(sprBoost.spr, sprBoost.x, sprBoost.y)
+            SetSpriteDepth(sprBoost.spr, 10)
+            PlaySprite(sprBoost.spr, 30)
             spawnActive.insert(sprBoost)
             // set the panel's underlying sprite's position.
             // we need to do this so we can check for overlaps when spawning
@@ -123,7 +132,7 @@ function InitBoostPanels()
             else
                 inc panelX, Random2(-1, 1)
             endif
-            inc panelY#, 80
+            inc panelY#, 90
         next panel
     next i
 endfunction
@@ -166,8 +175,9 @@ function InitLand2()
 
     // load hero sprite
     LoadAnimatedSprite(hero, "duckl", 2)
-    SetSpriteSize(hero, 40, 40)
+    SetSpriteSize(hero, 50, 50)
     SetSpritePosition(hero, 500, land2heroY)
+    SetSpriteDepth(hero, 1)
     PlaySprite(hero, 10)
     heroLocalDistance# = land2Distance
 
@@ -185,7 +195,7 @@ function DoSpawnables()
         inc spawnActive[i].y, -4 * land2heroSpeed#
         if spawnActive[i].cat = GOOD
             // check for collecting a boost
-            if GetSpriteCollision(spawnActive[i].spr, hero)
+            if GetSpriteCollision(spawnActive[i].spr, hero) and spawnActive[i].x = land2currentLane
                 idx_to_delete = i
                 land2heroBoostCharges# = min(land2heroBoostCharges# + 1, land2heroBoostChargesMax)
                 SetSpriteSize(land2sprBoostMeter, 20 * land2heroBoostCharges#, 20)
@@ -196,6 +206,7 @@ function DoSpawnables()
                 endif
                 PlaySound(boostChargeS, volumeS/4)
             endif
+            SetSpritePosition(spawnActive[i].spr, LaneToXWithOffsetBoost(spawnActive[i].x, spawnActive[i].y), spawnActive[i].y)
         elseif spawnActive[i].cat = BAD 
             // check for collisions
             if GetSpriteCollision(spawnActive[i].spr, hero) and land2HeroIFrames# = 0
@@ -207,8 +218,8 @@ function DoSpawnables()
                 inc spawnActive[i].y, 3600
                 spawnActive[i].x = SetObstacleLane(spawnActive[i])
             endif
+            SetSpritePosition(spawnActive[i].spr, LaneToXWithOffset(spawnActive[i].x, spawnActive[i].y), spawnActive[i].y)
         endif
-        SetSpritePosition(spawnActive[i].spr, LaneToXWithOffset(spawnActive[i].x, spawnActive[i].y), spawnActive[i].y)
     next i
     // delete any collected boosts
     if idx_to_delete <> -1
