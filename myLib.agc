@@ -1131,4 +1131,10 @@ powers[4, 2, 3] = "x1.2 Verticality"
 powers[4, 3, 3] = "x1.5 Verticality"
 powers[4, 4, 3] = "x1.9 Verticality"
 
+powers[1, 1, 4] = ""
+powers[1, 2, 4] = "x1.2 Verticality"
+powers[1, 3, 4] = "x1.5 Verticality"
+powers[1, 4, 4] = "x1.9 Verticality"
+
+
 endfunction

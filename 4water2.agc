@@ -46,7 +46,7 @@ function InitWater2()
 	
 	//AddSpriteAnimationFrame(hero, heroImg2)
 	
-	LoadSpriteExpress(duck, "L_D4_1.png", 120, 120, 999, 999, 60)
+	LoadSpriteExpress(duck, "swampfoe1a.png", 120, 120, 999, 999, 60)
 	
 	//Gameplay setting
 	heroLocalDistance# = water2Distance
@@ -428,7 +428,7 @@ function DoWater2()
 		
 	endif
 	
-	SetSpritePosition(duck, -1*(duckDistance# - 20000*(raceQueue.length+1)) - (water2Distance-heroLocalDistance#), 110+4*cos(gameTime#*2))
+	SetSpritePosition(duck, -1*(duckDistance# - 20000*(raceQueue.length+1)) - (water2Distance-heroLocalDistance#), 70+4*cos(gameTime#*2))
 	Print(GetSPriteX(duck))
 	Print(raceSize)
 	Print(raceQueue.length)

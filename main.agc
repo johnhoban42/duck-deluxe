@@ -24,7 +24,7 @@ SetWindowAllowResize( 1 ) // allow the user to resize the window
 global debug = 1
 if debug = 0 then SetErrorMode(1)
 global nextScreen = AIR2
-
+SetPhysicsDebugOn()
 
 
 #constant w 1280
@@ -240,13 +240,13 @@ function SetRaceQueue(raceSet)
 endfunction
 
 //This is the debug race list - this can be set to whatever is needed at the moment
-if debug
+/*if debug
 	raceQueue.length = -1
 	raceQueueRef.length = -1
 	//These should in theory be set to 0, but theres a weird thing with arrays and elements in AGK
 	
-	raceQueue.insert(Water2)
-	raceQueue.insert(WATER2)
+	raceQueue.insert(AIR2)
+	raceQueue.insert(LAND2)
 	raceQueue.insert(AIR2)
 	raceQueue.insert(SPACE2)
 	raceQueueRef = raceQueue
@@ -257,7 +257,7 @@ if debug
 	nextScreen = raceQueue[0]
 	raceQueue.remove(0)
 endif
-
+*/
 
 do
     fpsr# = (60.0/ScreenFPS())*9
@@ -296,7 +296,7 @@ do
 		elseif screen = WATER2
 			DoWater2()
 		elseif screen = LAND2
-			//DoLand2()
+			DoLand2()
 		elseif screen = AIR2
 			DoAir2()
 		elseif screen = SPACE2

@@ -52,7 +52,7 @@ function InitAir()
 	
 	//Setting the variables based on upgrades
 	fixedAirSpeed# = (.31)*(1 + 1*upgrades[1, 3] + 1*upgrades[1, 3]/3) //.31
-	airSpeedMax# = (2)*(1 + 0.5*upgrades[2, 3]/2 + 0.2*upgrades[2, 3]/3)
+	airSpeedMax# = (2)*(1 + 0.5*upgrades[2, 3]/2 + 0.2*upgrades[2, 3]/3)		//TODO: give a level 1 upgrade boost
 	airSpeedX# = (0.39)*(1 + 0.3*upgrades[3, 3] + 0.1*upgrades[3, 3] + 0.2*upgrades[3, 3]/3)
 	airSpeedY# = (0.28)*(1 + 0.2*upgrades[4, 3] + 0.1*upgrades[4, 3] + 0.2*upgrades[4, 3]/3)
 	

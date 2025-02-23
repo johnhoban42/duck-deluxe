@@ -136,6 +136,8 @@ global tileEH	//Tile extra height, expanded to make them look connected together
 #constant land2sprCones 5700  // reserved 5700 - 5799 for cone sprites
 #constant land2sprBoostPanels 5800  // reserved 5800 - 5999 for boost panel sprites
 
+#constant air2BG 6001
+
 global tileI1
 global tileI2
 
