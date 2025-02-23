@@ -79,7 +79,7 @@ function InitObstacles()
         sprCone as spawn
         sprCone.spr = sprID
         sprCone.cat = BAD
-        sprCone.size = 30
+        sprCone.size = 40
         LoadSpriteFromSpawnable(sprCone, "cone.png", 10)
         sprCone.y = 600 + 180 * i + Random2(0, 100)
         sprCone.x = SetObstacleLane(sprCone)
