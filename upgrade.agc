@@ -2,6 +2,7 @@
 // Created: 24-09-27
 
 // Hi Andy
+// Hi John! - From Andy, 3/2/25
 
 #include "constants.agc"
 
@@ -11,6 +12,84 @@ function InitializeFromRaceQueue()
 
 endfunction
 
+//Upgrade pod
+type p
+	//The info on the upgraded
+	rID as integer //Race ID
+	lev as integer //The current level of upgrade
+	
+	//Physical position
+	column as integer
+	row as integer
+	
+	//The main background element
+	sprBG as integer
+	sprLetter as integer
+	sprIcon as integer
+	txtMainDesc as integer
+	
+	//The upgrade box
+	sprUpBG as integer
+	txtUpgrade as integer
+	
+	//The peeper! The glowing guy at the bottom who says cost, preview for affordability
+	sprPeep as integer
+	txtPeep as integer
+	
+	//Chains which move down to the next part
+	sprChainL as integer
+	sprChainR as integer
+	
+endtype
+
+
+
+function CreatePod(pod as p, row, col)
+	rID = raceQueueRef[col+1]
+	pod.rID = rID
+	pod.row = row
+	pod.column = col
+	pod.lev = upgrades[row, rID]
+	
+	pod.sprBG = CreateSprite(0)
+	SetSpriteExpress(pod.sprBG, 362, 154, 10 + col*364, 80 + row*156, 50) 
+	SetSpriteColor(pod.sprBG, 80, 80, 80, 255)
+	
+	pod.sprLetter = LoadSprite("raceLetters/let" + str(row+1) + "r" + str(rID) + ".png")
+	SetSpriteExpress(pod.sprLetter, 75, 75, GetSpriteX(pod.sprBG)-5, GetSpriteY(pod.sprBG)-10, 20)
+	
+endfunction
+
+function CreateUpgrade2()
+	
+	if debug
+		raceQueueRef.insert(LAND)
+		raceQueueRef.insert(WATER)
+		raceQueueRef.insert(AIR2)
+		raceQueueRef.insert(AIR)
+		areaSeen = raceQueueRef.length
+	endif
+	
+	upPods.length = -1
+	upPods.length = areaSeen*4
+	
+	newP as p
+	curPod as p
+	
+	for i = 0 to upPods.length-1
+		curPod = newP
+		CreatePod(curPod, Mod(i, 4), i/4)
+		upPods[i] = curPod
+	next i
+	
+endfunction
+function DoUpgrade2()
+	
+endfunction
+function DeleteUpgrade2()
+	
+endfunction
+
 function CreateUpgradePod(row, col)
 	// Create a single upgrade pod.
 	
@@ -18,7 +97,7 @@ function CreateUpgradePod(row, col)
 	LoadSpriteExpress(spr, "shopbox" + str(raceQueueRef[col]) + ".png", 362, 154, 10 + col*360, 80 + row*156, 20)
 	
 	LoadSpriteExpress(spr + 1, "shopPlate.png", 240, 75, GetSpriteX(spr) + 72, GetSpriteY(spr) + 60, 14)
-	SetSpriteColor(spr+1, 110, 110, 110, 255)
+	SetSpriteColor(spr+1, 110, 110, 110, 255)	
 	
 	LoadSpriteExpress(spr + 2, "icon" + str(raceQueueRef[col]) + "bg.png", 40, 40, GetSpriteX(spr) + 16, GetSpriteY(spr) + 92, 14)
 	
@@ -74,6 +153,7 @@ function CreateUpgrade()
 	next col
 	
 	LoadSpriteExpress(upgradeBG, "upgradebg" + str(areaSeen) + ".png", w, h, 0, 0, 99)	
+	//SetSpritePhysicsOn(upgradeBG, 1)
 	LoadSpriteExpress(startRace, "nextRace.png", 420/2.8, 165/2.8, 1100-300*(3-areaSeen), 350, 5)
 	
 	//TODO - Slide everything in, fade in a slightly dark layer
@@ -82,6 +162,14 @@ function CreateUpgrade()
 			CreateUpgradePod(row, col)
 		next row
 	next col
+	
+	//DeleteP
+	//SetSpritePhysicsOff(upgrage1StartSpr+1)
+	//SetSpritePhysicsOn(upgrage1StartSpr+1, 1)
+	//joint = CreateRevoluteJoint(upgrage1StartSpr+1, upgradeBG, GetSpriteMiddleX(upgrage1StartSpr+1), 0, 1)
+	//joint = CreateRevoluteJoint(upgrage1StartSpr+1, upgrage1StartSpr+11, GetSpriteMiddleX(upgrage1StartSpr+1), (GetSpriteMiddleY(upgrage1StartSpr+1)+GetSpriteMiddleY(upgrage1StartSpr+11))/2, 1)
+	//joint = CreateRevoluteJoint(upgrage1StartSpr+11, upgrage1StartSpr+21, GetSpriteMiddleX(upgrage1StartSpr+11), (GetSpriteMiddleY(upgrage1StartSpr+11)+GetSpriteMiddleY(upgrage1StartSpr+21))/2, 1)
+	//joint = CreateRevoluteJoint(upgrage1StartSpr+21, upgrage1StartSpr+31, GetSpriteMiddleX(upgrage1StartSpr+21), (GetSpriteMiddleY(upgrage1StartSpr+21)+GetSpriteMiddleY(upgrage1StartSpr+31))/2, 1)
 	
 	PlayMusicOGG(upgradeM, 1)
 	
@@ -119,6 +207,9 @@ function DoUpgradePod(row, col)
 		SetSpriteImage(spr + 4, LoadImage(AREA_CHARS[col] + UPGRADE_CHARS[row] + str(1+upgrades[row+1,col+1]) + ".png"))
 		trashBag.insert(GetSpriteImageID(spr+4))
 		
+	elseif Button(spr)
+		//Physics event
+		//SetSpritePhysicsImpulse(spr+1, GetPointerX(), GetPointerY(), 2100*(-GetPointerX()+GetSpriteMiddleX(spr+1)), 2100*(-GetPointerY()+GetSpriteMiddleY(spr+1)))
 	endif
 
 	if cost > scrapTotal then SetTextColor(spr + 2, 160, 160, 160, 255)

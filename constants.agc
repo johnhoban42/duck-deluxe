@@ -120,6 +120,9 @@ global fish3I
 #constant upgrage2StartSpr 3201
 #constant upgrage3StartSpr 3401
 
+//The NEW upgrade system - these are IDs for the pod sets
+global upPods as p[0]
+
 //The start point for the extra sprites to make water tiles in the swamp
 #constant water2TileS = 4001
 global water2TileE

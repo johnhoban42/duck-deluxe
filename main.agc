@@ -23,7 +23,7 @@ SetWindowAllowResize( 1 ) // allow the user to resize the window
 
 global debug = 1
 if debug = 0 then SetErrorMode(1)
-global nextScreen = AIR2
+global nextScreen = UPGRADE
 SetPhysicsDebugOn()
 
 
@@ -209,9 +209,10 @@ tileI2 = LoadImage("waterTile2.png")
 //This is the array (technically not a queue) of races to be gone through in a gameplay order
 global raceQueue as integer[0]
 global raceQueueRef as integer[0]
-global curRaceSet = 1
+global curRaceSet = 2
 global raceSize = 0
 if debug = 0 then SetRaceQueue(curRaceSet)
+//SetRaceQueue(curRaceSet)
 
 function SetRaceQueue(raceSet)
 	
@@ -386,7 +387,11 @@ do
 	endif
 	
 	if screen = UPGRADE
-		DoUpgrade()
+		if curRaceSet = 1
+			DoUpgrade()
+		else
+			DoUpgrade2()
+		endif
 	endif
 	
 	if screen = TITLE
@@ -664,7 +669,11 @@ function SetupScene(scene)
 		FixSpriteToScreen(flag3, 1)
 		
 	elseif scene = UPGRADE
-		CreateUpgrade()
+		if curRaceSet = 1
+			CreateUpgrade()
+		else
+			CreateUpgrade2()
+		endif
 		
 		
 	
