@@ -25,7 +25,9 @@ type p
 	//The main background element
 	sprBG as integer
 	sprLetter as integer
-	sprIcon as integer
+	sprIconTop as integer
+	sprIconBG as integer
+	txtCurWord as integer
 	txtMainDesc as integer
 	
 	//The upgrade box
@@ -40,50 +42,195 @@ type p
 	sprChainL as integer
 	sprChainR as integer
 	
+	twnSideSway as integer
+	twnMainDown as integer
+	twnMainUp as integer
+	twnUpgradeDown as integer
+	twnUpgradeUp as integer
+	
+	isDown as integer
+	isSelected as integer
+	
 endtype
 
 
 
-function CreatePod(pod as p, row, col)
+function CreatePod(row, col)
+	pod as p
 	rID = raceQueueRef[col+1]
 	pod.rID = rID
 	pod.row = row
 	pod.column = col
 	pod.lev = upgrades[row, rID]
 	
-	pod.sprBG = CreateSprite(0)
-	SetSpriteExpress(pod.sprBG, 362, 154, 10 + col*364, 80 + row*156, 50) 
-	SetSpriteColor(pod.sprBG, 80, 80, 80, 255)
+	pod.sprBG = CreateSprite(LoadImage("shopbox1.png"))
+	spr = pod.sprBG
+	SetSpriteExpress(spr, 362, 100, 10 + col*364, 80 + row*142, 50) 
+	SetSpriteColor(spr, 80, 80, 80, 255)
+	//SetSpriteColorAlpha(spr, 100)
+	
+	//THE POSITIONS OF ALL THE BELOW ARE UPDATED EVERY FRAME IN THE 'ALIGNPOD' METHOD!!!
 	
 	pod.sprLetter = LoadSprite("raceLetters/let" + str(row+1) + "r" + str(rID) + ".png")
-	SetSpriteExpress(pod.sprLetter, 75, 75, GetSpriteX(pod.sprBG)-5, GetSpriteY(pod.sprBG)-10, 20)
+	SetSpriteExpress(pod.sprLetter, 75, 75, GetSpriteX(spr)-5, GetSpriteY(spr)-10, 20)
 	
-endfunction
+	pod.sprIconBG = LoadSprite("icon" + str(rID) + "bg.png")
+	SetSpriteExpress(pod.sprIconBG, 60, 60, GetSpriteX(spr) + 285, GetSpriteY(spr) + 14, 14)
+	
+	//if GetImageExists
+	pod.sprIconTop = LoadSprite("WD1.png")
+	SetSpriteExpress(pod.sprIconTop, 60, 60, GetSpriteX(spr) + 285, GetSpriteY(spr) + 14, 13)
+	
+	//inc upgrades[row+1, col+1], 3
+	pod.txtCurWord = CreateText("")
+	SetTextExpress(pod.txtCurWord, Mid(words[row+1, upgrades[row+1,col+1]+1, rID], 2, -1), 48, font1I + upgrades[row+1, col+1], 0, GetSpriteX(spr) + 60, GetSpriteY(spr) + 7, -7, 15)
+	
+	pod.txtMainDesc = CreateText("")
+	SetTextExpress(pod.txtMainDesc, powers[row+1, upgrades[row+1,col+1]+1, rID], 24, fontMI, 0, GetSpriteX(spr) + 70, GetSpriteY(spr) + 73, -4, 15)
+	
+	pod.sprUpBG = CreateSprite(0)
+	SetSpriteExpress(pod.sprUpBG, GetSpriteWidth(spr)-38, 110, 0, GetSpriteY(spr)+GetSpriteHeight(spr)-80, 100)
+	SetSpriteX(pod.sprUpBG, GetSpriteMiddleX(spr) - GetSpriteWidth(pod.sprUpBG)/2)
+	SetSpriteColor(pod.sprUpBG, 200, 200, 200, 255)
+	
+	pod.sprChainL = CreateSprite(0)
+	SetSpriteExpress(pod.sprChainL, 10, GetSpriteHeight(spr), GetSpriteX(spr)+5, GetSpriteMiddleY(spr), 150)
+	
+	pod.sprChainR = CreateSprite(0)
+	SetSpriteExpress(pod.sprChainR, 10, GetSpriteHeight(spr), GetSpriteX(spr)+GetSpriteWidth(spr)-15, GetSpriteMiddleY(spr), 150)
+	
+	pod.twnSideSway = CreateTweenSprite(.8)
+	SetTweenSpriteX(pod.twnSideSway, GetSpriteX(spr)-8, GetSpriteX(spr), TweenOvershoot())
+	
+	pod.twnMainDown = CreateTweenSprite(.3)
+	SetTweenSpriteY(pod.twnMainDown, GetSpriteY(spr), GetSpriteY(spr)+80, TweenSmooth2())
+	pod.twnMainUp = CreateTweenSprite(.3)
+	SetTweenSpriteY(pod.twnMainUp, GetSpriteY(spr)+80, GetSpriteY(spr), TweenSmooth2())
+	
+	pod.twnUpgradeDown = CreateTweenCustom(.3)
+	SetTweenCustomFloat1(pod.twnUpgradeDown, 0, 70, TweenOvershoot())
+	pod.twnUpgradeUp = CreateTweenCustom(.3)
+	SetTweenCustomFloat1(pod.twnUpgradeUp, 70, 0, TweenOvershoot())
+endfunction pod
 
 function CreateUpgrade2()
 	
+	LoadSpriteExpress(upgradeBG, "upgrade2-1.png", w, h, 0, 0, 900)
+	FixSpriteToScreen(upgradeBG, 1)
+	selectedPod = -1
+	
 	if debug
-		raceQueueRef.insert(LAND)
 		raceQueueRef.insert(WATER)
-		raceQueueRef.insert(AIR2)
+		raceQueueRef.insert(LAND)
 		raceQueueRef.insert(AIR)
+		raceQueueRef.insert(SPACE2)
+		//raceQueueRef.insert(WATER)
+		//raceQueueRef.insert(LAND)
+		//raceQueueRef.insert(AIR)
 		areaSeen = raceQueueRef.length
 	endif
 	
 	upPods.length = -1
 	upPods.length = areaSeen*4
 	
-	newP as p
 	curPod as p
 	
-	for i = 0 to upPods.length-1
-		curPod = newP
-		CreatePod(curPod, Mod(i, 4), i/4)
+	for i = 0 to areaSeen*4-1
+		curPod = CreatePod(Mod(i, 4), i/4)
 		upPods[i] = curPod
 	next i
 	
 endfunction
 function DoUpgrade2()
+	
+	triggerMove = 0
+	if inputLeft then triggerMove = -4
+	if inputRight then triggerMove = 4
+	if inputUp then triggerMove = -1
+	if inputUp and Mod(selectedPod, 4) = 0 then triggerMove = 3
+	if inputDown then triggerMove = 1
+	if inputDown and Mod(selectedPod, 4) = 3 then triggerMove = -3
+	if selectedPod = -1 and (inputLeft or inputRight or inputUp or inputDown)
+		//This is for the first selected pod when pressing left/right. It should default to the cheapest/lowest availible upgrade
+		triggerMove = 1
+	endif
+	
+	curP as p
+	for i = 0 to upPods.length-1
+		curP = upPods[i]
+		
+		if ((Button(curP.sprBG) or Button(curP.sprUpBG)) and i <> selectedPod) or (triggerMove <> 0 and i = selectedPod+triggerMove)
+			oldSel = selectedPod
+			selectedPod = i
+			upPods[i].isSelected = 1
+			if oldSel <> -1 then upPods[oldSel].isSelected = 0
+			
+			UpdateAllTweens(1)
+			
+			
+			//StopTweenCustom(upPods[i].twnUpgradeDown)
+			//StopTweenCustom(upPods[i].twnUpgradeUp)
+			
+			//Moving the upgrade panel down on the selected upgrade
+			PlayTweenCustom(upPods[i].twnUpgradeDown, 0)
+			//PlayTweenCustom(upPods[i].twnUpgradeUp, 0)
+			//UpdateAllTweens(.0001)
+			//StopTweenCustom(upPods[i].twnUpgradeUp)
+			if oldSel <> -1 then PlayTweenCustom(upPods[oldSel].twnUpgradeUp, 0)
+			
+			for j = 0 to upPods.length-1
+				//Normalizing the pods that aren't the selected one, this happens to all of them at the start
+				if (upPods[j].isDown = 1 and j <= i) or (upPods[j].column <> upPods[i].column and upPods[j].isDown = 1)
+					PlayTweenSprite(upPods[j].twnMainUp, upPods[j].sprBG, 0)
+					upPods[j].isDown = 0
+				endif
+				
+				//Moving pods down that are in the same row
+				if upPods[j].column = upPods[i].column and j > i and upPods[j].isDown = 0
+					if GetTweenSpritePlaying(upPods[j].twnMainUp,upPods[j].sprBG) then StopTweenSprite(upPods[j].twnMainUp,upPods[j].sprBG)
+					PlayTweenSprite(upPods[j].twnMainDown, upPods[j].sprBG, 0)
+					PlayTweenSprite(upPods[j].twnSideSway, upPods[j].sprBG, (j-i)*.03)
+				
+					upPods[j].isDown = 1
+				endif
+				if upPods[j].column = upPods[i].column
+					//Still sways things, even when they are already down
+					PlayTweenSprite(upPods[j].twnSideSway, upPods[j].sprBG, Abs((j-i))*.02)
+				endif
+			next j
+			i = upPods.length
+		endif
+			
+		
+	next i
+	UpdateAllTweens(.0001)
+	
+	//TODO: If you click on the Krab upgrade, make it play Space Crab turn sound
+	
+	for i = 0 to upPods.length-1
+		AlignPod(upPods[i])
+	next i
+	GlideViewOffset(((68+32*areaSeen)*(selectedPod/4)), 0, 40, 2)
+	
+	Print(GetSpriteHit(GetPointerX(), GetPointerY()))
+endfunction
+function AlignPod(curP as p)
+	spr = curP.sprBG
+	
+	//SetTextScisscor
+	
+	SetSpritePosition(curP.sprLetter, GetSpriteX(spr)-5, GetSpriteY(spr)-10)
+	SetSpritePosition(curP.sprUpBG, GetSpriteMiddleX(spr) - GetSpriteWidth(curP.sprUpBG)/2, GetSpriteY(spr)+GetSpriteHeight(spr)-80 + GetTweenCustomFloat1(curP.twnUpgradeUp)) //+GetTweenCustomFloat1(curP.twnUpgradeDown))
+	SetSpritePosition(curP.sprIconBG, GetSpriteX(spr) + 285, GetSpriteY(spr) + 14)
+	SetSpritePosition(curP.sprIconTop, GetSpriteX(spr) + 285, GetSpriteY(spr) + 14)
+	
+	SetTextPosition(curP.txtCurWord, GetSpriteX(spr) + 60, GetSpriteY(spr) + 7)
+	SetTextPosition(curP.txtMainDesc, GetSpriteX(spr) + 82, GetSpriteY(spr) + 63)
+	
+	if curP.isSelected
+		//Changing the positioning of the upgrade panel differently
+		SetSpritePosition(curP.sprUpBG, GetSpriteMiddleX(spr) - GetSpriteWidth(curP.sprUpBG)/2, GetSpriteY(spr)+GetSpriteHeight(spr)-80 + GetTweenCustomFloat1(curP.twnUpgradeDown))
+	endif
 	
 endfunction
 function DeleteUpgrade2()
@@ -163,14 +310,6 @@ function CreateUpgrade()
 		next row
 	next col
 	
-	//DeleteP
-	//SetSpritePhysicsOff(upgrage1StartSpr+1)
-	//SetSpritePhysicsOn(upgrage1StartSpr+1, 1)
-	//joint = CreateRevoluteJoint(upgrage1StartSpr+1, upgradeBG, GetSpriteMiddleX(upgrage1StartSpr+1), 0, 1)
-	//joint = CreateRevoluteJoint(upgrage1StartSpr+1, upgrage1StartSpr+11, GetSpriteMiddleX(upgrage1StartSpr+1), (GetSpriteMiddleY(upgrage1StartSpr+1)+GetSpriteMiddleY(upgrage1StartSpr+11))/2, 1)
-	//joint = CreateRevoluteJoint(upgrage1StartSpr+11, upgrage1StartSpr+21, GetSpriteMiddleX(upgrage1StartSpr+11), (GetSpriteMiddleY(upgrage1StartSpr+11)+GetSpriteMiddleY(upgrage1StartSpr+21))/2, 1)
-	//joint = CreateRevoluteJoint(upgrage1StartSpr+21, upgrage1StartSpr+31, GetSpriteMiddleX(upgrage1StartSpr+21), (GetSpriteMiddleY(upgrage1StartSpr+21)+GetSpriteMiddleY(upgrage1StartSpr+31))/2, 1)
-	
 	PlayMusicOGG(upgradeM, 1)
 	
 	PlayTweenSprite(tweenSprFadeOut, coverS, 0)
@@ -193,7 +332,8 @@ function DoUpgradePod(row, col)
 		
 		if upgrades[row+1, col+1] <> 3
 			SetTextString(spr + 1, words[row+1, upgrades[row+1,col+1]+1, raceQueueRef[col]])
-			SetTextString(spr + 2, UPGRADE_CHARS[row] + words[row+1, upgrades[row+1,col+1]+2, raceQueueRef[col]] + "- " + Str(cost) + "~" + chr(10) + powers[row+1, upgrades[row+1,col+1]+2, col+1])
+			mStr$ = words[row+1, upgrades[row+1,col+1]+2, raceQueueRef[col]]
+			SetTextString(spr + 2, Mid(mStr$, 2, -1) + "- " + Str(cost) + "~" + chr(10) + powers[row+1, upgrades[row+1,col+1]+2, col+1])
 		else
 			SetTextString(spr + 1, words[row+1, 4, raceQueueRef[col]])
 			SetTextString(spr + 2, "")
