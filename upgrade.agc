@@ -48,8 +48,14 @@ type p
 	twnUpgradeDown as integer
 	twnUpgradeUp as integer
 	
+	sprCover as integer
+	twnBuyWhite as integer
+	twnBuyClear as integer
+	twnBuyTuck as integer
+	
 	isDown as integer
 	isSelected as integer
+	isUnrefreshed as integer
 	
 endtype
 
@@ -63,7 +69,7 @@ function CreatePod(row, col)
 	pod.column = col
 	pod.lev = upgrades[row, rID]
 	
-	pod.sprBG = CreateSprite(LoadImage("shopbox1.png"))
+	pod.sprBG = CreateSprite(LoadImage("shopbox4.png"))
 	spr = pod.sprBG
 	SetSpriteExpress(spr, 362, 100, 10 + col*364, 80 + row*142, 50) 
 	SetSpriteColor(spr, 80, 80, 80, 255)
@@ -72,7 +78,7 @@ function CreatePod(row, col)
 	//THE POSITIONS OF ALL THE BELOW ARE UPDATED EVERY FRAME IN THE 'ALIGNPOD' METHOD!!!
 	
 	pod.sprLetter = LoadSprite("raceLetters/let" + str(row+1) + "r" + str(rID) + ".png")
-	SetSpriteExpress(pod.sprLetter, 75, 75, GetSpriteX(spr)-5, GetSpriteY(spr)-10, 20)
+	SetSpriteExpress(pod.sprLetter, 75, 75, GetSpriteX(spr)-5, GetSpriteY(spr)-10, 3)
 	
 	pod.sprIconBG = LoadSprite("icon" + str(rID) + "bg.png")
 	SetSpriteExpress(pod.sprIconBG, 60, 60, GetSpriteX(spr) + 285, GetSpriteY(spr) + 14, 14)
@@ -83,15 +89,25 @@ function CreatePod(row, col)
 	
 	//inc upgrades[row+1, col+1], 3
 	pod.txtCurWord = CreateText("")
-	SetTextExpress(pod.txtCurWord, Mid(words[row+1, upgrades[row+1,col+1]+1, rID], 2, -1), 48, font1I + upgrades[row+1, col+1], 0, GetSpriteX(spr) + 60, GetSpriteY(spr) + 7, -7, 15)
+	SetTextExpress(pod.txtCurWord, Mid(words[row+1, upgrades[row+1,rID]+1, rID], 2, -1), 48, font1I + upgrades[row+1, rID], 0, GetSpriteX(spr) + 60, GetSpriteY(spr) + 7, -7, 15)
 	
 	pod.txtMainDesc = CreateText("")
-	SetTextExpress(pod.txtMainDesc, powers[row+1, upgrades[row+1,col+1]+1, rID], 24, fontMI, 0, GetSpriteX(spr) + 70, GetSpriteY(spr) + 73, -4, 15)
+	SetTextExpress(pod.txtMainDesc, powers[row+1, upgrades[row+1,rID]+1, rID], 24, fontMI, 0, GetSpriteX(spr) + 70, GetSpriteY(spr) + 73, -4, 15)
 	
+	//Starting the upgrade pod
 	pod.sprUpBG = CreateSprite(0)
 	SetSpriteExpress(pod.sprUpBG, GetSpriteWidth(spr)-38, 110, 0, GetSpriteY(spr)+GetSpriteHeight(spr)-80, 100)
 	SetSpriteX(pod.sprUpBG, GetSpriteMiddleX(spr) - GetSpriteWidth(pod.sprUpBG)/2)
-	SetSpriteColor(pod.sprUpBG, 200, 200, 200, 255)
+	SetSpriteColor(pod.sprUpBG, 10, 80, 10, 255)
+	
+	if upgrades[row+1,col+1] < 3
+		pod.txtUpgrade = CreateText(chr(10) + "Next -> " + Upper(words[row+1, upgrades[row+1,rID]+2, rID]) + chr(10) + powers[row+1, upgrades[row+1,rID]+2, rID] + chr(10) + "Upgrade: " + Str(GetCost2(row, col, rID)) + " ~")
+	else
+		//TODO: Put some fun text here
+	endif
+	SetTextExpress(pod.txtUpgrade, GetTextString(pod.txtUpgrade), 24, fontMI, 0, GetSpriteX(pod.sprUpBG) + 10, GetSpriteY(pod.sprUpBG) + 13, -4, 90)
+	SetTextLineSpacing(pod.txtUpgrade, 3)
+	SetTextColor(pod.txtUpgrade, 0, 255, 0, 255)
 	
 	pod.sprChainL = CreateSprite(0)
 	SetSpriteExpress(pod.sprChainL, 10, GetSpriteHeight(spr), GetSpriteX(spr)+5, GetSpriteMiddleY(spr), 150)
@@ -108,11 +124,42 @@ function CreatePod(row, col)
 	SetTweenSpriteY(pod.twnMainUp, GetSpriteY(spr)+80, GetSpriteY(spr), TweenSmooth2())
 	
 	pod.twnUpgradeDown = CreateTweenCustom(.3)
-	SetTweenCustomFloat1(pod.twnUpgradeDown, 0, 70, TweenOvershoot())
+	SetTweenCustomFloat1(pod.twnUpgradeDown, 0, 60, TweenOvershoot())
 	pod.twnUpgradeUp = CreateTweenCustom(.3)
-	SetTweenCustomFloat1(pod.twnUpgradeUp, 70, 0, TweenOvershoot())
+	SetTweenCustomFloat1(pod.twnUpgradeUp, 60, 0, TweenOvershoot())
+	
+	pod.sprCover = LoadSprite("shopboxCover.png")
+	MatchSpriteSize(pod.sprCover, spr)
+	MatchSpritePosition(pod.sprCover, spr)
+	SetSpriteDepth(pod.sprCover, 4)
+	SetSpriteColorAlpha(pod.sprCover, 0)
+	
+	pod.twnBuyWhite = CreateTweenSprite(.45)
+	SetTweenSpriteAlpha(pod.twnBuyWhite, 0, 255, TweenSmooth2())
+	pod.twnBuyClear = CreateTweenSprite(.25)
+	SetTweenSpriteAlpha(pod.twnBuyWhite, 255, 0, TweenSmooth2())
+	
+	pod.twnBuyTuck = CreateTweenCustom(.2)
+	SetTweenCustomFloat1(pod.twnBuyTuck, 0, -200, TweenSmooth2())
+	
+	pod.isUnrefreshed = 0
+	
 endfunction pod
-
+function SetPodTextIcon2(pod as p)
+	
+	SetTextString(pod.txtCurWord, Mid(words[pod.row+1, upgrades[pod.row+1,pod.rID]+1, pod.rID], 2, -1))
+	SetTextFontImage(pod.txtCurWord, font1I + upgrades[pod.row+1, pod.rID])
+	SetTextString(pod.txtMainDesc, powers[pod.row+1, upgrades[pod.row+1,pod.rID]+1, pod.rID])
+	
+	//TODO - update the upgrade icon
+endfunction
+function SetPodUpgradeText2(pod as p)
+	if upgrades[pod.row+1, pod.rID] < 3
+		SetTextString(pod.txtUpgrade, chr(10) + "Next -> " + Upper(words[pod.row+1, upgrades[pod.row+1,pod.rID]+2, pod.rID]) + chr(10) + powers[pod.row+1, upgrades[pod.row+1,pod.rID]+2, pod.rID] + chr(10) + "Upgrade: " + Str(GetCost2(pod.row, pod.column, pod.rID)) + " ~")
+	else
+		SetTextString(pod.txtUpgrade, chr(10) + chr(10) + chr(10) + "FULLY UPGRADED")
+	endif
+endfunction
 function CreateUpgrade2()
 	
 	LoadSpriteExpress(upgradeBG, "upgrade2-1.png", w, h, 0, 0, 900)
@@ -120,8 +167,8 @@ function CreateUpgrade2()
 	selectedPod = -1
 	
 	if debug
-		raceQueueRef.insert(WATER)
 		raceQueueRef.insert(LAND)
+		raceQueueRef.insert(WATER)
 		raceQueueRef.insert(AIR)
 		raceQueueRef.insert(SPACE2)
 		//raceQueueRef.insert(WATER)
@@ -200,7 +247,29 @@ function DoUpgrade2()
 			next j
 			i = upPods.length
 		endif
-			
+		
+		//Buying an upgrade
+		if (((Button(curP.sprBG) or Button(curP.sprUpBG) or inputSelect) and i = selectedPod)) and upgrades[curP.row+1, curP.rID] < 3
+			PlayTweenSprite(curP.twnBuyWhite, curP.sprCover, 0)
+			PlayTweenSprite(curP.twnBuyClear, curP.sprCover, .45)
+			PlayTweenCustom(curP.twnBuyTuck, 0)
+			PlayTweenCustom(curP.twnUpgradeDown, GetTweenCustomEndTime(curP.twnBuyTuck))
+			inc upgrades[curP.row+1, curP.rID], 1
+			inc curP.lev, 1
+			curP.isUnrefreshed = 1
+			SetPodTextIcon2(curP)
+			UpdateAllTweens(.0001)
+		endif
+		
+		//Update main panel text
+		if GetSpriteColorAlpha(curP.sprCover) > 230
+			SetPodTextIcon2(curP)
+		endif
+		//Update upgrade text
+		if GetTweenCustomFloat1(curP.twnBuyTuck) < -100
+			SetPodUpgradeText2(curP)
+		endif
+		
 		
 	next i
 	UpdateAllTweens(.0001)
@@ -219,18 +288,28 @@ function AlignPod(curP as p)
 	
 	//SetTextScisscor
 	
+	SetSpritePosition(curP.sprCover, GetSpriteX(spr), GetSpriteY(spr))
 	SetSpritePosition(curP.sprLetter, GetSpriteX(spr)-5, GetSpriteY(spr)-10)
-	SetSpritePosition(curP.sprUpBG, GetSpriteMiddleX(spr) - GetSpriteWidth(curP.sprUpBG)/2, GetSpriteY(spr)+GetSpriteHeight(spr)-80 + GetTweenCustomFloat1(curP.twnUpgradeUp)) //+GetTweenCustomFloat1(curP.twnUpgradeDown))
 	SetSpritePosition(curP.sprIconBG, GetSpriteX(spr) + 285, GetSpriteY(spr) + 14)
 	SetSpritePosition(curP.sprIconTop, GetSpriteX(spr) + 285, GetSpriteY(spr) + 14)
 	
 	SetTextPosition(curP.txtCurWord, GetSpriteX(spr) + 60, GetSpriteY(spr) + 7)
 	SetTextPosition(curP.txtMainDesc, GetSpriteX(spr) + 82, GetSpriteY(spr) + 63)
 	
+	SetSpriteScissor(curP.sprUpBG, 0, GetSpriteY(spr)+GetSpriteHeight(spr)-20, w, h)
+	SetTextScissor(curP.txtUpgrade, 0, GetSpriteY(spr)+GetSpriteHeight(spr)-20, w, h)
+	
+	SetSpritePosition(curP.sprUpBG, GetSpriteMiddleX(spr) - GetSpriteWidth(curP.sprUpBG)/2, GetSpriteY(spr)+GetSpriteHeight(spr)-80 + GetTweenCustomFloat1(curP.twnUpgradeUp)) //+GetTweenCustomFloat1(curP.twnUpgradeDown))
 	if curP.isSelected
 		//Changing the positioning of the upgrade panel differently
 		SetSpritePosition(curP.sprUpBG, GetSpriteMiddleX(spr) - GetSpriteWidth(curP.sprUpBG)/2, GetSpriteY(spr)+GetSpriteHeight(spr)-80 + GetTweenCustomFloat1(curP.twnUpgradeDown))
+		
 	endif
+	if GetTweenCustomPlaying(curP.twnBuyTuck) then SetSpritePosition(curP.sprUpBG, GetSpriteMiddleX(spr) - GetSpriteWidth(curP.sprUpBG)/2, GetSpriteY(spr)+GetSpriteHeight(spr)-80 + GetTweenCustomFloat1(curP.twnUpgradeDown) + GetTweenCustomFloat1(curP.twnBuyTuck))
+	
+	SetTextPosition(curP.txtUpgrade, GetSpriteX(curP.sprUpBG) + 10, GetSpriteY(curP.sprUpBG) + 2)
+	
+	
 	
 endfunction
 function DeleteUpgrade2()
@@ -401,5 +480,28 @@ function GetCost(i, j)
 		if up = 0 then cost = 50
 		if up = 1 then cost = 120
 		if up = 2 then cost = 300
+	endif
+endfunction cost
+
+function GetCost2(row, col, rID)
+	cost = 0
+	up = upgrades[row+1, rID]
+	
+	if col = 0
+		if up = 0 then cost = 5
+		if up = 1 then cost = 20
+		if up = 2 then cost = 80
+	elseif col = 1
+		if up = 0 then cost = 20
+		if up = 1 then cost = 55
+		if up = 2 then cost = 130
+	elseif col = 2
+		if up = 0 then cost = 40
+		if up = 1 then cost = 110
+		if up = 2 then cost = 250
+	elseif col = 3
+		if up = 0 then cost = 65
+		if up = 1 then cost = 200
+		if up = 2 then cost = 500
 	endif
 endfunction cost
