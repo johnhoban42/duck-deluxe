@@ -33,6 +33,7 @@ type p
 	//The upgrade box
 	sprUpBG as integer
 	txtUpgrade as integer
+	sprBuy as integer
 	
 	//The peeper! The glowing guy at the bottom who says cost, preview for affordability
 	sprPeep as integer
@@ -55,7 +56,6 @@ type p
 	
 	isDown as integer
 	isSelected as integer
-	isUnrefreshed as integer
 	
 endtype
 
@@ -100,14 +100,15 @@ function CreatePod(row, col)
 	SetSpriteX(pod.sprUpBG, GetSpriteMiddleX(spr) - GetSpriteWidth(pod.sprUpBG)/2)
 	SetSpriteColor(pod.sprUpBG, 10, 80, 10, 255)
 	
-	if upgrades[row+1,col+1] < 3
-		pod.txtUpgrade = CreateText(chr(10) + "Next -> " + Upper(words[row+1, upgrades[row+1,rID]+2, rID]) + chr(10) + powers[row+1, upgrades[row+1,rID]+2, rID] + chr(10) + "Upgrade: " + Str(GetCost2(row, col, rID)) + " ~")
-	else
-		//TODO: Put some fun text here
-	endif
-	SetTextExpress(pod.txtUpgrade, GetTextString(pod.txtUpgrade), 24, fontMI, 0, GetSpriteX(pod.sprUpBG) + 10, GetSpriteY(pod.sprUpBG) + 13, -4, 90)
+	pod.txtUpgrade = CreateText("")
+	SetTextExpress(pod.txtUpgrade, "", 24, fontMI, 0, GetSpriteX(pod.sprUpBG) + 10, GetSpriteY(pod.sprUpBG) + 13, -4, 90)
+	SetPodUpgradeText2(pod)
 	SetTextLineSpacing(pod.txtUpgrade, 3)
 	SetTextColor(pod.txtUpgrade, 0, 255, 0, 255)
+	
+	pod.sprBuy = LoadSprite("buy.png")
+	SetSpriteExpress(pod.sprBuy, 70, 40, GetSpriteX(spr)+275, GetSpriteY(pod.sprUpBG)+GetSpriteHeight(pod.sprUpBG)-67, 80)
+	SetPodBuyColor(pod)
 	
 	pod.sprChainL = CreateSprite(0)
 	SetSpriteExpress(pod.sprChainL, 10, GetSpriteHeight(spr), GetSpriteX(spr)+5, GetSpriteMiddleY(spr), 150)
@@ -142,8 +143,6 @@ function CreatePod(row, col)
 	pod.twnBuyTuck = CreateTweenCustom(.2)
 	SetTweenCustomFloat1(pod.twnBuyTuck, 0, -200, TweenSmooth2())
 	
-	pod.isUnrefreshed = 0
-	
 endfunction pod
 function SetPodTextIcon2(pod as p)
 	
@@ -158,6 +157,13 @@ function SetPodUpgradeText2(pod as p)
 		SetTextString(pod.txtUpgrade, chr(10) + "Next -> " + Upper(words[pod.row+1, upgrades[pod.row+1,pod.rID]+2, pod.rID]) + chr(10) + powers[pod.row+1, upgrades[pod.row+1,pod.rID]+2, pod.rID] + chr(10) + "Upgrade: " + Str(GetCost2(pod.row, pod.column, pod.rID)) + " ~")
 	else
 		SetTextString(pod.txtUpgrade, chr(10) + chr(10) + chr(10) + "FULLY UPGRADED")
+	endif
+endfunction
+function SetPodBuyColor(pod as p)
+	if scrapTotal >= GetCost2(pod.row, pod.column, pod.rID)
+		SetSpriteColor(pod.sprBuy, 255, 255, 255, 255)
+	else
+		SetSpriteColor(pod.sprBuy, 50, 50, 50, 50)
 	endif
 endfunction
 function CreateUpgrade2()
@@ -187,6 +193,8 @@ function CreateUpgrade2()
 		upPods[i] = curPod
 	next i
 	
+	LoadSpriteExpress(startRace, "nextRace.png", 420/2.8, 165/2.8, GetSpriteX(upPods[areaSeen*4-1].sprBG)+500, 350, 5)
+	
 endfunction
 function DoUpgrade2()
 	
@@ -199,7 +207,38 @@ function DoUpgrade2()
 	if inputDown and Mod(selectedPod, 4) = 3 then triggerMove = -3
 	if selectedPod = -1 and (inputLeft or inputRight or inputUp or inputDown)
 		//This is for the first selected pod when pressing left/right. It should default to the cheapest/lowest availible upgrade
-		triggerMove = 1
+		for i = 0 to upPods.length-1
+			if upgrades[upPods[i].row+1, upPods[i].rID] < 3
+				triggerMove = i+1
+				i = upPods.length
+			endif
+		next i
+		if triggerMove = 0 then selectedPod = startRace
+	endif
+	
+	//This craziness is for moving on and moving off of the start race button
+	if (inputLeft and selectedPod/4 = 0) or (inputRight and selectedPod/4 = raceQueueRef.length-1)
+		if selectedPod <> -1
+			upPods[selectedPod].isSelected = 0
+			PlayTweenCustom(upPods[selectedPod].twnUpgradeUp, 0)
+			//Normalizing the pods that aren't the selected one, this happens to all of them at the start
+			for j = 0 to upPods.length-1
+				if (upPods[j].isDown = 1)
+					PlayTweenSprite(upPods[j].twnMainUp, upPods[j].sprBG, 0)
+					upPods[j].isDown = 0
+				endif	
+			next j
+		endif
+		selectedPod = startRace
+		triggerMove = 0
+	elseif (inputRight and selectedPod = startRace)
+		//if selectedPod <> -1 then PlayTweenCustom(upPods[selectedPod].twnUpgradeUp, 0)
+		selectedPod = -98
+		triggerMove = 99
+	elseif (inputLeft and selectedPod = startRace)
+		//if selectedPod <> -1 then PlayTweenCustom(upPods[selectedPod].twnUpgradeUp, 0)
+		selectedPod = upPods.length-3 - 99
+		triggerMove = 99
 	endif
 	
 	curP as p
@@ -210,10 +249,13 @@ function DoUpgrade2()
 			oldSel = selectedPod
 			selectedPod = i
 			upPods[i].isSelected = 1
-			if oldSel <> -1 then upPods[oldSel].isSelected = 0
+			if oldSel > -1 then upPods[oldSel].isSelected = 0
+			//if oldSel <> startRace then upPods[oldSel].isSelected = 0
 			
 			UpdateAllTweens(1)
 			
+			//Updating the buy button on that panel
+			SetPodBuyColor(curP)
 			
 			//StopTweenCustom(upPods[i].twnUpgradeDown)
 			//StopTweenCustom(upPods[i].twnUpgradeUp)
@@ -223,7 +265,8 @@ function DoUpgrade2()
 			//PlayTweenCustom(upPods[i].twnUpgradeUp, 0)
 			//UpdateAllTweens(.0001)
 			//StopTweenCustom(upPods[i].twnUpgradeUp)
-			if oldSel <> -1 then PlayTweenCustom(upPods[oldSel].twnUpgradeUp, 0)
+			if oldSel > -1 and oldSel <> startRace then PlayTweenCustom(upPods[oldSel].twnUpgradeUp, 0)
+			//if oldSel <> startRace then PlayTweenCustom(upPods[oldSel].twnUpgradeUp, 0)
 			
 			for j = 0 to upPods.length-1
 				//Normalizing the pods that aren't the selected one, this happens to all of them at the start
@@ -248,15 +291,20 @@ function DoUpgrade2()
 			i = upPods.length
 		endif
 		
+		
 		//Buying an upgrade
-		if (((Button(curP.sprBG) or Button(curP.sprUpBG) or inputSelect) and i = selectedPod)) and upgrades[curP.row+1, curP.rID] < 3
+		if ((((Button(curP.sprBG) or Button(curP.sprUpBG) or inputSelect) and i = selectedPod)) and upgrades[curP.row+1, curP.rID] < 3) and scrapTotal >= GetCost2(curP.row, curP.column, curP.rID)
 			PlayTweenSprite(curP.twnBuyWhite, curP.sprCover, 0)
 			PlayTweenSprite(curP.twnBuyClear, curP.sprCover, .45)
 			PlayTweenCustom(curP.twnBuyTuck, 0)
 			PlayTweenCustom(curP.twnUpgradeDown, GetTweenCustomEndTime(curP.twnBuyTuck))
+			
+			dec scrapTotal, GetCost2(curP.row, curP.column, curP.rID)
+			UpdateScrapText()
+			
 			inc upgrades[curP.row+1, curP.rID], 1
 			inc curP.lev, 1
-			curP.isUnrefreshed = 1
+			
 			SetPodTextIcon2(curP)
 			UpdateAllTweens(.0001)
 		endif
@@ -268,8 +316,17 @@ function DoUpgrade2()
 		//Update upgrade text
 		if GetTweenCustomFloat1(curP.twnBuyTuck) < -100
 			SetPodUpgradeText2(curP)
+			SetPodBuyColor(curP)
 		endif
 		
+		SetTextColor(curP.txtUpgrade, 0, 255, 0, 255)
+		//Making the upgrade cost glow if it's affordable
+		if scrapTotal >= GetCost2(curP.row, curP.column, curP.rID) and upgrades[curP.row+1, curP.rID] < 3
+			str$ = GetTextString(curP.txtUpgrade)
+			for j = FindString(str$, "Upgrade:")-1 to Len(str$)-1
+				SetTextCharColor(curP.txtUpgrade, j, 127 + 127*sin(gameTime#*1.5), 255, 127 + 127*sin(gameTime#*1.5), 255)
+			next j 
+		endif
 		
 	next i
 	UpdateAllTweens(.0001)
@@ -279,14 +336,25 @@ function DoUpgrade2()
 	for i = 0 to upPods.length-1
 		AlignPod(upPods[i])
 	next i
-	GlideViewOffset(((68+32*areaSeen)*(selectedPod/4)), 0, 40, 2)
+	if selectedPod <> startRace 
+		GlideViewOffset(((68+32*areaSeen)*(selectedPod/4)), 0, 40, 2)
+	else
+		GlideViewOffset(((68+32*areaSeen)*((upPods.length-1)/4)), 0, 40, 2)
+	endif
+	
+	if selectedPod = startRace
+		SetSpriteSize(startRace, 100 + 20*sin(gameTime#), 60)
+		if inputSelect then StartRace2()
+	endif
+	if Button(startRace) then StartRace2()
 	
 	Print(GetSpriteHit(GetPointerX(), GetPointerY()))
 endfunction
 function AlignPod(curP as p)
 	spr = curP.sprBG
 	
-	//SetTextScisscor
+	decUpgradeY = 0
+	if upgrades[curP.row+1, curP.rID] = 3 then decUpgradeY = 55
 	
 	SetSpritePosition(curP.sprCover, GetSpriteX(spr), GetSpriteY(spr))
 	SetSpritePosition(curP.sprLetter, GetSpriteX(spr)-5, GetSpriteY(spr)-10)
@@ -298,23 +366,43 @@ function AlignPod(curP as p)
 	
 	SetSpriteScissor(curP.sprUpBG, 0, GetSpriteY(spr)+GetSpriteHeight(spr)-20, w, h)
 	SetTextScissor(curP.txtUpgrade, 0, GetSpriteY(spr)+GetSpriteHeight(spr)-20, w, h)
+	SetSpriteScissor(curP.sprBuy, 0, GetSpriteY(spr)+GetSpriteHeight(spr)+40, w, h)
 	
-	SetSpritePosition(curP.sprUpBG, GetSpriteMiddleX(spr) - GetSpriteWidth(curP.sprUpBG)/2, GetSpriteY(spr)+GetSpriteHeight(spr)-80 + GetTweenCustomFloat1(curP.twnUpgradeUp)) //+GetTweenCustomFloat1(curP.twnUpgradeDown))
+	SetSpritePosition(curP.sprUpBG, GetSpriteMiddleX(spr) - GetSpriteWidth(curP.sprUpBG)/2, GetSpriteY(spr)+GetSpriteHeight(spr)-80 + GetTweenCustomFloat1(curP.twnUpgradeUp) - decUpgradeY) //+GetTweenCustomFloat1(curP.twnUpgradeDown))
 	if curP.isSelected
 		//Changing the positioning of the upgrade panel differently
-		SetSpritePosition(curP.sprUpBG, GetSpriteMiddleX(spr) - GetSpriteWidth(curP.sprUpBG)/2, GetSpriteY(spr)+GetSpriteHeight(spr)-80 + GetTweenCustomFloat1(curP.twnUpgradeDown))
+		SetSpritePosition(curP.sprUpBG, GetSpriteMiddleX(spr) - GetSpriteWidth(curP.sprUpBG)/2, GetSpriteY(spr)+GetSpriteHeight(spr)-80 + GetTweenCustomFloat1(curP.twnUpgradeDown) - decUpgradeY)
 		
 	endif
 	if GetTweenCustomPlaying(curP.twnBuyTuck) then SetSpritePosition(curP.sprUpBG, GetSpriteMiddleX(spr) - GetSpriteWidth(curP.sprUpBG)/2, GetSpriteY(spr)+GetSpriteHeight(spr)-80 + GetTweenCustomFloat1(curP.twnUpgradeDown) + GetTweenCustomFloat1(curP.twnBuyTuck))
 	
 	SetTextPosition(curP.txtUpgrade, GetSpriteX(curP.sprUpBG) + 10, GetSpriteY(curP.sprUpBG) + 2)
-	
+	SetSpritePosition(curP.sprBuy, GetSpriteX(spr)+263, GetSpriteY(curP.sprUpBG)+GetSpriteHeight(curP.sprUpBG)-GetSpriteHeight(curP.sprBuy)-9)
 	
 	
 endfunction
 function DeleteUpgrade2()
 	
+	
+	
+	if GetTextExists(scrapText) then DeleteText(scrapText)		
+	
+	EmptyTrashBag()
 endfunction
+function StartRace2()
+	duckSpeed# = duckSpeedDefault#
+	StopMusicOGG(upgradeM)
+	PlaySound(selectS, volumeS)
+	PlayTweenSprite(tweenSprFadeIn, coverS, 0)
+	PlaySound(windMS, volumeS)
+	WaitFadeTween()
+	
+	DeleteUpgrade2()
+	screen = 0
+	
+	SetRaceQueue(curRaceSet)
+endfunction
+
 
 function CreateUpgradePod(row, col)
 	// Create a single upgrade pod.

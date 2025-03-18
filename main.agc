@@ -161,6 +161,7 @@ global scrapTotal = 0
 global duckDistance# = 60000
 global duckSpeed# = .013
 #constant duckSpeedDefault# 2.2
+if debug then scrapTotal = 1000
 
 global areaSeen = 1
 global gameTime# = 0
