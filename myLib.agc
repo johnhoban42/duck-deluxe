@@ -1168,71 +1168,172 @@ function SetWords()
 endfunction
 
 function SetPowers()
-
-powers[1, 1, 1] = "x1 Base Speed"
-powers[1, 2, 1] = "x1.8 Base Speed"
-powers[1, 3, 1] = "x3.5 Base Speed"
-powers[1, 4, 1] = "x6 Base Speed"
-
-powers[2, 1, 1] = "x1 Row Boost"
-powers[2, 2, 1] = "x1.5 Row Boost"
-powers[2, 3, 1] = "x2 Row Boost"
-powers[2, 4, 1] = "x2.8 Row Boost"
-
-powers[3, 1, 1] = "x1 Row Charge"
-powers[3, 2, 1] = "x1.2 Row Charge"
-powers[3, 3, 1] = "x1.5 Row Charge"
-powers[3, 4, 1] = "x2 Row Charge"
-
-powers[4, 1, 1] = "x1 Movement"
-powers[4, 2, 1] = "x1.3 Movement"
-powers[4, 3, 1] = "x1.6 Movement"
-powers[4, 4, 1] = "x2.1 Movement"
-
-powers[1, 1, 2] = "x1 Base Speed"
-powers[1, 2, 2] = "x1.5 Base Speed"	//V5 1.5
-powers[1, 3, 2] = "x2 Base Speed"	//V5 2.6
-powers[1, 4, 2] = "x2.5 Base Speed"	//V5 4
-
-powers[2, 1, 2] = "3 Boosts"
-powers[2, 2, 2] = "+1 Boost Amt."
-powers[2, 3, 2] = "+2 Boost Amt."
-powers[2, 4, 2] = "+4 Boost Amt."
-
-powers[3, 1, 2] = "Hazard Slowdown"
-powers[3, 2, 2] = "x0.75 Slowdown"
-powers[3, 3, 2] = "x0.5 Slowdown"
-powers[3, 4, 2] = "x0.1 Slowdown"
-
-powers[4, 1, 2] = "x1 Boost Speed"
-powers[4, 2, 2] = "x1.6 Boost Speed"
-powers[4, 3, 2] = "x2.8 Boost Speed"
-powers[4, 4, 2] = "x6 Boost Speed"
-
-powers[1, 1, 3] = "x1 Base Speed"
-powers[1, 2, 3] = "x2 Base Speed"
-powers[1, 3, 3] = "x3 Base Speed"
-powers[1, 4, 3] = "x5 Base Speed"
-
-powers[2, 1, 3] = "Tornado Damage"
-powers[2, 2, 3] = "Tornado Boost"
-powers[2, 3, 3] = "x1.5 Boost"
-powers[2, 4, 3] = "x2.2 Boost"
-
-powers[3, 1, 3] = "x1 Side Speed"
-powers[3, 2, 3] = "x1.3 Side Speed"
-powers[3, 3, 3] = "x1.7 Side Speed"
-powers[3, 4, 3] = "x2.2 Side Speed"
-
-powers[4, 1, 3] = "x1 Verticality"
-powers[4, 2, 3] = "x1.2 Verticality"
-powers[4, 3, 3] = "x1.5 Verticality"
-powers[4, 4, 3] = "x1.9 Verticality"
-
-powers[1, 1, 4] = ""
-powers[1, 2, 4] = ""
-powers[1, 3, 4] = ""
-powers[1, 4, 4] = ""
-
+	//Water 1
+	powers[1, 1, 1] = "x1 Base Speed"
+	powers[1, 2, 1] = "x1.8 Base Speed"
+	powers[1, 3, 1] = "x3.5 Base Speed"
+	powers[1, 4, 1] = "x6 Base Speed"
+	
+	powers[2, 1, 1] = "x1 Row Boost"
+	powers[2, 2, 1] = "x1.5 Row Boost"
+	powers[2, 3, 1] = "x2 Row Boost"
+	powers[2, 4, 1] = "x2.8 Row Boost"
+	
+	powers[3, 1, 1] = "x1 Row Charge"
+	powers[3, 2, 1] = "x1.2 Row Charge"
+	powers[3, 3, 1] = "x1.5 Row Charge"
+	powers[3, 4, 1] = "x2 Row Charge"
+	
+	powers[4, 1, 1] = "x1 Movement"
+	powers[4, 2, 1] = "x1.3 Movement"
+	powers[4, 3, 1] = "x1.6 Movement"
+	powers[4, 4, 1] = "x2.1 Movement"
+	
+	//Land 1
+	powers[1, 1, 2] = "x1 Base Speed"
+	powers[1, 2, 2] = "x1.5 Base Speed"	//V5 1.5
+	powers[1, 3, 2] = "x2 Base Speed"	//V5 2.6
+	powers[1, 4, 2] = "x2.5 Base Speed"	//V5 4
+	
+	powers[2, 1, 2] = "3 Boosts"
+	powers[2, 2, 2] = "+1 Boost Amt."
+	powers[2, 3, 2] = "+2 Boost Amt."
+	powers[2, 4, 2] = "+4 Boost Amt."
+	
+	powers[3, 1, 2] = "Hazard Slowdown"
+	powers[3, 2, 2] = "x0.75 Slowdown"
+	powers[3, 3, 2] = "x0.5 Slowdown"
+	powers[3, 4, 2] = "x0.1 Slowdown"
+	
+	powers[4, 1, 2] = "x1 Boost Speed"
+	powers[4, 2, 2] = "x1.6 Boost Speed"
+	powers[4, 3, 2] = "x2.8 Boost Speed"
+	powers[4, 4, 2] = "x6 Boost Speed"
+	
+	//Air 1
+	powers[1, 1, 3] = "x1 Base Speed"
+	powers[1, 2, 3] = "x2 Base Speed"
+	powers[1, 3, 3] = "x3 Base Speed"
+	powers[1, 4, 3] = "x5 Base Speed"
+	
+	powers[2, 1, 3] = "Tornado Damage"
+	powers[2, 2, 3] = "Tornado Boost"
+	powers[2, 3, 3] = "x1.5 Boost"
+	powers[2, 4, 3] = "x2.2 Boost"
+	
+	powers[3, 1, 3] = "x1 Side Speed"
+	powers[3, 2, 3] = "x1.3 Side Speed"
+	powers[3, 3, 3] = "x1.7 Side Speed"
+	powers[3, 4, 3] = "x2.2 Side Speed"
+	
+	powers[4, 1, 3] = "x1 Verticality"
+	powers[4, 2, 3] = "x1.2 Verticality"
+	powers[4, 3, 3] = "x1.5 Verticality"
+	powers[4, 4, 3] = "x1.9 Verticality"
+	
+	//Starting the Duck 2 words
+	//Swamp/Water 2
+	powers[1, 1, 4] = "x1 Base Speed"
+	powers[1, 2, 4] = ""
+	powers[1, 3, 4] = ""
+	powers[1, 4, 4] = ""
+	
+	powers[2, 1, 4] = "x1 Feather Boost"
+	powers[2, 2, 4] = ""
+	powers[2, 3, 4] = ""
+	powers[2, 4, 4] = ""
+	
+	powers[3, 1, 4] = "Normal Dive Depth"
+	powers[3, 2, 4] = "Deep Dive Depth"
+	powers[3, 3, 4] = "Deeper Dive Depth"
+	powers[3, 4, 4] = "Full Dive Depth"
+	
+	powers[4, 1, 4] = "x1 Water Movement"
+	powers[4, 2, 4] = "2.5 Water Movement"
+	powers[4, 3, 4] = ""
+	powers[4, 4, 4] = ""
+	
+	words[1, 1, 4] = "Dilapidated"
+	words[1, 2, 4] = "Dreary"
+	words[1, 3, 4] = "Droll"
+	words[1, 4, 4] = "Daring"
+	
+	words[2, 1, 4] = "Useless"
+	words[2, 2, 4] = "Uninspiring"
+	words[2, 3, 4] = "Unexpected"
+	words[2, 4, 4] = "Unparalleled"
+	
+	words[3, 1, 4] = "Crummy"
+	words[3, 2, 4] = "Clunky"
+	words[3, 3, 4] = "Crushing"
+	words[3, 4, 4] = "Colassal"
+	
+	words[4, 1, 4] = "Knematode"
+	words[4, 2, 4] = "Krill"
+	words[4, 3, 4] = "Krab"
+	words[4, 4, 4] = "Kracken"
+	
+	//City/Land 2
+	powers[1, 1, 5] = ""
+	powers[1, 2, 5] = ""
+	powers[1, 3, 5] = ""
+	powers[1, 4, 5] = ""
+	
+	powers[2, 1, 5] = ""
+	powers[2, 2, 5] = ""
+	powers[2, 3, 5] = ""
+	powers[2, 4, 5] = ""
+	
+	powers[3, 1, 5] = ""
+	powers[3, 2, 5] = ""
+	powers[3, 3, 5] = ""
+	powers[3, 4, 5] = ""
+	
+	powers[4, 1, 5] = ""
+	powers[4, 2, 5] = ""
+	powers[4, 3, 5] = ""
+	powers[4, 4, 5] = ""
+	
+	//Mountains/Air 2
+	powers[1, 1, 6] = ""
+	powers[1, 2, 6] = ""
+	powers[1, 3, 6] = ""
+	powers[1, 4, 6] = ""
+	
+	powers[2, 1, 6] = ""
+	powers[2, 2, 6] = ""
+	powers[2, 3, 6] = ""
+	powers[2, 4, 6] = ""
+	
+	powers[3, 1, 6] = ""
+	powers[3, 2, 6] = ""
+	powers[3, 3, 6] = ""
+	powers[3, 4, 6] = ""
+	
+	powers[4, 1, 6] = ""
+	powers[4, 2, 6] = ""
+	powers[4, 3, 6] = ""
+	powers[4, 4, 6] = ""
+	
+	//Space 2
+	powers[1, 1, 7] = ""
+	powers[1, 2, 7] = ""
+	powers[1, 3, 7] = ""
+	powers[1, 4, 7] = ""
+	
+	powers[2, 1, 7] = ""
+	powers[2, 2, 7] = ""
+	powers[2, 3, 7] = ""
+	powers[2, 4, 7] = ""
+	
+	powers[3, 1, 7] = ""
+	powers[3, 2, 7] = ""
+	powers[3, 3, 7] = ""
+	powers[3, 4, 7] = ""
+	
+	powers[4, 1, 7] = ""
+	powers[4, 2, 7] = ""
+	powers[4, 3, 7] = ""
+	powers[4, 4, 7] = ""
 
 endfunction

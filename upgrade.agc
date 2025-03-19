@@ -35,10 +35,6 @@ type p
 	txtUpgrade as integer
 	sprBuy as integer
 	
-	//The peeper! The glowing guy at the bottom who says cost, preview for affordability
-	sprPeep as integer
-	txtPeep as integer
-	
 	//Chains which move down to the next part
 	sprChainL as integer
 	sprChainR as integer
@@ -63,7 +59,7 @@ endtype
 
 function CreatePod(row, col)
 	pod as p
-	rID = raceQueueRef[col+1]
+	rID = raceQueueRef[col]
 	pod.rID = rID
 	pod.row = row
 	pod.column = col
@@ -172,15 +168,17 @@ function CreateUpgrade2()
 	FixSpriteToScreen(upgradeBG, 1)
 	selectedPod = -1
 	
+	SetRaceQueue(curRaceSet)
+	
 	if debug
-		raceQueueRef.insert(LAND)
-		raceQueueRef.insert(WATER)
-		raceQueueRef.insert(AIR)
-		raceQueueRef.insert(SPACE2)
+		//raceQueueRef.insert(LAND)
+		//raceQueueRef.insert(WATER)
+		//raceQueueRef.insert(AIR)
+		//raceQueueRef.insert(SPACE2)
 		//raceQueueRef.insert(WATER)
 		//raceQueueRef.insert(LAND)
 		//raceQueueRef.insert(AIR)
-		areaSeen = raceQueueRef.length
+		//areaSeen = raceQueueRef.length
 	endif
 	
 	upPods.length = -1
@@ -194,6 +192,8 @@ function CreateUpgrade2()
 	next i
 	
 	LoadSpriteExpress(startRace, "nextRace.png", 420/2.8, 165/2.8, GetSpriteX(upPods[areaSeen*4-1].sprBG)+500, 350, 5)
+	
+	PlayTweenSprite(tweenSprFadeOut, coverS, 0)
 	
 endfunction
 function DoUpgrade2()
@@ -257,16 +257,9 @@ function DoUpgrade2()
 			//Updating the buy button on that panel
 			SetPodBuyColor(curP)
 			
-			//StopTweenCustom(upPods[i].twnUpgradeDown)
-			//StopTweenCustom(upPods[i].twnUpgradeUp)
-			
 			//Moving the upgrade panel down on the selected upgrade
 			PlayTweenCustom(upPods[i].twnUpgradeDown, 0)
-			//PlayTweenCustom(upPods[i].twnUpgradeUp, 0)
-			//UpdateAllTweens(.0001)
-			//StopTweenCustom(upPods[i].twnUpgradeUp)
 			if oldSel > -1 and oldSel <> startRace then PlayTweenCustom(upPods[oldSel].twnUpgradeUp, 0)
-			//if oldSel <> startRace then PlayTweenCustom(upPods[oldSel].twnUpgradeUp, 0)
 			
 			for j = 0 to upPods.length-1
 				//Normalizing the pods that aren't the selected one, this happens to all of them at the start
@@ -333,6 +326,7 @@ function DoUpgrade2()
 	
 	//TODO: If you click on the Krab upgrade, make it play Space Crab turn sound
 	
+	//Making sure all pieces of the pod (and the screen view) are set correctly
 	for i = 0 to upPods.length-1
 		AlignPod(upPods[i])
 	next i
@@ -381,14 +375,6 @@ function AlignPod(curP as p)
 	
 	
 endfunction
-function DeleteUpgrade2()
-	
-	
-	
-	if GetTextExists(scrapText) then DeleteText(scrapText)		
-	
-	EmptyTrashBag()
-endfunction
 function StartRace2()
 	duckSpeed# = duckSpeedDefault#
 	StopMusicOGG(upgradeM)
@@ -402,7 +388,42 @@ function StartRace2()
 	
 	SetRaceQueue(curRaceSet)
 endfunction
-
+function DeleteUpgrade2()
+	
+	for i = 0 to upPods.length
+		DeleteSprite(upPods[i].sprBG)
+		DeleteSprite(upPods[i].sprLetter)
+		DeleteSprite(upPods[i].sprIconTop)
+		DeleteSprite(upPods[i].sprIconBG)
+		DeleteText(upPods[i].txtCurWord)
+		DeleteText(upPods[i].txtMainDesc)
+		
+		DeleteSprite(upPods[i].sprUpBG)
+		DeleteSprite(upPods[i].sprBuy)
+		DeleteText(upPods[i].txtUpgrade)
+		DeleteSprite(upPods[i].sprChainL)
+		DeleteSprite(upPods[i].sprChainR)
+		DeleteSprite(upPods[i].sprCover)
+		
+		DeleteTween(upPods[i].twnSideSway)
+		DeleteTween(upPods[i].twnMainDown)
+		DeleteTween(upPods[i].twnMainUp)
+		DeleteTween(upPods[i].twnUpgradeDown)
+		DeleteTween(upPods[i].twnUpgradeUp)
+		DeleteTween(upPods[i].twnBuyWhite)
+		DeleteTween(upPods[i].twnBuyClear)
+		DeleteTween(upPods[i].twnBuyTuck)
+	next i
+	
+	
+	upPods.length = -1
+	
+	DeleteSprite(startRace)
+	DeleteSprite(upgradeBG)
+	if GetTextExists(scrapText) then DeleteText(scrapText)		
+	
+	EmptyTrashBag()
+endfunction
 
 function CreateUpgradePod(row, col)
 	// Create a single upgrade pod.

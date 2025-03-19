@@ -31,7 +31,7 @@ global fixedWater2Speed# = 0.11 //Upgrade variable
 
 function InitWater2()
 	
-	heroX# = w/5
+	heroX# = 120
 	heroY# = 0
 	//CreateSpriteExpress(hero, 140, 140, w, h, 50)
 	LoadAnimatedSprite(hero, "duckw2", 7)
@@ -52,21 +52,23 @@ function InitWater2()
 	heroLocalDistance# = water2Distance
 	waterVelX# = 0
 	
-	//upgrades[1, 4] = 
+	//Base speed, upgrade 1
+	fixedWater2Speed# = .2 * (1 + upgrades[1, 4]*2)	//Adding 7 should be the maximum
 	
-	fixedWater2Speed# = .2 * (1 + upgrades[1, 4] + 7)	//Adding 7 should be the maximum
+	//Feather boost, upgrade 2
+	diveBoostSlow# = .0048 / (1 + upgrades[2, 4] + 1) //2)
 	
-	diveVelMax# = .4 * (1 + upgrades[2, 4] + 4)//2)
-	diveRise# = .01 * (1 + upgrades[2, 4] + 4)//3)
+	//Water movement, upgrade 4
+	diveVelMax# = .4 * (1 + upgrades[4, 4]*1.5)//2)
+	diveRise# = .01 * (1 + upgrades[4, 4]*1.5)//3)
+	waterSpeedX# = (0.25) * (1 + 0.2*upgrades[4, 4] + 0.2*upgrades[4, 4]/3)
 	
-	diveLevel = 4 + upgrades[3, 4]
-	
+	//Dive depth, upgrade 3
+	diveLevel = 1 + upgrades[3, 4]
 	if diveLevel = 1 then diveDeepTimerMax# = 0.28/(diveVelMax#)
 	if diveLevel = 2 then diveDeepTimerMax# = 0.41/(diveVelMax#)
 	if diveLevel = 3 then diveDeepTimerMax# = 0.55/(diveVelMax#)
 	if diveLevel = 4 then diveDeepTimerMax# = 0.69/(diveVelMax#)
-	
-	diveBoostSlow# = .0058 / (1 + upgrades[4, 4] + 5) //2)
 	SetViewZoom(1/((4+diveLevel*1.5)/10.0))
 	
 	SetSpriteVisible(water2S, 1)
@@ -389,7 +391,7 @@ function DoWater2()
 	inc heroY#, diveVelY#*fpsr#
 	
 	//Print(heroY#)
-	Print(diveBoost#)
+	//Print(diveBoost#)
 	//Print(diveDeepTimer#)
 	//Print(diveDeepTimerMax#)
 	//Print(GetSpriteAngle(hero))
@@ -428,7 +430,7 @@ function DoWater2()
 		
 	endif
 	
-	SetSpritePosition(duck, -1*(duckDistance# - 20000*(raceQueue.length+1)) - (water2Distance-heroLocalDistance#), 70+4*cos(gameTime#*2))
+	SetSpritePosition(duck, -1*(duckDistance# - 20000*(raceQueue.length+1)) - (water2Distance-heroLocalDistance#)+80, 70+4*cos(gameTime#*2))
 	Print(GetSPriteX(duck))
 	Print(raceSize)
 	Print(raceQueue.length)
@@ -500,6 +502,9 @@ function DoWater2()
 		endif
 		spawnActive.remove(deleted)
 	endif
+	
+	
+	Print(GetSpriteX(duck))
 	
 
 	

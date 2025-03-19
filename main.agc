@@ -21,9 +21,9 @@ SetWindowTitle("Race Against a Duck")
 SetWindowSize( 1280, 720, 0 )
 SetWindowAllowResize( 1 ) // allow the user to resize the window
 
-global debug = 1
+global debug = 0
 if debug = 0 then SetErrorMode(1)
-global nextScreen = UPGRADE
+global nextScreen = water2
 SetPhysicsDebugOn()
 
 
@@ -305,6 +305,8 @@ do
 			DoSpace2()
 		endif
 		
+		if GetSpriteExists(cutsceneSpr) then IncSpriteY(cutsceneSpr, -2*fpsr#)
+		
 		if heroLocalDistance# <= 0
 			if raceQueue.length > 0
 				//Loading in the next race
@@ -324,6 +326,7 @@ do
 				
 				HideUIText()
 				LoadSpriteExpress(finishS, "finishHero.png", 924, 429, 0, 0, 4)
+				FixSpriteToScreen(finishS, 1)
 				SetSpriteMiddleScreen(finishS)
 				PlayTweenSprite(tweenSprFadeOut, coverS, 0)
 				PlaySound(clapS, volumeS)
@@ -368,6 +371,7 @@ do
 			
 			HideUIText()
 			LoadSpriteExpress(finishS, "finishDuck.png", 924, 429, 0, 0, 4)
+			FixSpriteToScreen(finishS, 1)
 			SetSpriteMiddleScreen(finishS)
 			PlayTweenSprite(tweenSprFadeOut, coverS, 0)
 			PlaySound(clapS, volumeS)
@@ -591,17 +595,20 @@ function SetupScene(scene)
 		
 		//LoadSpriteExpress(instruct, "mode" + str(scene) + ".png", 395*0.6, 80*0.6, 60, 20, 3)
 		for i = 0 to 3
+			/*
 			if i = 0 then str$ = "M"
 			if i = 1 then str$ = "O"
 			if i = 2 then str$ = "D"
 			if i = 3 then str$ = "E"
-			
 			if scene = WATER or scene = WATER2 then LoadSpriteExpress(vehicle1+i, "w" + str$ + ".png", 60, 60, 10+i*3, 15 + i*65, 3)
 			if scene = LAND or scene = LAND2 then LoadSpriteExpress(vehicle1+i, "l" + str$ + ".png", 60, 60, 10+i*3, 15 + i*65, 3)
 			if scene = AIR or scene = AIR2 then LoadSpriteExpress(vehicle1+i, "s" + str$ + ".png", 60, 60, 10+i*3, 15 + i*65, 3)
 			if scene = SPACE2 then LoadSpriteExpress(vehicle1+i, "s" + str$ + ".png", 60, 60, 10+i*3, 15 + i*65, 3)	//TODO: Replace these letters with new space ones
+			*/
 			
-			CreateTextExpress(vehicle1+i, words[i+1, upgrades[i+1,scene]+1, scene], 48, fontGI, 0, 63+i*3, 35 + i*65, -11, 2)
+			LoadSpriteExpress(vehicle1+i, "raceLetters\let" + str(i+1) + "r" + str(scene) + ".png", 60, 60, 10+i*3, 15 + i*65, 3)
+			
+			CreateTextExpress(vehicle1+i, Mid(words[i+1, upgrades[i+1,scene]+1, scene], 2, -1), 48, fontGI, 0, 63+i*3, 35 + i*65, -11, 2)
 			FixSpriteToScreen(vehicle1+i, 1)
 			FixTextToScreen(vehicle1+i, 1)
 		next i
@@ -668,6 +675,8 @@ function SetupScene(scene)
 		FixSpriteToScreen(flag1, 1)
 		FixSpriteToScreen(flag2, 1)
 		FixSpriteToScreen(flag3, 1)
+		
+		if raceSize = raceQueue.length+1 then PlayRaceCutScene(scene)
 		
 	elseif scene = UPGRADE
 		if curRaceSet = 1
@@ -795,7 +804,7 @@ function CollectScrap(area)
 	
 	if area = WATER or area = WATER2
 		num = Random(3, 5)
-		if scrapTotal = 0 then num = 5
+		if scrapTotal < 10 then num = 5
 		inc scrapTotal, num
 	elseif area = LAND
 		num = Random(10, 14)
@@ -936,6 +945,73 @@ function DeleteScene(scene)
 	
 endfunction
 
-
+function PlayRaceCutScene(scene)
+	
+	LoadAnimatedSprite(cutsceneSpr, "traffic", 4)
+	SetSpriteMiddleScreen(cutsceneSpr)
+	PlaySprite(cutsceneSpr, 1, 0, 1, 4)
+	SetSpriteDepth(cutsceneSpr, 2)
+	FixSpriteToScreen(cutsceneSpr, 1)
+	
+	//Doing the scene twice to get the sprites in place
+	//for i = 1 to 2
+		if scene = WATER
+			DoWater()
+		elseif scene = LAND
+			DoLand()
+		elseif scene = AIR
+			DoAir()
+		elseif scene = WATER2
+			DoWater2()
+		elseif scene = LAND2
+			DoLand2()
+		elseif scene = AIR2
+			DoAir2()
+		elseif scene = SPACE2
+			DoSpace2()
+		endif
+	//next i
+	
+	
+	while GetSpriteCurrentFrame(cutsceneSpr) < 4
+		
+		gameTime# = 0
+		
+		if scene = WATER
+			SetSpritePosition(hero, heroX#, heroY# + 10*Abs(sin(gameTime#/8)) + 6*Abs(cos(gameTime#/3)))
+			DrawWater()
+			IncSpriteY(duck, 10*Abs(sin(gameTime#/9)) + 5*Abs(cos(gameTime#/4)))
+		elseif scene = WATER2
+			//Put stuff here to make the scene feel alive while the timer is going off
+		endif
+		
+		if frameCheck <> GetSpriteCurrentFrame(cutsceneSpr) and GetSpriteCurrentFrame(cutsceneSpr) <> 1
+			PlaySound(beepReadyS, volumeS)
+			frameCheck = GetSpriteCurrentFrame(cutsceneSpr)
+		endif
+		
+		SyncG()
+		
+	endwhile
+	
+	PlaySound(beepGoS, volumeS)
+	PlaySound(windSS, volumeS)
+	
+	if curRaceSet = 1
+		StopMusicOGG(waterM)
+		StopMusicOGG(landM)
+		StopMusicOGG(airM)
+		PlayMusicOGG(waterM, 0)
+		PlayMusicOGG(landM, 0)
+		PlayMusicOGG(airM, 0)
+		SetMusicVolumeOGG(waterM, 100)
+		SetMusicVolumeOGG(landM, 0)
+		SetMusicVolumeOGG(airM, 0)
+	else
+		//This is where the other race music will be triggered
+	endif	
+		
+	
+endfunction
 
 
