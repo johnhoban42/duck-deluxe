@@ -563,6 +563,8 @@ function DoUpgrade()
 		PlaySound(windMS, volumeS)
 		WaitFadeTween()
 		
+		SetViewOffset(0, 0)
+		
 		DeleteScene(UPGRADE)
 		screen = 0
 		//The next three lines are identical to the title screen - should it be combined into a little function? IDK

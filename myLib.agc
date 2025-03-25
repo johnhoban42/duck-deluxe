@@ -1234,14 +1234,14 @@ function SetPowers()
 	//Starting the Duck 2 words
 	//Swamp/Water 2
 	powers[1, 1, 4] = "x1 Base Speed"
-	powers[1, 2, 4] = ""
-	powers[1, 3, 4] = ""
-	powers[1, 4, 4] = ""
+	powers[1, 2, 4] = "x1.75 Base Speed"
+	powers[1, 3, 4] = "x3 Base Speed"
+	powers[1, 4, 4] = "x5 Base Speed"
 	
 	powers[2, 1, 4] = "x1 Feather Boost"
-	powers[2, 2, 4] = ""
-	powers[2, 3, 4] = ""
-	powers[2, 4, 4] = ""
+	powers[2, 2, 4] = "x2 Feather Boost"
+	powers[2, 3, 4] = "x3.5 Feather Boost"
+	powers[2, 4, 4] = "x5.5 Feather Boost"
 	
 	powers[3, 1, 4] = "Normal Dive Depth"
 	powers[3, 2, 4] = "Deep Dive Depth"
@@ -1249,29 +1249,9 @@ function SetPowers()
 	powers[3, 4, 4] = "Full Dive Depth"
 	
 	powers[4, 1, 4] = "x1 Water Movement"
-	powers[4, 2, 4] = "2.5 Water Movement"
-	powers[4, 3, 4] = ""
-	powers[4, 4, 4] = ""
-	
-	words[1, 1, 4] = "Dilapidated"
-	words[1, 2, 4] = "Dreary"
-	words[1, 3, 4] = "Droll"
-	words[1, 4, 4] = "Daring"
-	
-	words[2, 1, 4] = "Useless"
-	words[2, 2, 4] = "Uninspiring"
-	words[2, 3, 4] = "Unexpected"
-	words[2, 4, 4] = "Unparalleled"
-	
-	words[3, 1, 4] = "Crummy"
-	words[3, 2, 4] = "Clunky"
-	words[3, 3, 4] = "Crushing"
-	words[3, 4, 4] = "Colassal"
-	
-	words[4, 1, 4] = "Knematode"
-	words[4, 2, 4] = "Krill"
-	words[4, 3, 4] = "Krab"
-	words[4, 4, 4] = "Kracken"
+	powers[4, 2, 4] = "x1.4 Water Movement"
+	powers[4, 3, 4] = "x1.9 Water Movement"
+	powers[4, 4, 4] = "x3 Water Movement"
 	
 	//City/Land 2
 	powers[1, 1, 5] = ""
@@ -1316,24 +1296,46 @@ function SetPowers()
 	powers[4, 4, 6] = ""
 	
 	//Space 2
-	powers[1, 1, 7] = ""
-	powers[1, 2, 7] = ""
-	powers[1, 3, 7] = ""
-	powers[1, 4, 7] = ""
+	powers[1, 1, 7] = "x1 Start Speed"
+	powers[1, 2, 7] = "x1.5 Start Speed"
+	powers[1, 3, 7] = "x_ Start Speed"
+	powers[1, 4, 7] = "x_ Start Speed"
 	
 	powers[2, 1, 7] = ""
 	powers[2, 2, 7] = ""
 	powers[2, 3, 7] = ""
 	powers[2, 4, 7] = ""
 	
-	powers[3, 1, 7] = ""
-	powers[3, 2, 7] = ""
-	powers[3, 3, 7] = ""
-	powers[3, 4, 7] = ""
+	powers[3, 1, 7] = "No Mistakes"
+	powers[3, 2, 7] = "Second Chance"
+	powers[3, 3, 7] = "Third Chance"
+	powers[3, 4, 7] = "5 "
 	
-	powers[4, 1, 7] = ""
-	powers[4, 2, 7] = ""
-	powers[4, 3, 7] = ""
-	powers[4, 4, 7] = ""
+	powers[4, 1, 7] = "Normal Combo"
+	powers[4, 2, 7] = "Big Combo"
+	powers[4, 3, 7] = "Bigger Combo"
+	powers[4, 4, 7] = "B"
+
+
+//Space 2
+	words[1, 1, 7] = "Doomed"
+	words[1, 2, 7] = "Desperate"
+	words[1, 3, 7] = "Destined"
+	words[1, 4, 7] = "Defending"
+	
+	words[2, 1, 7] = "Usurped"
+	words[2, 2, 7] = "Unraveled"
+	words[2, 3, 7] = "Ultimate"
+	words[2, 4, 7] = "Universal"
+	
+	words[3, 1, 7] = "Catasprohic"
+	words[3, 2, 7] = "Collapsed"
+	words[3, 3, 7] = "Colossal"
+	words[3, 4, 7] = "Candescent"
+	
+	words[4, 1, 7] = "Knave"
+	words[4, 2, 7] = "Knight"
+	words[4, 3, 7] = "King"
+	words[4, 4, 7] = "King of Kings"
 
 endfunction

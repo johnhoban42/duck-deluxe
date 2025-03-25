@@ -129,7 +129,7 @@ global selectedPod
 global water2TileE
 global numCross	//The number of tiles across that the water texture tiles will go
 global tileEH	//Tile extra height, expanded to make them look connected together
-#constant diveVisAngle 50
+#constant diveVisAngle 80//160//110
 #constant waterTileAlpha 200
 #constant water2Trees 4051
 
@@ -150,7 +150,7 @@ global spawnS = spawnStartS
 
 
 //Start point for extra space sprites: mash inputs
-#constant mashSprS 7001
+//#constant mashSprS 7001
 global arrowI
 
 //Particles

@@ -24,7 +24,7 @@ SetWindowAllowResize( 1 ) // allow the user to resize the window
 global debug = 0
 if debug = 0 then SetErrorMode(1)
 global nextScreen = water2
-SetPhysicsDebugOn()
+//SetPhysicsDebugOn()
 
 
 #constant w 1280
@@ -38,11 +38,11 @@ global deviceType = DESKTOP
 // set display properties
 SetVirtualResolution(w, h) // doesn't have to match the window
 SetOrientationAllowed(1, 1, 1, 1) // allow both portrait and landscape on mobile devices
-SetSyncRate(60, 0) // 30fps instead of 60 to save battery
+SetSyncRate(30, 0) // 30fps instead of 60 to save battery
 SetScissor(0,0,0,0 ) // use the maximum available screen space, no black borders
 UseNewDefaultFonts( 1 ) // since version 2.0.22 we can use nicer default fonts
 
-SetVSync(1)
+SetVSync(0)
 
 #constant hitS 1
 LoadSoundOGG(hitS, "sounds/hit.ogg")
@@ -164,10 +164,12 @@ global duckSpeed# = .013
 if debug then scrapTotal = 1000
 
 global areaSeen = 1
+global curAreaSeen = 1
 global gameTime# = 0
 if debug = 0 then nextScreen = TITLE
 
 CreateSpriteExpress(coverS, w, h, 0, 0, 1)
+FixSpriteToScreen(coverS, 1)
 SetSpriteColor(coverS, 0, 0, 0, 0)
 
 //Loading in the heavy hitters all at once
@@ -227,10 +229,10 @@ function SetRaceQueue(raceSet)
 		raceQueue.insert(LAND)
 		raceQueue.insert(AIR)
 	elseif raceSet = 2 //Race Against a Duck 2 order
+		raceQueue.insert(SPACE2)
 		raceQueue.insert(WATER2)
 		raceQueue.insert(LAND2)
 		raceQueue.insert(AIR2)
-		raceQueue.insert(SPACE2)
 	endif
 	raceQueueRef = raceQueue
 	
@@ -239,6 +241,9 @@ function SetRaceQueue(raceSet)
 	
 	nextScreen = raceQueue[0]
 	raceQueue.remove(0)
+	
+	curAreaSeen = 1
+	
 endfunction
 
 //This is the debug race list - this can be set to whatever is needed at the moment
@@ -263,7 +268,7 @@ endif
 
 do
     fpsr# = (60.0/ScreenFPS())*9
-    if fpsr# > 5 then fpsr# = 5 
+    if fpsr# > 100 then fpsr# = 100
 	DoInputs()
 	
 	inc gameTime#, fpsr#
@@ -315,8 +320,10 @@ do
 				WaitFadeTween()
 				DeleteScene(screen)
 				screen = 0
-				nextScreen = raceQueue[1]
-				raceQueue.remove(1)
+				nextScreen = raceQueue[0]
+				raceQueue.remove(0)
+				inc curAreaSeen, 1
+				areaSeen = Max(areaSeen, curAreaSeen)
 			else
 				//Last race just ended, finishing this 'session'
 				//This was currently copied from the 'AIR' finishing code, should be updated
@@ -518,6 +525,7 @@ do
 		Print(duckSpeed#)
 		
 	endif
+	Print(fpsr#)
     Sync()
 loop
 
@@ -869,6 +877,7 @@ function DeleteScene(scene)
 			for i = water2TileS+1 to water2TileE
 				if GetSpriteExists(i) then DeleteSprite(i)
 			next i
+			DeleteSprite(water2Trees)
 		endif
 		
 		if scene = SPACE2
@@ -972,6 +981,7 @@ function PlayRaceCutScene(scene)
 		endif
 	//next i
 	
+	/*
 	
 	while GetSpriteCurrentFrame(cutsceneSpr) < 4
 		
@@ -1011,6 +1021,7 @@ function PlayRaceCutScene(scene)
 		//This is where the other race music will be triggered
 	endif	
 		
+		*/
 	
 endfunction
 

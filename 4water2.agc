@@ -42,6 +42,12 @@ function InitWater2()
 	boatSpeed# = 0
 	chargeC# = 0
 	
+ 	diveVelY# = 0
+	diveBoost# = 0
+	diveBoostQueue = 0
+	diveHop# = 0
+	diveDamage = 0
+	
 	//heroImg2 = LoadImage("duckl1.png")
 	
 	//AddSpriteAnimationFrame(hero, heroImg2)
@@ -52,15 +58,17 @@ function InitWater2()
 	heroLocalDistance# = water2Distance
 	waterVelX# = 0
 	
+	if debug then scrapTotal = 1000
+	
 	//Base speed, upgrade 1
-	fixedWater2Speed# = .2 * (1 + upgrades[1, 4]*2)	//Adding 7 should be the maximum
+	fixedWater2Speed# = .2 * (1 + upgrades[1, 4]*.75 + (upgrades[1, 4]/2)*.5 + (upgrades[1, 4]/3)*1.25)	//Adding 7 should be the maximum
 	
 	//Feather boost, upgrade 2
-	diveBoostSlow# = .0048 / (1 + upgrades[2, 4] + 1) //2)
+	diveBoostSlow# = .0038 / (1 + upgrades[2, 4] + (upgrades[2, 4]/2)*.5 + (upgrades[2, 4]/3)*1) //2)
 	
 	//Water movement, upgrade 4
-	diveVelMax# = .4 * (1 + upgrades[4, 4]*1.5)//2)
-	diveRise# = .01 * (1 + upgrades[4, 4]*1.5)//3)
+	diveVelMax# = .4 * (1 + upgrades[4, 4]*0.4 + (upgrades[4, 4]/2)*0.1 + (upgrades[4, 4]/2)*0.7)//2)
+	diveRise# = .007 * (1 + upgrades[4, 4]*.5)//3)
 	waterSpeedX# = (0.25) * (1 + 0.2*upgrades[4, 4] + 0.2*upgrades[4, 4]/3)
 	
 	//Dive depth, upgrade 3
@@ -182,16 +190,27 @@ function InitWater2()
 	fish2I = LoadImage("robofish2.png")
 	fish3I = LoadImage("robofish3.png")
 	
+	//This variable makes sure that the scrap won't overpower the balance
+	scrapWeight = 0
+	
 	newS as spawn
-	iEnd = 25 + 10*diveLevel //+ (.5*diveLevel*diveLevel)
+	iEnd = 40 + 8*diveLevel //+ (.5*diveLevel*diveLevel)
 	for i = 1 to iEnd
 		newS.spr = spawnS
 		newS.cat = Random(1, 7)
+		if newS.cat <= 3
+			inc newS.cat, scrapWeight/2
+		endif
 		if newS.cat <= 3 then newS.cat = SCRAP
 		if newS.cat = 4 or newS.cat = 5 then newS.cat = GOOD
 		if newS.cat = 6 or newS.cat = 7 then newS.cat = BAD
 		if i < 4 and newS.cat = BAD then newS.cat = SCRAP
 		
+		if upgrades[3, 4] = 0
+			//Railroading the first three on the first attempt
+			if i = 1 or i = 2 then newS.cat = SCRAP
+			if i = 3 then newS.cat = GOOD
+		endif
 		
 		newS.x = i*water2Distance/(iEnd+2) + 100 + Random(0, 340)
 		newS.y = GetSpriteY(water2TileS) - 50 + Random(60, 350-(4-diveLevel)*70)
@@ -200,6 +219,7 @@ function InitWater2()
 		if i = iEnd then newS.cat = SCRAP
 		
 		if newS.cat = GOOD
+			scrapWeight = 0
 			CreateSpriteExpress(spawnS, 10, 10, w, h, 8)
 			AddSpriteAnimationFrame(spawnS, featherImg1)
 			AddSpriteAnimationFrame(spawnS, featherImg2)
@@ -212,17 +232,19 @@ function InitWater2()
 			newS.size = 60
 			SetSpriteSizeSquare(spawnS, newS.size)
 		elseif newS.cat = BAD
+			scrapWeight = 0
 			CreateSpriteExpress(spawnS, 10, 10, w, h, 8)
 			AddSpriteAnimationFrame(spawnS, fish1I)
 			AddSpriteAnimationFrame(spawnS, fish2I)
 			AddSpriteAnimationFrame(spawnS, fish2I)
 			AddSpriteAnimationFrame(spawnS, fish3I)
 			PlaySprite(spawnS, 3, 1, 1, 2)
-			SetSpriteShape(spawnS, 3)
-			newS.size = 90
+			newS.size = 75
 			SetSpriteSizeSquare(spawnS, newS.size)
 			SetSpriteFlip(spawnS, 1, 0)
+			SetSpriteShape(spawnS, 3)
 		else
+			inc scrapWeight, 1
 			CreateSpriteExpress(spawnS, 10, 10, w, h, 8)
 			for j = 1 to 4
 				AddSpriteAnimationFrame(spawnS, scrapImgs[1, j, 1])//First index will be a random
@@ -230,7 +252,6 @@ function InitWater2()
 			PlaySprite(spawnS, 3+Random(1,3))
 			newS.size = 60
 			SetSpriteSizeSquare(spawnS, newS.size)
-			
 		endif
 		SetSpriteDepth(spawnS, 50)
 		
@@ -284,13 +305,13 @@ function DoWater2()
 	if diveBoost# > 0 and heroY# <= 0
 		IncSpriteY(hero, (1-diveHop#)*(-diveBoost#*36 - 10))
 		SetSpriteAngle(hero, Max(-5, -diveBoost#*15 + 20))
-		Print(GetSpriteAngle(hero))
+		//Print(GetSpriteAngle(hero))
 	else
 		SetSpriteAngle(hero, 0)
 	endif
 	if diveHop# > 0 then diveHop# = GlideNumToZero(diveHop#, 44)
 	//inc diveHop#, diveHopRise*fpsr#
-	Print(diveHop#)
+	//Print(diveHop#)
 	if inputLeft
 		inc heroX#, -waterSpeedX#*1.5*fpsr#
 	endif
@@ -313,10 +334,10 @@ function DoWater2()
 	endif
 	//GlideNumToZero(waterVelX#, 40)
 	
-	if stateLeft then waterVelX# = -waterSpeedX#*fpsr#
-	if stateRight then waterVelX# = waterSpeedX#*fpsr#
+	if stateLeft then waterVelX# = -waterSpeedX#
+	if stateRight then waterVelX# = waterSpeedX#
 
-	inc heroX#, waterVelX#
+	inc heroX#, waterVelX#*fpsr#
 	
 	if diveDamage
 		SetSpriteAngle(hero, Mod(heroY#*7, 360))
@@ -331,7 +352,7 @@ function DoWater2()
 		//Diving
 		if stateSpace and heroY# <= 0
 			//Diving sound
-			PlaySound(bubbleS, volumeS/2)
+			if GetSoundPlayingR(bubbleS) = 0 then PlaySound(bubbleS, volumeS/2)
 			SetParticlesPosition(splashP, GetSpriteMiddleX(hero), (GetSpriteMiddleY(water2S)) + GetSpriteHeight(hero)/2)
 			ResetParticleCount(splashP)
 		endif
@@ -343,7 +364,7 @@ function DoWater2()
 			
 			if ((heroY# > 0 and diveVelY# >= (diveVelMax#-diveVelY#)) or heroY# <= 0) and diveDeepTimer# < diveDeepTimerMax#
 				//Setting the dive to the max strength, but only when above water OR when currently underwater and diving
-				diveVelY# = diveVelMax# +  diveVelMax#*0.2*(diveDeepTimerMax#-diveDeepTimer#)
+				diveVelY# = diveVelMax# + diveVelMax#*0.2*(diveDeepTimerMax#-diveDeepTimer#)
 				
 				SetSpriteAngle(hero, diveVisAngle)
 				
@@ -352,15 +373,12 @@ function DoWater2()
 			diveHop# = 1
 			inc diveDeepTimer#, GetFrameTime()
 			
-			//Print(boatSpeed#)
-			//Sync()
-			//Sleep(1000)
 		endif
 		if heroY# > 0
 			//Rising the duck back up, if space is no longer held
 			if (diveDeepTimer# >= diveDeepTimerMax#) or stateSpace = 0 then diveVelY# = diveVelY# - diveRise#*fpsr#
 			
-			SetSpriteAngle(hero, diveVisAngle*diveVelY#)
+			SetSpriteAngle(hero, diveVisAngle*(diveVelY#))
 			if diveVelY# < 0 and GetSpriteAngle(hero) < 360-diveVisAngle then SetSpriteAngle(hero, -diveVisAngle)
 			
 			dec heroLocalDistance#, fixedWater2Speed#*fpsr#/2.5
@@ -431,9 +449,9 @@ function DoWater2()
 	endif
 	
 	SetSpritePosition(duck, -1*(duckDistance# - 20000*(raceQueue.length+1)) - (water2Distance-heroLocalDistance#)+80, 70+4*cos(gameTime#*2))
-	Print(GetSPriteX(duck))
-	Print(raceSize)
-	Print(raceQueue.length)
+	//Print(GetSPriteX(duck))
+	//Print(raceSize)
+	//Print(raceQueue.length)
 	//SetSpriteFrame(bg3, 1+8.0*(Round(waterDistance-heroLocalDistance#)/(1.0*waterDistance)))
 	
 	SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(waterDistance - heroLocalDistance#)/waterDistance)/areaSeen)
