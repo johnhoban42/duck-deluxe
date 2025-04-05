@@ -27,6 +27,8 @@ global mashPos = 1
 global onSplit = 0
 global splitPos
 
+global oops as integer[5]
+
 function CreateMashInputSprite(spr, dir)
 	if GetSpriteExists(spr) = 0 then CreateSprite(spr, 0)
 	SetSpriteExpress(spr, 40, 40, 0, 0, 20)
@@ -119,7 +121,6 @@ function InitSpace2()
 	CreateSpriteExpress(hero, 80, 80, w/2-40, 300, 5)
 	
 	
-	
 	//Gameplay setting
 	heroLocalDistance# = space2Distance
 	
@@ -127,6 +128,12 @@ function InitSpace2()
 	spaceSpeed# = 0.4 * (1 + upgrades[1, 7]*.75 + (upgrades[1, 7]/2)*.5 + (upgrades[1, 7]/3)*1.25)	
 	
 	spaceSpeedMult# = 1 + 0.1*(5)
+	
+	
+	for i = 0 to oops.length
+		oops[i] = CreateSprite(0)
+		//SetSpriteExpress(oops[i], 50, 50, 
+	next i
 	
 	//Second chances are like 'oopsie' stickers, they get placed over a combo when the wrong thing is pushed
 	//It always defaults to the speed path

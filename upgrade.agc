@@ -67,7 +67,8 @@ function CreatePod(row, col)
 	
 	pod.sprBG = CreateSprite(LoadImage("shopbox4.png"))
 	spr = pod.sprBG
-	SetSpriteExpress(spr, 362, 100, 10 + col*364, 80 + row*142, 50) 
+	//SetSpriteExpress(spr, 362, 100, 10 + col*364, 80 + row*142, 50) //Pre-making them longer
+	SetSpriteExpress(spr, 382, 100, 10 + col*384, 80 + row*142, 50) 
 	SetSpriteColor(spr, 80, 80, 80, 255)
 	//SetSpriteColorAlpha(spr, 100)
 	
@@ -88,7 +89,7 @@ function CreatePod(row, col)
 	SetTextExpress(pod.txtCurWord, Mid(words[row+1, upgrades[row+1,rID]+1, rID], 2, -1), 48, font1I + upgrades[row+1, rID], 0, GetSpriteX(spr) + 60, GetSpriteY(spr) + 7, -7, 15)
 	
 	pod.txtMainDesc = CreateText("")
-	SetTextExpress(pod.txtMainDesc, powers[row+1, upgrades[row+1,rID]+1, rID], 24, fontMI, 0, GetSpriteX(spr) + 70, GetSpriteY(spr) + 73, -4, 15)
+	SetTextExpress(pod.txtMainDesc, powers[row+1, upgrades[row+1,rID]+1, rID], 24, fontMI, 0, GetSpriteX(spr) + 70, GetSpriteY(spr) + 73, -5, 15)
 	
 	//Starting the upgrade pod
 	pod.sprUpBG = CreateSprite(0)
@@ -171,9 +172,10 @@ function CreateUpgrade2()
 	SetRaceQueue(curRaceSet)
 	
 	if debug
-		//raceQueueRef.insert(LAND)
-		//raceQueueRef.insert(WATER)
-		//raceQueueRef.insert(AIR)
+		//raceQueueRef.length = -1
+		//raceQueueRef.insert(WATER2)
+		//raceQueueRef.insert(LAND2)
+		//raceQueueRef.insert(AIR2)
 		//raceQueueRef.insert(SPACE2)
 		//raceQueueRef.insert(WATER)
 		//raceQueueRef.insert(LAND)
@@ -217,7 +219,7 @@ function DoUpgrade2()
 	endif
 	
 	//This craziness is for moving on and moving off of the start race button
-	if (inputLeft and selectedPod/4 = 0) or (inputRight and selectedPod/4 = raceQueueRef.length-1)
+	if (inputLeft and selectedPod/4 = 0) or (inputRight and selectedPod/4 = areaSeen-1 and selectedPod > -1)
 		if selectedPod <> -1
 			upPods[selectedPod].isSelected = 0
 			PlayTweenCustom(upPods[selectedPod].twnUpgradeUp, 0)
@@ -331,9 +333,9 @@ function DoUpgrade2()
 		AlignPod(upPods[i])
 	next i
 	if selectedPod <> startRace 
-		GlideViewOffset(((68+32*areaSeen)*(selectedPod/4)), 0, 40, 2)
+		GlideViewOffset(((78+32*areaSeen)*(selectedPod/4)), 0, 40, 2)
 	else
-		GlideViewOffset(((68+32*areaSeen)*((upPods.length-1)/4)), 0, 40, 2)
+		GlideViewOffset(((78+32*areaSeen)*((upPods.length-1)/4)), 0, 40, 2)
 	endif
 	
 	if selectedPod = startRace
@@ -352,8 +354,8 @@ function AlignPod(curP as p)
 	
 	SetSpritePosition(curP.sprCover, GetSpriteX(spr), GetSpriteY(spr))
 	SetSpritePosition(curP.sprLetter, GetSpriteX(spr)-5, GetSpriteY(spr)-10)
-	SetSpritePosition(curP.sprIconBG, GetSpriteX(spr) + 285, GetSpriteY(spr) + 14)
-	SetSpritePosition(curP.sprIconTop, GetSpriteX(spr) + 285, GetSpriteY(spr) + 14)
+	SetSpritePosition(curP.sprIconBG, GetSpriteX(spr) + 305, GetSpriteY(spr) + 14)
+	SetSpritePosition(curP.sprIconTop, GetSpriteX(spr) + 305, GetSpriteY(spr) + 14)
 	
 	SetTextPosition(curP.txtCurWord, GetSpriteX(spr) + 60, GetSpriteY(spr) + 7)
 	SetTextPosition(curP.txtMainDesc, GetSpriteX(spr) + 82, GetSpriteY(spr) + 63)
@@ -371,7 +373,7 @@ function AlignPod(curP as p)
 	if GetTweenCustomPlaying(curP.twnBuyTuck) then SetSpritePosition(curP.sprUpBG, GetSpriteMiddleX(spr) - GetSpriteWidth(curP.sprUpBG)/2, GetSpriteY(spr)+GetSpriteHeight(spr)-80 + GetTweenCustomFloat1(curP.twnUpgradeDown) + GetTweenCustomFloat1(curP.twnBuyTuck))
 	
 	SetTextPosition(curP.txtUpgrade, GetSpriteX(curP.sprUpBG) + 10, GetSpriteY(curP.sprUpBG) + 2)
-	SetSpritePosition(curP.sprBuy, GetSpriteX(spr)+263, GetSpriteY(curP.sprUpBG)+GetSpriteHeight(curP.sprUpBG)-GetSpriteHeight(curP.sprBuy)-9)
+	SetSpritePosition(curP.sprBuy, GetSpriteX(spr)+283, GetSpriteY(curP.sprUpBG)+GetSpriteHeight(curP.sprUpBG)-GetSpriteHeight(curP.sprBuy)-9)
 	
 	
 endfunction

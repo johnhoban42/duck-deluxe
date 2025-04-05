@@ -17,6 +17,7 @@ global AREA_CHARS as string[7] = ["W", "L", "S", "W", "L", "S", "Z"]
 #constant UPGRADE 8
 #constant TITLE 9
 #constant FINISH 10
+#constant MENU 11
 
 global heroImg1
 global heroImg2

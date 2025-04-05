@@ -114,9 +114,9 @@ endfunction
 function InitLand2()
 	
     // load building sprites
-    imgBuildings = LoadImage("cbg/citytop1010.png")
+   // imgBuildings = LoadImage("cbg/citytop1010.png")
     for i = 0 to 2
-        CreateSpriteExpressImage(land2sprBuildings + i, imgbuildings, w, 3*h, 200 + w*i, (-2 + 4.0 / 3 * i) * h, 99)
+        LoadSpriteExpress(land2sprBuildings + i, "cbg/citytop1010.png", w, 3*h, 200 + w*i, (-2 + 4.0 / 3 * i) * h, 99)
     next i
     
     // load street sprites
@@ -172,7 +172,7 @@ function DoSpawnables()
                 if land2heroBoostCharges# = land2heroBoostChargesMax
                     SetSpriteColor(land2sprBoostMeter, 0, 255, 0, 255)
                 endif
-                PlaySound(boostChargeS)
+                PlaySound(boostChargeS, volumeS/4)
             endif
         elseif spawnActive[i].cat = BAD 
             // check for collisions

@@ -8,6 +8,7 @@
 #include "6air2.agc"
 #include "7space2.agc"
 #include "constants.agc"
+#include "menu.agc"
 
 // Project: EvilDuck 
 // Created: 2023-11-27
@@ -23,7 +24,7 @@ SetWindowAllowResize( 1 ) // allow the user to resize the window
 
 global debug = 0
 if debug = 0 then SetErrorMode(1)
-global nextScreen = water2
+global nextScreen = WATER2
 //SetPhysicsDebugOn()
 
 
@@ -42,7 +43,7 @@ SetSyncRate(30, 0) // 30fps instead of 60 to save battery
 SetScissor(0,0,0,0 ) // use the maximum available screen space, no black borders
 UseNewDefaultFonts( 1 ) // since version 2.0.22 we can use nicer default fonts
 
-SetVSync(0)
+SetVSync(1)
 
 #constant hitS 1
 LoadSoundOGG(hitS, "sounds/hit.ogg")
@@ -229,10 +230,10 @@ function SetRaceQueue(raceSet)
 		raceQueue.insert(LAND)
 		raceQueue.insert(AIR)
 	elseif raceSet = 2 //Race Against a Duck 2 order
-		raceQueue.insert(SPACE2)
 		raceQueue.insert(WATER2)
 		raceQueue.insert(LAND2)
 		raceQueue.insert(AIR2)
+		raceQueue.insert(SPACE2)
 	endif
 	raceQueueRef = raceQueue
 	
@@ -510,7 +511,9 @@ do
 		
 	endif
 	
-
+	if screen = MENU
+		DoMenu()
+	endif
     
     UpdateAllTweens(GetFrameTime())
     
@@ -880,6 +883,15 @@ function DeleteScene(scene)
 			DeleteSprite(water2Trees)
 		endif
 		
+		if scene = LAND2
+		    for i = 0 to 2
+		        DeleteSprite(land2sprBuildings + i)
+		    next i
+		    for lane = 0 to land2maxLanes - 1
+		        DeleteSprite(land2sprStreet + lane)
+		    next lane
+		endif
+		
 		if scene = SPACE2
 			DeleteMashSequence()
 		endif
@@ -981,7 +993,6 @@ function PlayRaceCutScene(scene)
 		endif
 	//next i
 	
-	/*
 	
 	while GetSpriteCurrentFrame(cutsceneSpr) < 4
 		
@@ -1021,7 +1032,7 @@ function PlayRaceCutScene(scene)
 		//This is where the other race music will be triggered
 	endif	
 		
-		*/
+		
 	
 endfunction
 

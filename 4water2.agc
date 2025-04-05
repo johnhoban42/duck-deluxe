@@ -67,7 +67,7 @@ function InitWater2()
 	diveBoostSlow# = .0038 / (1 + upgrades[2, 4] + (upgrades[2, 4]/2)*.5 + (upgrades[2, 4]/3)*1) //2)
 	
 	//Water movement, upgrade 4
-	diveVelMax# = .4 * (1 + upgrades[4, 4]*0.4 + (upgrades[4, 4]/2)*0.1 + (upgrades[4, 4]/2)*0.7)//2)
+	diveVelMax# = .4 * (1 + upgrades[4, 4]*0.25 + (upgrades[4, 4]/2)*0.1 + (upgrades[4, 4]/2)*0.4)//2)
 	diveRise# = .007 * (1 + upgrades[4, 4]*.5)//3)
 	waterSpeedX# = (0.25) * (1 + 0.2*upgrades[4, 4] + 0.2*upgrades[4, 4]/3)
 	
