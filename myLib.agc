@@ -231,7 +231,7 @@ endfunction
 
 function Hover(sprite) 
 	if GetSpriteExists(sprite) = 0 then exitfunction 0	//Added in to make sure bad buttons aren't targeted
-	returnValue = GetSpriteHitTest(sprite, GetPointerX(), GetPointerY())
+	returnValue = GetSpriteHitTest(sprite, GetPointerX()+GetViewOffsetX(), GetPointerY())
 endfunction returnValue
 
 function Button(sprite) 
@@ -283,6 +283,16 @@ endfunction
 
 function CreateTextExpress(txt, content$, size, fontI, alignment, x, y, spacing, depth)
 	CreateText(txt, content$)
+	SetTextSize(txt, size)
+	SetTextFontImage(txt, fontI)
+	SetTextAlignment(txt, alignment)
+	SetTextPosition(txt, x, y)
+	SetTextSpacing(txt, spacing)
+	SetTextDepth(txt, depth)
+endfunction
+
+function SetTextExpress(txt, content$, size, fontI, alignment, x, y, spacing, depth)
+	SetTextString(txt, content$)
 	SetTextSize(txt, size)
 	SetTextFontImage(txt, fontI)
 	SetTextAlignment(txt, alignment)
@@ -1008,128 +1018,325 @@ function MatchSpriteColor(spr, sprOrigin)
 endfunction
 
 function SetWords()
-	words[1, 1, 1] = "opey"
-	words[1, 2, 1] = "iddling"
-	words[1, 3, 1] = "ighty"
-	words[1, 4, 1] = "ASTerful"
+	//Water 1
+	words[1, 1, 1] = "Mopey"
+	words[1, 2, 1] = "Middling"
+	words[1, 3, 1] = "Mighty"
+	words[1, 4, 1] = "MASTerful"
 
-	words[2, 1, 1] = "ar-ible"
-	words[2, 2, 1] = "ld-fashioned"
-	words[2, 3, 1] = "n-ward"
-	words[2, 4, 1] = "ar-some"
+	words[2, 1, 1] = "Oar-ible"
+	words[2, 2, 1] = "Old-fashioned"
+	words[2, 3, 1] = "On-ward"
+	words[2, 4, 1] = "Oar-some"
 
-	words[3, 1, 1] = "inky"
-	words[3, 2, 1] = "rippy"
-	words[3, 3, 1] = "eft"
-	words[3, 4, 1] = "ynamic"
+	words[3, 1, 1] = "Dinky"
+	words[3, 2, 1] = "Drippy"
+	words[3, 3, 1] = "Deft"
+	words[3, 4, 1] = "Dynamic"
 
-	words[4, 1, 1] = "rror"
-	words[4, 2, 1] = "xerter"
-	words[4, 3, 1] = "poch"
-	words[4, 4, 1] = "legance"
+	words[4, 1, 1] = "Error"
+	words[4, 2, 1] = "Exerter"
+	words[4, 3, 1] = "Epoch"
+	words[4, 4, 1] = "Elegance"
 
-	words[1, 1, 2] = "iscalibrated"
-	words[1, 2, 2] = "otor"
-	words[1, 3, 2] = "egaMotor"
-	words[1, 4, 2] = "aximum"
+	//Land 1
+	words[1, 1, 2] = "Miscalibrated"
+	words[1, 2, 2] = "Motor"
+	words[1, 3, 2] = "MegaMotor"
+	words[1, 4, 2] = "Maximum"
 
-	words[2, 1, 2] = "verBurdened"
-	words[2, 2, 2] = "verConfident"
-	words[2, 3, 2] = "verDrive"
-	words[2, 4, 2] = "verestDrive"
+	words[2, 1, 2] = "OverBurdened"
+	words[2, 2, 2] = "OverConfident"
+	words[2, 3, 2] = "OverDrive"
+	words[2, 4, 2] = "OverestDrive"
 
-	words[3, 1, 2] = "eficient"
-	words[3, 2, 2] = "ecent"
-	words[3, 3, 2] = "ramatic"
-	words[3, 4, 2] = "eadly"
+	words[3, 1, 2] = "Deficient"
+	words[3, 2, 2] = "Decent"
+	words[3, 3, 2] = "Dramatic"
+	words[3, 4, 2] = "Deadly"
 
 	words[4, 1, 2] = "xhaust"
 	words[4, 2, 2] = "ngine"
 	words[4, 3, 2] = "xciter"
 	words[4, 4, 2] = "lectricity"
 
-	words[1, 1, 3] = "oronic"
-	words[1, 2, 3] = "aladjusted"
-	words[1, 3, 3] = "arvelous"
-	words[1, 4, 3] = "agnificent"
+	//Air 1
+	words[1, 1, 3] = "Moronic"
+	words[1, 2, 3] = "Maladjusted"
+	words[1, 3, 3] = "Marvelous"
+	words[1, 4, 3] = "Magnificent"
 
-	words[2, 1, 3] = "rwellian"
-	words[2, 2, 3] = "btuse"
-	words[2, 3, 3] = "zone"
-	words[2, 4, 3] = "rvillian"
+	words[2, 1, 3] = "Orwellian"
+	words[2, 2, 3] = "Obtuse"
+	words[2, 3, 3] = "Ozone"
+	words[2, 4, 3] = "Orvillian"
 
-	words[3, 1, 3] = "rab"
-	words[3, 2, 3] = "ilapidated"
-	words[3, 3, 3] = "exterous"
-	words[3, 4, 3] = "reamy"
+	words[3, 1, 3] = "Drab"
+	words[3, 2, 3] = "Dilapidated"
+	words[3, 3, 3] = "Dexterous"
+	words[3, 4, 3] = "Dreamy"
 
-	words[4, 1, 3] = "mptiness"
-	words[4, 2, 3] = "xosuit"
-	words[4, 3, 3] = "xotica"
-	words[4, 4, 3] = "ureka!"
+	words[4, 1, 3] = "Emptiness"
+	words[4, 2, 3] = "Exosuit"
+	words[4, 3, 3] = "Exotica"
+	words[4, 4, 3] = "Eureka!"
+	
+	//Starting the Duck 2 words
+	//Swamp/Water 2
+	words[1, 1, 4] = "Dilapidated"
+	words[1, 2, 4] = "Dreary"
+	words[1, 3, 4] = "Droll"
+	words[1, 4, 4] = "Daring"
+	
+	words[2, 1, 4] = "Useless"
+	words[2, 2, 4] = "Uninspiring"
+	words[2, 3, 4] = "Unexpected"
+	words[2, 4, 4] = "Unparalleled"
+	
+	words[3, 1, 4] = "Crummy"
+	words[3, 2, 4] = "Clunky"
+	words[3, 3, 4] = "Crushing"
+	words[3, 4, 4] = "Colassal"
+	
+	words[4, 1, 4] = "Knematode"
+	words[4, 2, 4] = "Krill"
+	words[4, 3, 4] = "Krab"
+	words[4, 4, 4] = "Kracken"
+	
+	//City/Land 2
+	words[1, 1, 5] = "Dreadful"
+	words[1, 2, 5] = "Dorky"
+	words[1, 3, 5] = "Dashing"
+	words[1, 4, 5] = "Debonair"
+	
+	words[2, 1, 5] = "Ugly"
+	words[2, 2, 5] = "Uncouth"
+	words[2, 3, 5] = "Unassuming"
+	words[2, 4, 5] = "Umbral"
+	
+	words[3, 1, 5] = "Crumpled"
+	words[3, 2, 5] = "Creepy"
+	words[3, 3, 5] = "Captivating"
+	words[3, 4, 5] = "Cracked"
+	
+	words[4, 1, 5] = "Knormie"
+	words[4, 2, 5] = "Kook"
+	words[4, 3, 5] = "Krunk"
+	words[4, 4, 5] = "Knightmare"
+	
+	//Mountains/Sky 2
+	words[1, 1, 6] = "Derrible"
+	words[1, 2, 6] = "Dim"
+	words[1, 3, 6] = "D-List"
+	words[1, 4, 6] = "Deserving"
+	
+	words[2, 1, 6] = "Uerrible"
+	words[2, 2, 6] = "Ummm..."
+	words[2, 3, 6] = "Unorthodox"
+	words[2, 4, 6] = "Uplifting"
+	
+	words[3, 1, 6] = "Cerrible"
+	words[3, 2, 6] = "Curious"
+	words[3, 3, 6] = "Crazy"
+	words[3, 4, 6] = "Cerebral"
+	
+	words[4, 1, 6] = "Kerrible"
+	words[4, 2, 6] = "Knacker"
+	words[4, 3, 6] = "Kleptomaniac"
+	words[4, 4, 6] = "Knice!"
+	
+	//Space 2
+	words[1, 1, 7] = "Doomed"
+	words[1, 2, 7] = "Desperate"
+	words[1, 3, 7] = "Destined"
+	words[1, 4, 7] = "Defending"
+	
+	words[2, 1, 7] = "Usurped"
+	words[2, 2, 7] = "Unraveled"
+	words[2, 3, 7] = "Ultimate"
+	words[2, 4, 7] = "Universal"
+	
+	words[3, 1, 7] = "Catasprohic"
+	words[3, 2, 7] = "Collapsed"
+	words[3, 3, 7] = "Colossal"
+	words[3, 4, 7] = "Candescent"
+	
+	words[4, 1, 7] = "Knave"
+	words[4, 2, 7] = "Knight"
+	words[4, 3, 7] = "King"
+	words[4, 4, 7] = "King of Kings"
 endfunction
 
 function SetPowers()
+	//Water 1
+	powers[1, 1, 1] = "x1 Base Speed"
+	powers[1, 2, 1] = "x1.8 Base Speed"
+	powers[1, 3, 1] = "x3.5 Base Speed"
+	powers[1, 4, 1] = "x6 Base Speed"
+	
+	powers[2, 1, 1] = "x1 Row Boost"
+	powers[2, 2, 1] = "x1.5 Row Boost"
+	powers[2, 3, 1] = "x2 Row Boost"
+	powers[2, 4, 1] = "x2.8 Row Boost"
+	
+	powers[3, 1, 1] = "x1 Row Charge"
+	powers[3, 2, 1] = "x1.2 Row Charge"
+	powers[3, 3, 1] = "x1.5 Row Charge"
+	powers[3, 4, 1] = "x2 Row Charge"
+	
+	powers[4, 1, 1] = "x1 Movement"
+	powers[4, 2, 1] = "x1.3 Movement"
+	powers[4, 3, 1] = "x1.6 Movement"
+	powers[4, 4, 1] = "x2.1 Movement"
+	
+	//Land 1
+	powers[1, 1, 2] = "x1 Base Speed"
+	powers[1, 2, 2] = "x1.5 Base Speed"	//V5 1.5
+	powers[1, 3, 2] = "x2 Base Speed"	//V5 2.6
+	powers[1, 4, 2] = "x2.5 Base Speed"	//V5 4
+	
+	powers[2, 1, 2] = "3 Boosts"
+	powers[2, 2, 2] = "+1 Boost Amt."
+	powers[2, 3, 2] = "+2 Boost Amt."
+	powers[2, 4, 2] = "+4 Boost Amt."
+	
+	powers[3, 1, 2] = "Hazard Slowdown"
+	powers[3, 2, 2] = "x0.75 Slowdown"
+	powers[3, 3, 2] = "x0.5 Slowdown"
+	powers[3, 4, 2] = "x0.1 Slowdown"
+	
+	powers[4, 1, 2] = "x1 Boost Speed"
+	powers[4, 2, 2] = "x1.6 Boost Speed"
+	powers[4, 3, 2] = "x2.8 Boost Speed"
+	powers[4, 4, 2] = "x6 Boost Speed"
+	
+	//Air 1
+	powers[1, 1, 3] = "x1 Base Speed"
+	powers[1, 2, 3] = "x2 Base Speed"
+	powers[1, 3, 3] = "x3 Base Speed"
+	powers[1, 4, 3] = "x5 Base Speed"
+	
+	powers[2, 1, 3] = "Tornado Damage"
+	powers[2, 2, 3] = "Tornado Boost"
+	powers[2, 3, 3] = "x1.5 Boost"
+	powers[2, 4, 3] = "x2.2 Boost"
+	
+	powers[3, 1, 3] = "x1 Side Speed"
+	powers[3, 2, 3] = "x1.3 Side Speed"
+	powers[3, 3, 3] = "x1.7 Side Speed"
+	powers[3, 4, 3] = "x2.2 Side Speed"
+	
+	powers[4, 1, 3] = "x1 Verticality"
+	powers[4, 2, 3] = "x1.2 Verticality"
+	powers[4, 3, 3] = "x1.5 Verticality"
+	powers[4, 4, 3] = "x1.9 Verticality"
+	
+	//Starting the Duck 2 words
+	//Swamp/Water 2
+	powers[1, 1, 4] = "x1 Base Speed"
+	powers[1, 2, 4] = "x1.75 Base Speed"
+	powers[1, 3, 4] = "x3 Base Speed"
+	powers[1, 4, 4] = "x5 Base Speed"
+	
+	powers[2, 1, 4] = "x1 Feather Boost"
+	powers[2, 2, 4] = "x2 Feather Boost"
+	powers[2, 3, 4] = "x3.5 Feather Boost"
+	powers[2, 4, 4] = "x5.5 Feather Boost"
+	
+	powers[3, 1, 4] = "Normal Dive Depth"
+	powers[3, 2, 4] = "Deep Dive Depth"
+	powers[3, 3, 4] = "Deeper Dive Depth"
+	powers[3, 4, 4] = "Full Dive Depth"
+	
+	powers[4, 1, 4] = "x1 Water Movement"
+	powers[4, 2, 4] = "x1.4 Water Movement"
+	powers[4, 3, 4] = "x1.9 Water Movement"
+	powers[4, 4, 4] = "x3 Water Movement"
+	
+	//City/Land 2
+	powers[1, 1, 5] = ""
+	powers[1, 2, 5] = ""
+	powers[1, 3, 5] = ""
+	powers[1, 4, 5] = ""
+	
+	powers[2, 1, 5] = ""
+	powers[2, 2, 5] = ""
+	powers[2, 3, 5] = ""
+	powers[2, 4, 5] = ""
+	
+	powers[3, 1, 5] = ""
+	powers[3, 2, 5] = ""
+	powers[3, 3, 5] = ""
+	powers[3, 4, 5] = ""
+	
+	powers[4, 1, 5] = ""
+	powers[4, 2, 5] = ""
+	powers[4, 3, 5] = ""
+	powers[4, 4, 5] = ""
+	
+	//Mountains/Air 2
+	powers[1, 1, 6] = ""
+	powers[1, 2, 6] = ""
+	powers[1, 3, 6] = ""
+	powers[1, 4, 6] = ""
+	
+	powers[2, 1, 6] = ""
+	powers[2, 2, 6] = ""
+	powers[2, 3, 6] = ""
+	powers[2, 4, 6] = ""
+	
+	powers[3, 1, 6] = ""
+	powers[3, 2, 6] = ""
+	powers[3, 3, 6] = ""
+	powers[3, 4, 6] = ""
+	
+	powers[4, 1, 6] = ""
+	powers[4, 2, 6] = ""
+	powers[4, 3, 6] = ""
+	powers[4, 4, 6] = ""
+	
+	//Space 2
+	powers[1, 1, 7] = "x1 Start Speed"
+	powers[1, 2, 7] = "x1.5 Start Speed"
+	powers[1, 3, 7] = "x_ Start Speed"
+	powers[1, 4, 7] = "x_ Start Speed"
+	
+	powers[2, 1, 7] = ""
+	powers[2, 2, 7] = ""
+	powers[2, 3, 7] = ""
+	powers[2, 4, 7] = ""
+	
+	powers[3, 1, 7] = "No Mistakes"
+	powers[3, 2, 7] = "Second Chance"
+	powers[3, 3, 7] = "Third Chance"
+	powers[3, 4, 7] = "5 "
+	
+	powers[4, 1, 7] = "Normal Combo"
+	powers[4, 2, 7] = "Big Combo"
+	powers[4, 3, 7] = "Bigger Combo"
+	powers[4, 4, 7] = "B"
 
-powers[1, 1, 1] = ""
-powers[1, 2, 1] = "x1.8 Base Speed"
-powers[1, 3, 1] = "x3.5 Base Speed"
-powers[1, 4, 1] = "x6 Base Speed"
 
-powers[2, 1, 1] = ""
-powers[2, 2, 1] = "x1.5 Row Boost"
-powers[2, 3, 1] = "x2 Row Boost"
-powers[2, 4, 1] = "x2.8 Row Boost"
-
-powers[3, 1, 1] = ""
-powers[3, 2, 1] = "x1.2 Row Charge"
-powers[3, 3, 1] = "x1.5 Row Charge"
-powers[3, 4, 1] = "x2 Row Charge"
-
-powers[4, 1, 1] = ""
-powers[4, 2, 1] = "x1.3 Movement"
-powers[4, 3, 1] = "x1.6 Movement"
-powers[4, 4, 1] = "x2.1 Movement"
-
-powers[1, 1, 2] = ""
-powers[1, 2, 2] = "x1.5 Base Speed"	//V5 1.5
-powers[1, 3, 2] = "x2 Base Speed"	//V5 2.6
-powers[1, 4, 2] = "x2.5 Base Speed"	//V5 4
-
-powers[2, 1, 2] = ""
-powers[2, 2, 2] = "+1 Boost Amt."
-powers[2, 3, 2] = "+2 Boost Amt."
-powers[2, 4, 2] = "+4 Boost Amt."
-
-powers[3, 1, 2] = ""
-powers[3, 2, 2] = "x0.75 Slowdown"
-powers[3, 3, 2] = "x0.5 Slowdown"
-powers[3, 4, 2] = "x0.1 Slowdown"
-
-powers[4, 1, 2] = ""
-powers[4, 2, 2] = "x1.6 Boost Speed"
-powers[4, 3, 2] = "x2.8 Boost Speed"
-powers[4, 4, 2] = "x6 Boost Speed"
-
-powers[1, 1, 3] = ""
-powers[1, 2, 3] = "x2 Base Speed"
-powers[1, 3, 3] = "x3 Base Speed"
-powers[1, 4, 3] = "x5 Base Speed"
-
-powers[2, 1, 3] = ""
-powers[2, 2, 3] = "Tornado Boost"
-powers[2, 3, 3] = "x1.5 Boost"
-powers[2, 4, 3] = "x2.2 Boost"
-
-powers[3, 1, 3] = ""
-powers[3, 2, 3] = "x1.3 Side Speed"
-powers[3, 3, 3] = "x1.7 Side Speed"
-powers[3, 4, 3] = "x2.2 Side Speed"
-
-powers[4, 1, 3] = ""
-powers[4, 2, 3] = "x1.2 Verticality"
-powers[4, 3, 3] = "x1.5 Verticality"
-powers[4, 4, 3] = "x1.9 Verticality"
+//Space 2
+	words[1, 1, 7] = "Doomed"
+	words[1, 2, 7] = "Desperate"
+	words[1, 3, 7] = "Destined"
+	words[1, 4, 7] = "Defending"
+	
+	words[2, 1, 7] = "Usurped"
+	words[2, 2, 7] = "Unraveled"
+	words[2, 3, 7] = "Ultimate"
+	words[2, 4, 7] = "Universal"
+	
+	words[3, 1, 7] = "Catasprohic"
+	words[3, 2, 7] = "Collapsed"
+	words[3, 3, 7] = "Colossal"
+	words[3, 4, 7] = "Candescent"
+	
+	words[4, 1, 7] = "Knave"
+	words[4, 2, 7] = "Knight"
+	words[4, 3, 7] = "King"
+	words[4, 4, 7] = "King of Kings"
 
 powers[1, 1, 5] = ""
 powers[1, 2, 5] = "+1 Available Lane"

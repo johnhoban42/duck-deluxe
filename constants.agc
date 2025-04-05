@@ -17,6 +17,7 @@ global AREA_CHARS as string[7] = ["W", "L", "S", "W", "L", "S", "Z"]
 #constant UPGRADE 8
 #constant TITLE 9
 #constant FINISH 10
+#constant MENU 11
 
 global heroImg1
 global heroImg2
@@ -120,12 +121,16 @@ global fish3I
 #constant upgrage2StartSpr 3201
 #constant upgrage3StartSpr 3401
 
+//The NEW upgrade system - these are IDs for the pod sets
+global upPods as p[0]
+global selectedPod
+
 //The start point for the extra sprites to make water tiles in the swamp
 #constant water2TileS = 4001
 global water2TileE
 global numCross	//The number of tiles across that the water texture tiles will go
 global tileEH	//Tile extra height, expanded to make them look connected together
-#constant diveVisAngle 50
+#constant diveVisAngle 80//160//110
 #constant waterTileAlpha 200
 #constant water2Trees 4051
 
@@ -136,6 +141,8 @@ global tileEH	//Tile extra height, expanded to make them look connected together
 #constant land2sprCones 5700  // reserved 5700 - 5799 for cone sprites
 #constant land2sprBoostPanels 5800  // reserved 5800 - 5999 for boost panel sprites
 
+#constant air2BG 6001
+
 global tileI1
 global tileI2
 
@@ -144,7 +151,7 @@ global spawnS = spawnStartS
 
 
 //Start point for extra space sprites: mash inputs
-#constant mashSprS 7001
+//#constant mashSprS 7001
 global arrowI
 
 //Particles

@@ -117,10 +117,10 @@ function InitWater()
 	spawnActive.insert(newS)
 	inc spawnS, 1
 	
-	LoadAnimatedSprite(cutsceneSpr, "traffic", 4)
-	SetSpriteMiddleScreen(cutsceneSpr)
-	PlaySprite(cutsceneSpr, 1, 0, 1, 4)
-	SetSpriteDepth(cutsceneSpr, 2)
+	//LoadAnimatedSprite(cutsceneSpr, "traffic", 4)
+	//SetSpriteMiddleScreen(cutsceneSpr)
+	//PlaySprite(cutsceneSpr, 1, 0, 1, 4)
+	//SetSpriteDepth(cutsceneSpr, 2)
 	
 	//Gameplay setting
 	heroLocalDistance# = waterDistance
@@ -129,7 +129,7 @@ function InitWater()
 endfunction
 
 function DoWater()
-	
+	/*
 	if GetSpriteCurrentFrame(cutsceneSpr) < 4
 		
 		gameTime# = 0
@@ -158,6 +158,10 @@ function DoWater()
 			SetMusicVolumeOGG(landM, 0)
 			SetMusicVolumeOGG(airM, 0)
 		endif
+		*/
+		
+		if GetSpritePlaying(duck) = 0 then PlaySprite(duck, 20, 1, 2, 3)
+		
 		IncSpriteY(cutsceneSpr, -2*fpsr#)
 		//waterXMax = -
 		heroX# = Min(Max(heroX#, 195), 1080)
@@ -302,7 +306,7 @@ function DoWater()
 		endif
 		
 		//Print(fixedWaterSpeed#)
-	endif
+	//endif
 	
 	
 endfunction
