@@ -60,11 +60,11 @@ endfunction x#
 
 function LaneToXWithOffset(lane as integer, yOffset as float)
     // calculate the current x-coordinate from a lane number and y-coordinate
-endfunction (yoffset * 4.0 / 3) + 100 * (lane - 1)
+endfunction 105 + (yoffset * 4.0 / 3) + 100 * (lane - 1)
 
 function LaneToXWithOffsetBoost(lane as integer, yOffset as float)
     // calculate the current x-coordinate from a lane number, specific to boost panels
-endfunction -70 + (yoffset * 4.0 / 3) + 100 * (lane - 1)
+endfunction 45 + (yoffset * 4.0 / 3) + 100 * (lane - 1)
 
 function SetObstacleLane(obstacle as spawn)
     // given a obstacle's y-coordinate, assign it a lane such that
@@ -72,7 +72,15 @@ function SetObstacleLane(obstacle as spawn)
     hitUpper = land2sprBoostPanels
     hitLower = land2sprBoostPanels
     while ((land2sprBoostPanels <= hitUpper and hitUpper < land2sprBoostPanels + 200) or (land2sprBoostPanels <= hitLower and hitLower < land2sprBoostPanels + 200))
-        x = Random2(1, 5)
+        x = Random2(1, land2maxLanes)
+        // "hide" any sprites that spawn outside of unlocked lanes
+        // todo - we might want a more precise way of checking for overlaps between
+        //      obstacles and boost panels. the random check is janky and not performant 
+        if x > land2nLanes
+            SetSpriteVisible(obstacle.spr, 0)
+        else
+            SetSpriteVisible(obstacle.spr, 1)
+        endif
         SetSpritePosition(obstacle.spr, LaneToXWithOffset(x, obstacle.y), obstacle.y)
         // check upper and lower corners
         hitUpper = GetSpriteHit(GetSpriteX(obstacle.spr), GetSpriteY(obstacle.spr))
@@ -88,7 +96,7 @@ function InitObstacles()
         sprCone.spr = sprID
         sprCone.cat = BAD
         sprCone.size = 40
-        LoadSpriteFromSpawnable(sprCone, "cone.png", 10)
+        LoadSpriteFromSpawnable(sprCone, "cone.png", 10) 
         sprCone.y = 600 + 180 * i + Random2(0, 100)
         sprCone.x = SetObstacleLane(sprCone)
         spawnActive.insert(sprCone)
@@ -98,13 +106,14 @@ endfunction
 
 function InitBoostPanels()
     // load spawnable boost panels
-    // panels come in runs of 4-7, and shift left or right one lane at a time
-    // panels can spawn in all 5 lanes before the player unlocks more lanes,
+    // panels come in runs and shift left or right one lane at a time
+    // panels spawn less often until the player unlocks more lanes,
     // which is the incentive for that upgrade
     sprBoostID = land2sprBoostPanels
-    for i = 0 to 24
-        panelX = Random2(1, 5)  // x coordinate -> which lane boost spawns in
-        panelY# = (i / 20.0) * land2Distance + Random2(500, 750)  // race distance
+    nBoostStrings = 24 / (6 - land2nLanes)
+    for i = 0 to nBoostStrings
+        panelX = Random2(1, land2nLanes)  // x coordinate -> which lane boost spawns in
+        panelY# = (i / (1.0 * nBoostStrings)) * land2Distance + Random2(500, 750)  // race distance
         for panel = 0 to land2boostGroupLength - 1
             // set panel properties
             sprBoost as spawn
@@ -112,7 +121,7 @@ function InitBoostPanels()
             sprBoost.cat = GOOD
             sprBoost.x = panelX
             sprBoost.y = panelY#
-            sprBoost.size = 200
+            sprBoost.size = 180
             // todo - write something like LoadAnimatedSpriteFromSpawnable?
             LoadAnimatedSprite(sprBoost.spr, "land2booster", 18)
             SetSpriteSize(sprBoost.spr, sprBoost.size, sprBoost.size * 0.4)
@@ -131,12 +140,12 @@ function InitBoostPanels()
             inc sprBoostID, 1
             if panelX = 1
                 inc panelX, Random2(0, 1)
-            elseif panelX = land2maxLanes
+            elseif panelX = land2nLanes
                 inc panelX, Random2(-1, 0)
             else
                 inc panelX, Random2(-1, 1)
             endif
-            inc panelY#, 90
+            inc panelY#, 80
         next panel
     next i
 endfunction
@@ -183,7 +192,7 @@ function DoSpawnables()
     // process movement for all spawnables (boosts, obstacles)
     idx_to_delete = -1
     for i = 0 to spawnActive.length - 1
-        inc spawnActive[i].y, -4 * land2heroSpeed#
+        inc spawnActive[i].y, -3.5 * land2heroSpeed#
         if spawnActive[i].cat = GOOD
             // check for collecting a boost
             if GetSpriteCollision(spawnActive[i].spr, hero) and spawnActive[i].x = land2currentLane
