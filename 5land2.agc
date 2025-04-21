@@ -33,6 +33,10 @@ global land2currentLane = 2  // current lane, 1 = leftmost lane
 global land2laneChangeFrame = 0  // frames remaining in lane change, max 5
 global land2laneChangeDirection = 0  // -1 -> left, 1 -> right
 
+// background movement
+global land2baseLaneSpeed = 52
+global land2buildingXOffset = 0  // set in the init script
+
 function InitUpgradeValues()
     // assign values to upgradeable attributes based on purchased levels 
     land2nLanes = 2 + upgrades[attrnLanes, LAND2]
@@ -143,30 +147,17 @@ function InitLand2()
     InitUpgradeValues()
 	
     // load building sprites
-   // imgBuildings = LoadImage("cbg/citytop1010.png")
+    // building positioning depends on how many lanes are unlocked
+    land2buildingXOffset = -105 + 55 * land2nLanes
     for i = 0 to 2
-        LoadSpriteExpress(land2sprBuildings + i, "cbg/citytop1010.png", w, 3*h, 200 + w*i, (-2 + 4.0 / 3 * i) * h, 99)
+        LoadSpriteExpress(land2sprBuildings + i, "cbg/citytop1010.png", w, 3*h, land2buildingXOffset + w*i, (-2 + 4.0 / 3 * i) * h, 99)
     next i
-    
-    // load street sprites
-    for lane = 0 to land2maxLanes - 1
-        sprLane = land2sprStreet + lane
-        LoadAnimatedSprite(sprLane, "cbg/onelanegrey/c1", 40)
-        SetSpriteSize(sprLane, 1200, 820)
-        SetSpritePosition(sprLane, -80 + 100 * lane, 0)
-        // gray out unavailable lanes
-        if lane < land2nLanes
-            SetSpriteColor(sprLane, 180, 120, 190, 255)
-        else
-            SetSpriteColor(sprLane, 50, 50, 50, 255)
-        endif
-        PlaySprite(sprLane, 60 * land2heroSpeed#)
-        if mod(lane, 2) = 0
-            SetSpriteFrame(sprLane, 1)
-        else
-            SetSpriteFrame(sprLane, 21)
-        endif
-    next lane
+
+    streetDir$ = "cbg/lanes" + str(land2nLanes) + "/c" + str(land2nLanes)
+    LoadAnimatedSprite(land2sprStreet, streetDir$, 40)
+    SetSpriteSize(land2sprStreet, 1435, 820)
+    SetSpritePosition(land2sprStreet, 0, 0)
+    PlaySprite(land2sprStreet, land2baseLaneSpeed * land2heroSpeed#)
 
     // load boost meter
     // for now, just a basic rectangle that stretches with additional boosts
@@ -235,7 +226,7 @@ function DoLand2()
     for i = 0 to 2
         IncSpritePosition(land2sprBuildings + i, -4.75 * land2heroSpeed#, -4.75 * 0.75 * land2heroSpeed#)
         if GetSpriteY(land2sprBuildings + i) < -3 * h
-            SetSpritePosition(land2sprBuildings + i, 200 + 2*w, 2.0 / 3 * h)
+            SetSpritePosition(land2sprBuildings + i, land2buildingXOffset + 2*w, 2.0 / 3 * h)
         endif
     next i
 
@@ -275,9 +266,7 @@ function DoLand2()
         land2heroBoostFrames# = max(0, land2heroBoostFrames# - 1)
         land2heroSpeed# = land2heroSpeedMax# - 0.5 * (land2heroIFrames# / land2heroIFramesMax) + 1.5 * (land2heroBoostFrames# / land2heroBoostFramesMax)
         // slow down lanes to match hero slowdown
-        for lane = 0 to land2maxLanes - 1
-            SetSpriteSpeed(land2sprStreet + lane, 60 * land2heroSpeed#)
-        next lane
+        SetSpriteSpeed(land2sprStreet, land2baseLaneSpeed * land2heroSpeed#)
     endif
     SetSpriteColor(hero, 255, 255 - 2*land2heroIFrames#, 255 - 2*land2heroIFrames#, 255)
     SetSpritePosition(hero, LaneToX(land2currentLane) - 9 * land2laneChangeDirection * land2laneChangeFrame, 300)
