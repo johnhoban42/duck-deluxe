@@ -1083,7 +1083,7 @@ function SetWords()
 	
 	//Starting the Duck 2 words
 	//Swamp/Water 2
-	words[1, 1, 4] = "Dilapidated"
+	words[1, 1, 4] = "Deadweight"
 	words[1, 2, 4] = "Dreary"
 	words[1, 3, 4] = "Droll"
 	words[1, 4, 4] = "Daring"

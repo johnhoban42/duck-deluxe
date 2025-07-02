@@ -36,12 +36,12 @@ global featherImg3
 global featherImg4
 
 //ScrapNum, FrameNum, SetNum
-global scrapImgs as integer[3,4,4]
+global scrapImgs as integer[8,4,4]
 function LoadScrapImages()
-	for i = 1 to 3	//ScrapNum
+	for i = 1 to 8	//ScrapNum
 		for j = 1 to 4	//FrameNum
 			for k = 1 to 4	//SetNum
-				scrapImgs[i,j,k] = LoadImageR("scrap" + str(i) + "_" + str(k) + "_" + str(j) + ".png")
+				scrapImgs[i,j,k] = LoadImageR("scrap/scrap" + str(i) + "_" + str(j) + "_" + str(k) + ".png")
 			next k
 		next j
 	next i
@@ -91,7 +91,6 @@ global fish3I
 
 
 
-
 #constant duck 1201
 
 #constant instruct 1202
@@ -125,6 +124,9 @@ global fish3I
 global upPods as p[0]
 global selectedPod
 
+global upCols as integer[20]
+global scrapBG
+
 //The start point for the extra sprites to make water tiles in the swamp
 #constant water2TileS = 4001
 global water2TileE
@@ -142,9 +144,16 @@ global tileEH	//Tile extra height, expanded to make them look connected together
 #constant land2sprBoostPanels 5800  // reserved 5800 - 5999 for boost panel sprites
 
 #constant air2BG 6001
+#constant air2BBG 6002
 
 global tileI1
 global tileI2
+
+global eggBird
+global eggBadI
+global eggGoodI
+global miniBird1I
+global miniBird2I
 
 #constant spawnStartS 10001
 global spawnS = spawnStartS

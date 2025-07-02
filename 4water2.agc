@@ -22,6 +22,9 @@ global diveBoostSlow# = .0008
 global diveHop# = 0
 global diveDamage = 0
 
+global featherBoostFrameS
+global featherBoostS
+
 //Water tile visibility could be an upgrade variable?
 //waterTileAlpha
 
@@ -77,7 +80,9 @@ function InitWater2()
 	if diveLevel = 2 then diveDeepTimerMax# = 0.41/(diveVelMax#)
 	if diveLevel = 3 then diveDeepTimerMax# = 0.55/(diveVelMax#)
 	if diveLevel = 4 then diveDeepTimerMax# = 0.69/(diveVelMax#)
+	SetViewZoomMode(0)
 	SetViewZoom(1/((4+diveLevel*1.5)/10.0))
+	heroX# = 120 + 60*diveLevel
 	
 	SetSpriteVisible(water2S, 1)
 	SetSpriteSize(water2S, w, w/1000*75)
@@ -246,8 +251,9 @@ function InitWater2()
 		else
 			inc scrapWeight, 1
 			CreateSpriteExpress(spawnS, 10, 10, w, h, 8)
+			rnd = Random(1,8)
 			for j = 1 to 4
-				AddSpriteAnimationFrame(spawnS, scrapImgs[1, j, 1])//First index will be a random
+				AddSpriteAnimationFrame(spawnS, scrapImgs[rnd, 1, j])//First index will be a random
 			next j
 			PlaySprite(spawnS, 3+Random(1,3))
 			newS.size = 60
@@ -290,7 +296,14 @@ function InitWater2()
 	spawnActive.insert(newS)
 	inc spawnS, 1
 	
+	//The feather boost meter
+	featherBoostFrameS = LoadSprite("featherBar.png")
+	SetSpriteExpress(featherBoostFrameS, 70, 70, 70, 590, 5) 
+	FixSpriteToScreen(featherBoostFrameS, 1)
 	
+	featherBoostS = CreateSprite(0) 
+	SetSpriteExpress(featherBoostS, 0, GetSpriteWidth(featherBoostFrameS)*2/9, GetSpriteX(featherBoostFrameS) + GetSpriteWidth(featherBoostFrameS)*4/9, GetSpriteY(featherBoostFrameS) + GetSpriteHeight(featherBoostFrameS)*5/18, 6) 
+	FixSpriteToScreen(featherBoostS, 1)
 	
 	//SetSpriteColor(BG, 255, 255, 0, 255)
 	
@@ -454,8 +467,8 @@ function DoWater2()
 	//Print(raceQueue.length)
 	//SetSpriteFrame(bg3, 1+8.0*(Round(waterDistance-heroLocalDistance#)/(1.0*waterDistance)))
 	
-	SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(waterDistance - heroLocalDistance#)/waterDistance)/areaSeen)
-	SetSpriteX(duckIcon, Min(GetSpriteX(progBack)-GetSpriteWidth(duckIcon)/2 + (GetSpriteWidth(progBack)*(20000 - (duckDistance#-40000))/20000)/areaSeen, GetSpriteX(progBack)+GetSpriteWidth(progBack)-GetSpriteWidth(duckIcon)))
+	//SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(waterDistance - heroLocalDistance#)/waterDistance)/areaSeen)
+	//SetSpriteX(duckIcon, Min(GetSpriteX(progBack)-GetSpriteWidth(duckIcon)/2 + (GetSpriteWidth(progBack)*(20000 - (duckDistance#-40000))/20000)/areaSeen, GetSpriteX(progBack)+GetSpriteWidth(progBack)-GetSpriteWidth(duckIcon)))
 	
 	deleted = 0
 	for i = 1 to spawnActive.length
@@ -475,7 +488,7 @@ function DoWater2()
 				elseif spawnActive[i].cat = BAD
 					diveDamage = 1
 					if GetSpriteColorGreen(hero) = 255 then PlaySound(hitS, volumeS)
-					diveBoost# = 0
+					diveBoost# = diveBoost#*2/3
 					diveBoostQueue = 0
 					//if damageAmt# <= 0
 					//	damageAmt# = 255
@@ -519,6 +532,12 @@ function DoWater2()
 			DeleteSprite(spawnActive[deleted].spr)
 		endif
 		spawnActive.remove(deleted)
+	endif
+	
+	if diveBoost# > 0 or diveBoostQueue > 0
+		SetSpriteSize(featherBoostS, 30*(diveBoost#+diveBoostQueue)*(2+upgrades[2, 4]), GetSpriteHeight(featherBoostS))
+	else
+		SetSpriteSize(featherBoostS, 0, GetSpriteHeight(featherBoostS))
 	endif
 	
 	

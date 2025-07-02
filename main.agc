@@ -22,9 +22,9 @@ SetWindowTitle("Race Against a Duck")
 SetWindowSize( 1280, 720, 0 )
 SetWindowAllowResize( 1 ) // allow the user to resize the window
 
-global debug = 0
+global debug = 1
 if debug = 0 then SetErrorMode(1)
-global nextScreen = WATER2
+global nextScreen = water2
 //SetPhysicsDebugOn()
 
 
@@ -311,6 +311,10 @@ do
 			DoSpace2()
 		endif
 		
+		//Progress bar at top
+		SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(waterDistance - heroLocalDistance#)/waterDistance)/areaSeen)
+		SetSpriteX(duckIcon, Min(GetSpriteX(progBack)-GetSpriteWidth(duckIcon)/2 + (GetSpriteWidth(progBack)*(40000 - (duckDistance#-20000))/20000)/areaSeen, GetSpriteX(progBack)+GetSpriteWidth(progBack)-GetSpriteWidth(duckIcon)))
+		
 		if GetSpriteExists(cutsceneSpr) then IncSpriteY(cutsceneSpr, -2*fpsr#)
 		
 		if heroLocalDistance# <= 0
@@ -589,6 +593,12 @@ function SetupScene(scene)
 		featherImg4 = LoadImage("feather4.png")
 	endif
 
+	if scene <> TITLE and scene <> FINISH
+		CreateTextExpress(scrapText, "Scrap: " + str(scrapTotal) + " ~", 50, fontGI, 0, 1000, 30, -12, 5)
+		FixTextToScreen(scrapText, 1)
+		//SetTextColor(scrapText, 0, 0, 0, 255)
+	endif
+
 	if scene < UPGRADE
 
 		
@@ -656,8 +666,12 @@ function SetupScene(scene)
 		LoadSpriteExpress(progFront, "mapBar" + Str(areaSeen) + ".png", GetSpriteWidth(progBack), GetSpriteHeight(progBack)-10, GetSpriteX(progBack), GetSpriteY(progBack)+5, 7)
 		//SetSpriteColor(progFront, 170, 170, 170, 255)
 		
-		LoadSpriteExpress(heroIcon, "heroIcon.png", 40, 40, GetSpriteX(progBack)-20, GetSpriteMiddleY(progBack)-20, 5)
-		LoadSpriteExpress(duckIcon, "duckIcon.png", 40, 40, GetSpriteX(progBack)-20, GetSpriteMiddleY(progBack)-20, 6)
+		if curRaceSet < 3
+			LoadSpriteExpress(heroIcon, "game" + str(curRaceSet) + "IconHero.png", 40, 40, GetSpriteX(progBack)-20, GetSpriteMiddleY(progBack)-20, 5)
+			LoadSpriteExpress(duckIcon, "game" + str(curRaceSet) + "IconDuck.png", 40, 40, GetSpriteX(progBack)-20, GetSpriteMiddleY(progBack)-20, 6)
+			SetSpriteSize(duckIcon, 100*40/90, 100*40/90) //This line makes it dissapear???
+			SetSpriteY(duckIcon, GetSpriteMiddleY(progBack) - GetSpriteHeight(duckIcon)/2)
+		endif
 		
 		
 		LoadAnimatedSprite(flag1, "flag", 7)
@@ -757,11 +771,7 @@ function SetupScene(scene)
 		PlayTweenSprite(tweenSprFadeOut, coverS, 0)
 	endif
 	
-	if scene <> TITLE and scene <> FINISH
-		CreateTextExpress(scrapText, "Scrap: " + str(scrapTotal) + " ~", 50, fontGI, 0, 1000, 30, -12, 5)
-		FixTextToScreen(scrapText, 1)
-		//SetTextColor(scrapText, 0, 0, 0, 255)
-	endif
+	
 	
 	screen = scene
 	
@@ -844,6 +854,13 @@ function SetInstructionText(sceneL)
 	elseif sceneL = AIR
 		SetTextString(instruct, "LEFT/RIGHT/UP/DOWN - Move" + CHR(10) + "Hit Tornados?" + CHR(10) + "Get an upgrade!")
 		if upgrades[2, 3] > 0 then SetTextString(instruct, "LEFT/RIGHT/UP/DOWN - Move" + CHR(10) + "Hit Tornados - Boost" + CHR(10) + "Win the race!")
+	elseif sceneL = WATER2
+		SetTextString(instruct, "SPACE - Dive" + CHR(10) + "LEFT/RIGHT - Move" + CHR(10) + "Feather - Boost")
+	elseif sceneL = LAND2
+	elseif sceneL = AIR2
+		SetTextString(instruct, "SPACE - Turn" + CHR(10) + "Touch Slipstream - Speed Up" + CHR(10) + "")
+	elseif sceneL = SPACE2
+		SetTextString(instruct, "MASH the keys!" + CHR(10) + "BOOST your speed!" + CHR(10) + "WIN the race!!")
 	endif
 endfunction
 
@@ -876,11 +893,15 @@ function DeleteScene(scene)
 			SetSpriteVisible(water2S, 0)
 			SetSpriteVisible(water2TileS, 0)
 			DeleteParticles(lightP)
+			DeleteParticles(splashP)
 			DeleteParticles(featherP)
 			for i = water2TileS+1 to water2TileE
 				if GetSpriteExists(i) then DeleteSprite(i)
 			next i
 			DeleteSprite(water2Trees)
+			DeleteSprite(featherBoostFrameS)
+			DeleteSprite(featherBoostS)
+			DeleteSprite(water2BG)
 		endif
 		
 		if scene = LAND2
@@ -890,6 +911,20 @@ function DeleteScene(scene)
 		    for lane = 0 to land2maxLanes - 1
 		        DeleteSprite(land2sprStreet + lane)
 		    next lane
+		endif
+		
+		if scene = AIR2
+			DeleteSprite(air2BG)
+			DeleteSprite(air2BBG)
+			DeleteSprite(eggBird)
+			
+			iMax = bulletActive.length
+			for i = 1 to iMax
+				DeleteAnimatedSprite(bulletActive[1].spr)
+				if GetTweenExists(bulletActive[1].spr) then DeleteTween(bulletActive[1].spr)
+				bulletActive.remove(1)
+			next i
+			
 		endif
 		
 		if scene = SPACE2
@@ -992,7 +1027,7 @@ function PlayRaceCutScene(scene)
 			DoSpace2()
 		endif
 	//next i
-	
+	/*
 	
 	while GetSpriteCurrentFrame(cutsceneSpr) < 4
 		
@@ -1017,7 +1052,7 @@ function PlayRaceCutScene(scene)
 	
 	PlaySound(beepGoS, volumeS)
 	PlaySound(windSS, volumeS)
-	
+	*/
 	if curRaceSet = 1
 		StopMusicOGG(waterM)
 		StopMusicOGG(landM)
@@ -1032,8 +1067,12 @@ function PlayRaceCutScene(scene)
 		//This is where the other race music will be triggered
 	endif	
 		
-		
+	
 	
 endfunction
 
+function FreezeGameplay()
+	
+	
+endfunction
 

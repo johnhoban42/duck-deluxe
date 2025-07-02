@@ -65,11 +65,11 @@ function CreatePod(row, col)
 	pod.column = col
 	pod.lev = upgrades[row, rID]
 	
-	pod.sprBG = CreateSprite(LoadImage("shopbox4.png"))
+	pod.sprBG = CreateSprite(LoadImage("upgrade/shopboxNew" + str(rID) + ".png"))
 	spr = pod.sprBG
 	//SetSpriteExpress(spr, 362, 100, 10 + col*364, 80 + row*142, 50) //Pre-making them longer
-	SetSpriteExpress(spr, 382, 100, 10 + col*384, 80 + row*142, 50) 
-	SetSpriteColor(spr, 80, 80, 80, 255)
+	SetSpriteExpress(spr, 372, 100, 10 + col*374, 80 + row*142, 50) 
+	//SetSpriteColor(spr, 80, 80, 80, 255)
 	//SetSpriteColorAlpha(spr, 100)
 	
 	//THE POSITIONS OF ALL THE BELOW ARE UPDATED EVERY FRAME IN THE 'ALIGNPOD' METHOD!!!
@@ -77,7 +77,7 @@ function CreatePod(row, col)
 	pod.sprLetter = LoadSprite("raceLetters/let" + str(row+1) + "r" + str(rID) + ".png")
 	SetSpriteExpress(pod.sprLetter, 75, 75, GetSpriteX(spr)-5, GetSpriteY(spr)-10, 3)
 	
-	pod.sprIconBG = LoadSprite("icon" + str(rID) + "bg.png")
+	pod.sprIconBG = LoadSprite("upgrade/icon" + str(rID) + "bg.png")
 	SetSpriteExpress(pod.sprIconBG, 60, 60, GetSpriteX(spr) + 285, GetSpriteY(spr) + 14, 14)
 	
 	//if GetImageExists
@@ -92,10 +92,11 @@ function CreatePod(row, col)
 	SetTextExpress(pod.txtMainDesc, powers[row+1, upgrades[row+1,rID]+1, rID], 24, fontMI, 0, GetSpriteX(spr) + 70, GetSpriteY(spr) + 73, -5, 15)
 	
 	//Starting the upgrade pod
-	pod.sprUpBG = CreateSprite(0)
+	pod.sprUpBG = LoadSprite("upgrade/upgradeBG.png")
 	SetSpriteExpress(pod.sprUpBG, GetSpriteWidth(spr)-38, 110, 0, GetSpriteY(spr)+GetSpriteHeight(spr)-80, 100)
 	SetSpriteX(pod.sprUpBG, GetSpriteMiddleX(spr) - GetSpriteWidth(pod.sprUpBG)/2)
-	SetSpriteColor(pod.sprUpBG, 10, 80, 10, 255)
+	//SetSpriteColor(pod.sprUpBG, 10, 80, 10, 255)
+	//SetSpriteColor(pod.sprUpBG, 150, 150, 150, 255)
 	
 	pod.txtUpgrade = CreateText("")
 	SetTextExpress(pod.txtUpgrade, "", 24, fontMI, 0, GetSpriteX(pod.sprUpBG) + 10, GetSpriteY(pod.sprUpBG) + 13, -4, 90)
@@ -103,8 +104,8 @@ function CreatePod(row, col)
 	SetTextLineSpacing(pod.txtUpgrade, 3)
 	SetTextColor(pod.txtUpgrade, 0, 255, 0, 255)
 	
-	pod.sprBuy = LoadSprite("buy.png")
-	SetSpriteExpress(pod.sprBuy, 70, 40, GetSpriteX(spr)+275, GetSpriteY(pod.sprUpBG)+GetSpriteHeight(pod.sprUpBG)-67, 80)
+	pod.sprBuy = LoadSprite("upgrade/buy.png")
+	SetSpriteExpress(pod.sprBuy, 98*.7, 42*.7, GetSpriteX(spr)+275, GetSpriteY(pod.sprUpBG)+GetSpriteHeight(pod.sprUpBG)-67, 80)
 	SetPodBuyColor(pod)
 	
 	pod.sprChainL = CreateSprite(0)
@@ -126,7 +127,7 @@ function CreatePod(row, col)
 	pod.twnUpgradeUp = CreateTweenCustom(.3)
 	SetTweenCustomFloat1(pod.twnUpgradeUp, 60, 0, TweenOvershoot())
 	
-	pod.sprCover = LoadSprite("shopboxCover.png")
+	pod.sprCover = LoadSprite("upgrade/shopboxCover.png")
 	MatchSpriteSize(pod.sprCover, spr)
 	MatchSpritePosition(pod.sprCover, spr)
 	SetSpriteDepth(pod.sprCover, 4)
@@ -160,7 +161,7 @@ function SetPodBuyColor(pod as p)
 	if scrapTotal >= GetCost2(pod.row, pod.column, pod.rID)
 		SetSpriteColor(pod.sprBuy, 255, 255, 255, 255)
 	else
-		SetSpriteColor(pod.sprBuy, 50, 50, 50, 50)
+		SetSpriteColor(pod.sprBuy, 50, 50, 50, 255)
 	endif
 endfunction
 function CreateUpgrade2()
@@ -172,15 +173,15 @@ function CreateUpgrade2()
 	SetRaceQueue(curRaceSet)
 	
 	if debug
-		//raceQueueRef.length = -1
-		//raceQueueRef.insert(WATER2)
-		//raceQueueRef.insert(LAND2)
-		//raceQueueRef.insert(AIR2)
-		//raceQueueRef.insert(SPACE2)
-		//raceQueueRef.insert(WATER)
-		//raceQueueRef.insert(LAND)
-		//raceQueueRef.insert(AIR)
-		//areaSeen = raceQueueRef.length
+		raceQueueRef.length = -1
+		raceQueueRef.insert(WATER2)
+		raceQueueRef.insert(LAND2)
+		raceQueueRef.insert(AIR2)
+		raceQueueRef.insert(SPACE2)
+		raceQueueRef.insert(WATER)
+		raceQueueRef.insert(LAND)
+		raceQueueRef.insert(AIR)
+		areaSeen = raceQueueRef.length +1
 	endif
 	
 	upPods.length = -1
@@ -193,7 +194,20 @@ function CreateUpgrade2()
 		upPods[i] = curPod
 	next i
 	
-	LoadSpriteExpress(startRace, "nextRace.png", 420/2.8, 165/2.8, GetSpriteX(upPods[areaSeen*4-1].sprBG)+500, 350, 5)
+	for col = 0 to areaSeen - 1
+		upCols[col] = LoadSprite("upgrade/mode" + str(raceQueueRef[col]) + ".png")
+		SetSpriteSize(upCols[col], 395*0.6, 80*0.6)
+		SetSpritePosition(upCols[col], GetSpriteMiddleX(upPods[0+4*col].sprUpBG)-GetSpriteWidth(upCols[col])/2, 25)
+		SetSpriteDepth(upCols[col], 30)
+	next col
+	
+	IncTextY(scrapText, -16)
+	scrapBG = LoadSprite("upgrade/scrapBG.png")
+	SetSpriteExpress(scrapBG, GetTextTotalWidth(scrapText)*1.2, GetTextTotalHeight(scrapText)*1.2, GetTextX(scrapText) - GetTextTotalWidth(scrapText)*.1, GetTextY(scrapText) - GetTextTotalHeight(scrapText)*.1, GetTextDepth(scrapText)+1)
+	SetSpriteColorAlpha(scrapBG, 170)
+	FixSpriteToScreen(scrapBG, 1)
+	
+	LoadSpriteExpress(startRace, "nextRace.png", 420/2.5, 165/2.5, GetSpriteX(upPods[areaSeen*4-1].sprBG)+500, 350, 5)
 	
 	PlayTweenSprite(tweenSprFadeOut, coverS, 0)
 	
@@ -319,7 +333,7 @@ function DoUpgrade2()
 		if scrapTotal >= GetCost2(curP.row, curP.column, curP.rID) and upgrades[curP.row+1, curP.rID] < 3
 			str$ = GetTextString(curP.txtUpgrade)
 			for j = FindString(str$, "Upgrade:")-1 to Len(str$)-1
-				SetTextCharColor(curP.txtUpgrade, j, 127 + 127*sin(gameTime#*1.5), 255, 127 + 127*sin(gameTime#*1.5), 255)
+				SetTextCharColor(curP.txtUpgrade, j, 127 + 127*sin(gameTime#*.6), 255, 127 + 127*sin(gameTime#*.6), 255)
 			next j 
 		endif
 		
@@ -338,8 +352,12 @@ function DoUpgrade2()
 		GlideViewOffset(((78+32*areaSeen)*((upPods.length-1)/4)), 0, 40, 2)
 	endif
 	
+	//Adjusting the start race button, pulses if it's highlighted
+	SetSpriteSize(startRace, 420/2.5, 165/2.5)
+	SetSpritePosition(startRace, GetSpriteX(upPods[areaSeen*4-1].sprBG)+500, 350)
 	if selectedPod = startRace
-		SetSpriteSize(startRace, 100 + 20*sin(gameTime#), 60)
+		SetSpriteSize(startRace, GetSpriteWidth(startRace) + sin(gameTime#)*14, GetSpriteHeight(startRace) + sin(gameTime#)*14)
+		SetSpritePosition(startRace, GetSpriteX(startRace) - sin(gameTime#)*7, GetSpriteY(startRace) - sin(gameTime#)*7)
 		if inputSelect then StartRace2()
 	endif
 	if Button(startRace) then StartRace2()
@@ -372,8 +390,8 @@ function AlignPod(curP as p)
 	endif
 	if GetTweenCustomPlaying(curP.twnBuyTuck) then SetSpritePosition(curP.sprUpBG, GetSpriteMiddleX(spr) - GetSpriteWidth(curP.sprUpBG)/2, GetSpriteY(spr)+GetSpriteHeight(spr)-80 + GetTweenCustomFloat1(curP.twnUpgradeDown) + GetTweenCustomFloat1(curP.twnBuyTuck))
 	
-	SetTextPosition(curP.txtUpgrade, GetSpriteX(curP.sprUpBG) + 10, GetSpriteY(curP.sprUpBG) + 2)
-	SetSpritePosition(curP.sprBuy, GetSpriteX(spr)+283, GetSpriteY(curP.sprUpBG)+GetSpriteHeight(curP.sprUpBG)-GetSpriteHeight(curP.sprBuy)-9)
+	SetTextPosition(curP.txtUpgrade, GetSpriteX(curP.sprUpBG) + 15, GetSpriteY(curP.sprUpBG) - 4)
+	SetSpritePosition(curP.sprBuy, GetSpriteX(spr)+266, GetSpriteY(curP.sprUpBG)+GetSpriteHeight(curP.sprUpBG)-GetSpriteHeight(curP.sprBuy)-9)
 	
 	
 endfunction
@@ -417,11 +435,15 @@ function DeleteUpgrade2()
 		DeleteTween(upPods[i].twnBuyTuck)
 	next i
 	
+	for i = 0 to raceQueueRef.length-1
+		DeleteSprite(upCols[i])
+	next i
 	
 	upPods.length = -1
 	
 	DeleteSprite(startRace)
 	DeleteSprite(upgradeBG)
+	DeleteSprite(scrapBG)
 	if GetTextExists(scrapText) then DeleteText(scrapText)		
 	
 	EmptyTrashBag()
@@ -431,12 +453,12 @@ function CreateUpgradePod(row, col)
 	// Create a single upgrade pod.
 	
 	spr = upgrage1StartSpr + 200*col + row*10
-	LoadSpriteExpress(spr, "shopbox" + str(raceQueueRef[col]) + ".png", 362, 154, 10 + col*360, 80 + row*156, 20)
+	LoadSpriteExpress(spr, "upgrade/shopbox" + str(raceQueueRef[col]) + ".png", 362, 154, 10 + col*360, 80 + row*156, 20)
 	
 	LoadSpriteExpress(spr + 1, "shopPlate.png", 240, 75, GetSpriteX(spr) + 72, GetSpriteY(spr) + 60, 14)
 	SetSpriteColor(spr+1, 110, 110, 110, 255)	
 	
-	LoadSpriteExpress(spr + 2, "icon" + str(raceQueueRef[col]) + "bg.png", 40, 40, GetSpriteX(spr) + 16, GetSpriteY(spr) + 92, 14)
+	LoadSpriteExpress(spr + 2, "upgrade/icon" + str(raceQueueRef[col]) + "bg.png", 40, 40, GetSpriteX(spr) + 16, GetSpriteY(spr) + 92, 14)
 	
 	for k = 0 to 2
 		if k = 0 then CreateTextExpress(spr + k, "", 96, fontMI, 1, GetSpriteX(spr) + 30, GetSpriteY(spr) + 2, 0, 15)
@@ -486,7 +508,7 @@ function CreateUpgrade()
 	LoadSpriteExpress(vehicle4, "upgradeV" + str(areaSeen) + ".png", GetSpriteWidth(instruct), GetSpriteWidth(instruct), GetSpriteX(instruct), GetSpriteY(instruct), 70)
 	
 	for col = 0 to areaSeen - 1
-		LoadSpriteExpress(vehicle1 + col, "mode" + str(raceQueueRef[col]) + ".png", 395*0.6, 80*0.6, 70 + col*(360), 25, 30)
+		LoadSpriteExpress(vehicle1 + col, "upgrade/mode" + str(raceQueueRef[col]) + ".png", 395*0.6, 80*0.6, 70 + col*(360), 25, 30)
 	next col
 	
 	LoadSpriteExpress(upgradeBG, "upgradebg" + str(areaSeen) + ".png", w, h, 0, 0, 99)	
