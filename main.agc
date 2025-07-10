@@ -22,7 +22,7 @@ SetWindowTitle("Race Against a Duck")
 SetWindowSize( 1280, 720, 0 )
 SetWindowAllowResize( 1 ) // allow the user to resize the window
 
-global debug = 1
+global debug = 0
 if debug = 0 then SetErrorMode(1)
 global nextScreen = water2
 //SetPhysicsDebugOn()
@@ -85,6 +85,25 @@ LoadSoundOGG(bubbleS, "sounds/bubbles.ogg")
 LoadSoundOGG(flyoutS, "sounds/flyout.ogg")
 #constant collectS 20
 LoadSoundOGG(collectS, "sounds/collect.ogg")
+#constant metalChompS 21
+LoadSoundOGG(metalChompS, "sounds/metalChomp.ogg")
+#constant swimmingS 22
+LoadSoundOGG(swimmingS, "sounds/swimming.ogg")
+#constant waterExitS 23
+LoadSoundOGG(waterExitS, "sounds/waterExit.ogg")
+#constant botKillS 24
+LoadSoundOGG(botKillS, "sounds/botKill.ogg")
+#constant chainShakeS 25
+LoadSoundOGG(chainShakeS, "sounds/chainShake.ogg")
+#constant screenSlideS 26
+LoadSoundOGG(screenSlideS, "sounds/screenSlide.ogg")
+#constant boxSlideS 27
+LoadSoundOGG(boxSlideS, "sounds/boxSlide.ogg")
+#constant crabS 28
+LoadSoundOGG(crabS, "sounds/crab.ogg")
+#constant haltS 29
+LoadSoundOGG(haltS, "sounds/halt.ogg")
+
 
 #constant introM 1
 LoadMusicOGG(introM, "music/intro.ogg")
@@ -101,6 +120,13 @@ LoadMusicOGG(endingM, "music/ending.ogg")
 #constant titleM 7
 LoadMusicOGG(titleM, "music/title.ogg")
 SetMusicLoopTimesOGG(titleM, 4.941, 33.030)
+#constant upgrade2M 8
+
+
+#constant ambWater2 21
+LoadMusicOGG(ambWater2, "sounds/ambWater2.ogg")
+#constant ambUpgrade2 25
+LoadMusicOGG(ambUpgrade2, "sounds/ambUpgrade2.ogg")
 
 #constant font1I 40001
 #constant font2I 40002
@@ -380,6 +406,7 @@ do
 			StopMusicOGG(waterM)
 			StopMusicOGG(landM)
 			StopMusicOGG(airM)
+			StopAmbientMusic()
 			
 			HideUIText()
 			LoadSpriteExpress(finishS, "finishDuck.png", 924, 429, 0, 0, 4)
@@ -867,7 +894,7 @@ endfunction
 function DeleteScene(scene)
 	
 	if scene < UPGRADE
-		
+		StopAmbientMusic()
 		DeleteSprite(hero)
 		if GetSpriteExists(hero2) then DeleteSprite(hero2)		
 		DeleteAnimatedSprite(duck)
@@ -901,7 +928,9 @@ function DeleteScene(scene)
 			DeleteSprite(water2Trees)
 			DeleteSprite(featherBoostFrameS)
 			DeleteSprite(featherBoostS)
+			DeleteSprite(featherBoostTop)
 			DeleteSprite(water2BG)
+			
 		endif
 		
 		if scene = LAND2
@@ -1027,7 +1056,7 @@ function PlayRaceCutScene(scene)
 			DoSpace2()
 		endif
 	//next i
-	/*
+	
 	
 	while GetSpriteCurrentFrame(cutsceneSpr) < 4
 		
@@ -1052,7 +1081,7 @@ function PlayRaceCutScene(scene)
 	
 	PlaySound(beepGoS, volumeS)
 	PlaySound(windSS, volumeS)
-	*/
+	
 	if curRaceSet = 1
 		StopMusicOGG(waterM)
 		StopMusicOGG(landM)
@@ -1069,6 +1098,12 @@ function PlayRaceCutScene(scene)
 		
 	
 	
+endfunction
+
+function StopAmbientMusic()
+	StopMusicOgg(ambWater2)
+	StopSound(swimmingS)
+	StopMusicOGG(ambUpgrade2)
 endfunction
 
 function FreezeGameplay()

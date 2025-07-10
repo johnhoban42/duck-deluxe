@@ -118,9 +118,9 @@ function CreatePod(row, col)
 	SetTweenSpriteX(pod.twnSideSway, GetSpriteX(spr)-8, GetSpriteX(spr), TweenOvershoot())
 	
 	pod.twnMainDown = CreateTweenSprite(.3)
-	SetTweenSpriteY(pod.twnMainDown, GetSpriteY(spr), GetSpriteY(spr)+80, TweenSmooth2())
+	SetTweenSpriteY(pod.twnMainDown, GetSpriteY(spr), GetSpriteY(spr)+70, TweenSmooth2())
 	pod.twnMainUp = CreateTweenSprite(.3)
-	SetTweenSpriteY(pod.twnMainUp, GetSpriteY(spr)+80, GetSpriteY(spr), TweenSmooth2())
+	SetTweenSpriteY(pod.twnMainUp, GetSpriteY(spr)+70, GetSpriteY(spr), TweenSmooth2())
 	
 	pod.twnUpgradeDown = CreateTweenCustom(.3)
 	SetTweenCustomFloat1(pod.twnUpgradeDown, 0, 60, TweenOvershoot())
@@ -165,6 +165,24 @@ function SetPodBuyColor(pod as p)
 	endif
 endfunction
 function CreateUpgrade2()
+	
+	//areaSeen = 4
+	if curRaceSet = 2
+		if areaSeen = 1
+			LoadMusicOGG(upgrade2M, "music/upgrade2-1.ogg")
+			SetMusicLoopTimesOGG(upgrade2M, 3.692, -1)
+		endif
+		if areaSeen = 2 then LoadMusicOGG(upgrade2M, "music/upgrade2-2.ogg")
+		if areaSeen = 3 then LoadMusicOGG(upgrade2M, "music/upgrade2-3.ogg")
+		if areaSeen >= 4 then LoadMusicOGG(upgrade2M, "music/upgrade2-4.ogg")
+	endif
+	if GetMusicExistsOGG(upgrade2M) = 0 then LoadMusicOGG(upgrade2M, "music/upgrade.ogg")
+	
+	PlayMusicOGG(upgrade2M, 1)
+	PlayMusicOGG(ambUpgrade2, 1)
+	SetMusicVolumeOGG(ambUpgrade2, ambVol*.2)
+	//General upgrade music, for duck 3/DX/challenge mode
+	
 	
 	LoadSpriteExpress(upgradeBG, "upgrade2-1.png", w, h, 0, 0, 900)
 	FixSpriteToScreen(upgradeBG, 1)
@@ -232,6 +250,8 @@ function DoUpgrade2()
 		if triggerMove = 0 then selectedPod = startRace
 	endif
 	
+	
+	
 	//This craziness is for moving on and moving off of the start race button
 	if (inputLeft and selectedPod/4 = 0) or (inputRight and selectedPod/4 = areaSeen-1 and selectedPod > -1)
 		if selectedPod <> -1
@@ -268,6 +288,9 @@ function DoUpgrade2()
 			if oldSel > -1 then upPods[oldSel].isSelected = 0
 			//if oldSel <> startRace then upPods[oldSel].isSelected = 0
 			
+			PlaySound(chainShakeS, volumeS*0.04)
+			PlaySound(boxSlideS, volumeS*0.08)
+			
 			UpdateAllTweens(1)
 			
 			//Updating the buy button on that panel
@@ -276,6 +299,9 @@ function DoUpgrade2()
 			//Moving the upgrade panel down on the selected upgrade
 			PlayTweenCustom(upPods[i].twnUpgradeDown, 0)
 			if oldSel > -1 and oldSel <> startRace then PlayTweenCustom(upPods[oldSel].twnUpgradeUp, 0)
+			
+			
+			PlaySound(screenSlideS, volumeS*0.1)
 			
 			for j = 0 to upPods.length-1
 				//Normalizing the pods that aren't the selected one, this happens to all of them at the start
@@ -308,14 +334,24 @@ function DoUpgrade2()
 			PlayTweenCustom(curP.twnBuyTuck, 0)
 			PlayTweenCustom(curP.twnUpgradeDown, GetTweenCustomEndTime(curP.twnBuyTuck))
 			
+			PlaySound(screenSlideS, volumeS*0.15)
+			PlaySound(buyS, volumeS)
+			
 			dec scrapTotal, GetCost2(curP.row, curP.column, curP.rID)
 			UpdateScrapText()
 			
 			inc upgrades[curP.row+1, curP.rID], 1
+			
+			if upgrades[curP.row+1, curP.rID] = 2 and curP.rID = WATER2 and curP.row+1 = 4 then PlaySound(crabS, volumeS*0.4)
+			
 			inc curP.lev, 1
 			
 			SetPodTextIcon2(curP)
 			UpdateAllTweens(.0001)
+		endif
+		
+		if ((((Button(curP.sprBG) or Button(curP.sprUpBG) or inputSelect) and i = selectedPod)) and upgrades[curP.row+1, curP.rID] < 3) and scrapTotal < GetCost2(curP.row, curP.column, curP.rID)
+			PlaySound(haltS, volumeS*0.5)
 		endif
 		
 		//Update main panel text
@@ -397,7 +433,7 @@ function AlignPod(curP as p)
 endfunction
 function StartRace2()
 	duckSpeed# = duckSpeedDefault#
-	StopMusicOGG(upgradeM)
+	StopMusicOGG(upgrade2M)
 	PlaySound(selectS, volumeS)
 	PlayTweenSprite(tweenSprFadeIn, coverS, 0)
 	PlaySound(windMS, volumeS)
@@ -446,6 +482,7 @@ function DeleteUpgrade2()
 	DeleteSprite(scrapBG)
 	if GetTextExists(scrapText) then DeleteText(scrapText)		
 	
+	StopAmbientMusic()
 	EmptyTrashBag()
 endfunction
 
