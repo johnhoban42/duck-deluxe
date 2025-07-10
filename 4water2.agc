@@ -22,6 +22,10 @@ global diveBoostSlow# = .0008
 global diveHop# = 0
 global diveDamage = 0
 
+global featherBoostFrameS
+global featherBoostS
+global featherBoostTop
+
 //Water tile visibility could be an upgrade variable?
 //waterTileAlpha
 
@@ -30,6 +34,9 @@ global fixedWater2Speed# = 0.11 //Upgrade variable
 
 
 function InitWater2()
+	
+	PlayMusicOGG(ambWater2, 1)
+	SetMusicVolumeOGG(ambWater2, ambVol*volumeS)
 	
 	heroX# = 120
 	heroY# = 0
@@ -77,7 +84,9 @@ function InitWater2()
 	if diveLevel = 2 then diveDeepTimerMax# = 0.41/(diveVelMax#)
 	if diveLevel = 3 then diveDeepTimerMax# = 0.55/(diveVelMax#)
 	if diveLevel = 4 then diveDeepTimerMax# = 0.69/(diveVelMax#)
+	SetViewZoomMode(0)
 	SetViewZoom(1/((4+diveLevel*1.5)/10.0))
+	heroX# = 120 + 60*diveLevel
 	
 	SetSpriteVisible(water2S, 1)
 	SetSpriteSize(water2S, w, w/1000*75)
@@ -246,8 +255,9 @@ function InitWater2()
 		else
 			inc scrapWeight, 1
 			CreateSpriteExpress(spawnS, 10, 10, w, h, 8)
+			rnd = Random(1,8)
 			for j = 1 to 4
-				AddSpriteAnimationFrame(spawnS, scrapImgs[1, j, 1])//First index will be a random
+				AddSpriteAnimationFrame(spawnS, scrapImgs[rnd, 1, j])//First index will be a random
 			next j
 			PlaySprite(spawnS, 3+Random(1,3))
 			newS.size = 60
@@ -290,7 +300,19 @@ function InitWater2()
 	spawnActive.insert(newS)
 	inc spawnS, 1
 	
+	//The feather boost meter
+	featherBoostFrameS = LoadSprite("featherBar.png")
+	SetSpriteExpress(featherBoostFrameS, 70, 70, 70, 590, 5) 
+	FixSpriteToScreen(featherBoostFrameS, 1)
 	
+	featherBoostS = CreateSprite(0) 
+	SetSpriteExpress(featherBoostS, 20, 1, GetSpriteX(featherBoostFrameS) + GetSpriteWidth(featherBoostFrameS)*4/9, GetSpriteY(featherBoostFrameS) + GetSpriteHeight(featherBoostFrameS)*5/18, 6) 
+	//SetSpriteExpress(featherBoostS, 0, GetSpriteWidth(featherBoostFrameS)*2/9, GetSpriteX(featherBoostFrameS) + GetSpriteWidth(featherBoostFrameS)*4/9, GetSpriteY(featherBoostFrameS) + GetSpriteHeight(featherBoostFrameS)*5/18, 4) 
+	FixSpriteToScreen(featherBoostS, 1)
+	
+	featherBoostTop = CreateSprite(featherImg1)
+	SetSpriteExpress(featherBoostTop, 50, 50, GetSpriteMiddleX(featherBoostFrameS)-50/2, GetSpriteY(featherBoostFrameS)-10, 4) 
+	FixSpriteToScreen(featherBoostTop, 1)
 	
 	//SetSpriteColor(BG, 255, 255, 0, 255)
 	
@@ -353,6 +375,8 @@ function DoWater2()
 		if stateSpace and heroY# <= 0
 			//Diving sound
 			if GetSoundPlayingR(bubbleS) = 0 then PlaySound(bubbleS, volumeS/2)
+			//Swimming sound
+			PlaySound(swimmingS, volumeS*0.05, 1)
 			SetParticlesPosition(splashP, GetSpriteMiddleX(hero), (GetSpriteMiddleY(water2S)) + GetSpriteHeight(hero)/2)
 			ResetParticleCount(splashP)
 		endif
@@ -388,6 +412,11 @@ function DoWater2()
 			
 			//diveVelY# = diveVelY# + diveRise#*fpsr#*4
 			//For being airborne
+			
+			StopSound(swimmingS)
+			PlaySound(waterExitS, volumeS*(0.07+diveLevel*0.05))
+			SetParticlesPosition(splashP, GetSpriteMiddleX(hero), (GetSpriteMiddleY(water2S)) + GetSpriteHeight(hero)/2)
+			ResetParticleCount(splashP)
 			
 			//For now, leaving the water will just cancel movement
 			diveVelY# = 0
@@ -454,8 +483,8 @@ function DoWater2()
 	//Print(raceQueue.length)
 	//SetSpriteFrame(bg3, 1+8.0*(Round(waterDistance-heroLocalDistance#)/(1.0*waterDistance)))
 	
-	SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(waterDistance - heroLocalDistance#)/waterDistance)/areaSeen)
-	SetSpriteX(duckIcon, Min(GetSpriteX(progBack)-GetSpriteWidth(duckIcon)/2 + (GetSpriteWidth(progBack)*(20000 - (duckDistance#-40000))/20000)/areaSeen, GetSpriteX(progBack)+GetSpriteWidth(progBack)-GetSpriteWidth(duckIcon)))
+	//SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(waterDistance - heroLocalDistance#)/waterDistance)/areaSeen)
+	//SetSpriteX(duckIcon, Min(GetSpriteX(progBack)-GetSpriteWidth(duckIcon)/2 + (GetSpriteWidth(progBack)*(20000 - (duckDistance#-40000))/20000)/areaSeen, GetSpriteX(progBack)+GetSpriteWidth(progBack)-GetSpriteWidth(duckIcon)))
 	
 	deleted = 0
 	for i = 1 to spawnActive.length
@@ -475,7 +504,8 @@ function DoWater2()
 				elseif spawnActive[i].cat = BAD
 					diveDamage = 1
 					if GetSpriteColorGreen(hero) = 255 then PlaySound(hitS, volumeS)
-					diveBoost# = 0
+					PlaySound(botKillS, volumeS*0.15)
+					diveBoost# = diveBoost#*2/3
 					diveBoostQueue = 0
 					//if damageAmt# <= 0
 					//	damageAmt# = 255
@@ -505,6 +535,9 @@ function DoWater2()
 				SetSpriteAngle(spr, 6.0*cos(gameTime#))
 				spawnActive[i].x = spawnActive[i].x - 0.2*diveLevel*fpsr#
 				if GetSpriteCurrentFrame(spr) <= 2 then PlaySprite(spr, 10, 1, 3, 4)
+				if GetSoundsPlaying(metalChompS) = 0 and GetSpriteX(spr) > 20
+					PlaySound(metalChompS, volumeS*.2)
+				endif
 			endif
 			if spawnActive[i].cat = GOOD
 				SetSpriteColorBlue(spr, 185 + 70*sin( spawnActive[i].x-heroLocalDistance#))
@@ -521,8 +554,16 @@ function DoWater2()
 		spawnActive.remove(deleted)
 	endif
 	
+	if diveBoost# > 0 or diveBoostQueue > 0
+		SetSpriteSize(featherBoostS, 20, 30*(diveBoost#+diveBoostQueue)*(2+upgrades[2, 4]))
+		SetSpriteY(featherBoostS, GetSpriteY(featherBoostFrameS)+18-GetSpriteHeight(featherBoostS))
+	else
+		SetSpriteSize(featherBoostS, 20, 0.1)
+	endif
+	SetSpriteY(featherBoostTop, GetSpriteY(featherBoostFrameS)-10-GetSpriteHeight(featherBoostS))
 	
-	Print(GetSpriteX(duck))
+	Print(GetSpriteWidth(featherBoostS))
+	Print(GetSpriteHeight(featherBoostS))
 	
 
 	

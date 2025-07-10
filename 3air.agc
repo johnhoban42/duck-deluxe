@@ -197,8 +197,8 @@ function DoAir()
 	
 	SetSpriteFrame(airS, 1+Mod(Round(airDistance-heroLocalDistance#)/12, 52))
 	
-	SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(airDistance - heroLocalDistance#)/airDistance)/3 + (GetSpriteWidth(progBack)*2/3)-GetSpriteWidth(heroIcon)/2)
-	SetSpriteX(duckIcon, Min(GetSpriteX(progBack)-GetSpriteWidth(duckIcon)/2 + (GetSpriteWidth(progBack)*(20000 - (duckDistance#-40000))/20000)/3, GetSpriteX(progBack)+GetSpriteWidth(progBack)-GetSpriteWidth(duckIcon)))
+	//SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(airDistance - heroLocalDistance#)/airDistance)/3 + (GetSpriteWidth(progBack)*2/3)-GetSpriteWidth(heroIcon)/2)
+	//SetSpriteX(duckIcon, Min(GetSpriteX(progBack)-GetSpriteWidth(duckIcon)/2 + (GetSpriteWidth(progBack)*(20000 - (duckDistance#-40000))/20000)/3, GetSpriteX(progBack)+GetSpriteWidth(progBack)-GetSpriteWidth(duckIcon)))
 	
 	deleted = 0
 	for i = 1 to spawnActive.length

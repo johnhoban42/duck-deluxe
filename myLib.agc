@@ -70,6 +70,7 @@ endfunction
 //Volume for music and sound effects
 global volumeM = 100
 global volumeS = 100
+#constant ambVol 20
 
 //Core functions that are used in the app, and possible future apps
 function SyncG()
@@ -1055,10 +1056,10 @@ function SetWords()
 	words[3, 3, 2] = "Dramatic"
 	words[3, 4, 2] = "Deadly"
 
-	words[4, 1, 2] = "xhaust"
-	words[4, 2, 2] = "ngine"
-	words[4, 3, 2] = "xciter"
-	words[4, 4, 2] = "lectricity"
+	words[4, 1, 2] = "Exhaust"
+	words[4, 2, 2] = "Engine"
+	words[4, 3, 2] = "Exciter"
+	words[4, 4, 2] = "Electricity"
 
 	//Air 1
 	words[1, 1, 3] = "Moronic"
@@ -1083,7 +1084,7 @@ function SetWords()
 	
 	//Starting the Duck 2 words
 	//Swamp/Water 2
-	words[1, 1, 4] = "Dilapidated"
+	words[1, 1, 4] = "Deadweight"
 	words[1, 2, 4] = "Dreary"
 	words[1, 3, 4] = "Droll"
 	words[1, 4, 4] = "Daring"
@@ -1248,10 +1249,10 @@ function SetPowers()
 	powers[3, 3, 4] = "Deeper Dive Depth"
 	powers[3, 4, 4] = "Full Dive Depth"
 	
-	powers[4, 1, 4] = "x1 Water Movement"
-	powers[4, 2, 4] = "x1.4 Water Movement"
-	powers[4, 3, 4] = "x1.9 Water Movement"
-	powers[4, 4, 4] = "x3 Water Movement"
+	powers[4, 1, 4] = "x1 Dive Speed"
+	powers[4, 2, 4] = "x1.4 Dive Speed"
+	powers[4, 3, 4] = "x1.9 Dive Speed"
+	powers[4, 4, 4] = "x3 Dive Speed"
 	
 	//City/Land 2
 	powers[1, 1, 5] = ""

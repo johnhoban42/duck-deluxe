@@ -199,9 +199,9 @@ function DoLand()
 		//Print((i - landBoost1 + 1) - boostAmt#)
 	next i 
 	
-	SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(landDistance - heroLocalDistance#)/landDistance)/areaSeen + (GetSpriteWidth(progBack)/areaSeen))
+	//SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(landDistance - heroLocalDistance#)/landDistance)/areaSeen + (GetSpriteWidth(progBack)/areaSeen))
 	SetSpriteFrame(landS, 1+Mod(Round(landDistance-heroLocalDistance#)/6, 60))
-	SetSpriteX(duckIcon, Min(GetSpriteX(progBack)-GetSpriteWidth(duckIcon)/2 + (GetSpriteWidth(progBack)*(40000 - (duckDistance#-20000))/20000)/areaSeen, GetSpriteX(progBack)+GetSpriteWidth(progBack)-GetSpriteWidth(duckIcon)))
+	//SetSpriteX(duckIcon, Min(GetSpriteX(progBack)-GetSpriteWidth(duckIcon)/2 + (GetSpriteWidth(progBack)*(40000 - (duckDistance#-20000))/20000)/areaSeen, GetSpriteX(progBack)+GetSpriteWidth(progBack)-GetSpriteWidth(duckIcon)))
 	SetSpriteX(duck, (heroLocalDistance#-(duckDistance#-20000)))
 	
 	SetSpriteX(rail1, -GetSpriteWidth(rail1)/4+Mod(20000+heroLocalDistance#/2.5, GetSpriteWidth(rail1)/4))
