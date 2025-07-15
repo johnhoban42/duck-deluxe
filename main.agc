@@ -230,6 +230,8 @@ LoadScrapImages()
 tileI1 = LoadImage("waterTile1.png")
 tileI2 = LoadImage("waterTile2.png")
 
+global enemyPI
+enemyPI = LoadImage("enemyParticle.png")
 
 //CreateTextExpress(superStart, "Game loaded." + chr(10) + "Please click"+chr(10)+"to start.", 52, fontGI, 1, w/2, h/2-52, -10, 3)
 
@@ -263,7 +265,7 @@ function SetRaceQueue(raceSet)
 	endif
 	raceQueueRef = raceQueue
 	
-	raceSize = raceQueue.length
+	raceSize = raceQueue.length+1
 	duckDistance# = 20000*raceSize
 	
 	nextScreen = raceQueue[0]
@@ -339,7 +341,7 @@ do
 		
 		//Progress bar at top
 		SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(waterDistance - heroLocalDistance#)/waterDistance)/areaSeen)
-		SetSpriteX(duckIcon, Min(GetSpriteX(progBack)-GetSpriteWidth(duckIcon)/2 + (GetSpriteWidth(progBack)*(40000 - (duckDistance#-20000))/20000)/areaSeen, GetSpriteX(progBack)+GetSpriteWidth(progBack)-GetSpriteWidth(duckIcon)))
+		SetSpriteX(duckIcon, Min(GetSpriteX(progBack)-GetSpriteWidth(duckIcon)/2 + (GetSpriteWidth(progBack)*(20000*raceSize - (duckDistance#))/20000)/areaSeen, GetSpriteX(progBack)+GetSpriteWidth(progBack)-GetSpriteWidth(duckIcon)))
 		
 		if GetSpriteExists(cutsceneSpr) then IncSpriteY(cutsceneSpr, -2*fpsr#)
 		
@@ -407,6 +409,8 @@ do
 			StopMusicOGG(landM)
 			StopMusicOGG(airM)
 			StopAmbientMusic()
+			FreezeGameplay()
+			firstDuck2Race = 1
 			
 			HideUIText()
 			LoadSpriteExpress(finishS, "finishDuck.png", 924, 429, 0, 0, 4)
@@ -641,6 +645,21 @@ function SetupScene(scene)
 		FixTextToScreen(instruct, 1)
 		SetBG(scene)
 		
+		CreateParticlesExpress(enemyP, 10, 15, 4, 360, 500)
+		SetParticlesImage(enemyP, enemyPI)
+		SetParticlesStartZone(enemyP, -10, -1, 10, 1)
+		SetParticlesPosition(enemyP, 9999, 9999)
+		SetParticlesDirection(enemyP, 0, 70)
+		life# = .2
+		SetParticlesLife(enemyP, life#)
+		r = 255
+		g = 255
+		b = 255
+		AddParticlesColorKeyFrame(enemyP, 0, r, g, b, 255)
+		AddParticlesColorKeyFrame(enemyP, life#*4/5, r, g, b, 255)
+		AddParticlesColorKeyFrame(enemyP, life#, r, g, b, 0)
+		//AddParticlesForce(enemyP, 0, life#, 0, 1000)
+		
 		//LoadSpriteExpress(instruct, "mode" + str(scene) + ".png", 395*0.6, 80*0.6, 60, 20, 3)
 		for i = 0 to 3
 			/*
@@ -728,7 +747,8 @@ function SetupScene(scene)
 		FixSpriteToScreen(flag2, 1)
 		FixSpriteToScreen(flag3, 1)
 		
-		if raceSize = raceQueue.length+1 then PlayRaceCutScene(scene)
+		if raceSize-2 = raceQueue.length then PlayRaceCutScene(scene)	//What is this if statement??? Haha	//Turns out it was essential to making the game work
+		//PlayRaceCutScene(scene)
 		
 	elseif scene = UPGRADE
 		if curRaceSet = 1
@@ -898,6 +918,7 @@ function DeleteScene(scene)
 		DeleteSprite(hero)
 		if GetSpriteExists(hero2) then DeleteSprite(hero2)		
 		DeleteAnimatedSprite(duck)
+		if GetParticlesExists(enemyP) then DeleteParticles(enemyP)
 		
 		if scene = WATER
 			SetSpriteVisible(waterS, 0)
@@ -1107,7 +1128,16 @@ function StopAmbientMusic()
 endfunction
 
 function FreezeGameplay()
-	
+	if screen = WATER2
+		StopSprite(hero)
+		DeleteParticles(lightP)
+		DeleteParticles(splashP)
+		DeleteParticles(featherP)
+		for i = 1 to spawnActive.length
+			StopSprite(spawnActive[i].spr)
+		next i
+		
+	endif
 	
 endfunction
 

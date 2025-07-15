@@ -26,6 +26,10 @@ global featherBoostFrameS
 global featherBoostS
 global featherBoostTop
 
+//This is only used for the funny zoom for the very first race
+global focalPoint#
+global firstDuck2Race = 0
+
 //Water tile visibility could be an upgrade variable?
 //waterTileAlpha
 
@@ -221,7 +225,7 @@ function InitWater2()
 			if i = 3 then newS.cat = GOOD
 		endif
 		
-		newS.x = i*water2Distance/(iEnd+2) + 100 + Random(0, 340)
+		newS.x = i*water2Distance/(iEnd+2) + 100 + Random(0, 340) + 100*(1-firstDuck2Race)
 		newS.y = GetSpriteY(water2TileS) - 50 + Random(60, 350-(4-diveLevel)*70)
 		
 		
@@ -450,7 +454,6 @@ function DoWater2()
 		
 		SetSpriteFrame(i, 1+Mod(GetSpriteCurrentFrame(water2TileS)-1 + Mod(i-1,2)*30, 60))
 	next i
-	
 	SetSpriteX(water2Trees, (-w) + Mod(heroLocalDistance#, w))
 	
 	//if boatSpeed# > 0
@@ -477,7 +480,38 @@ function DoWater2()
 		
 	endif
 	
-	SetSpritePosition(duck, -1*(duckDistance# - 20000*(raceQueue.length+1)) - (water2Distance-heroLocalDistance#)+80, 70+4*cos(gameTime#*2))
+	SetSpritePosition(duck, -1*(duckDistance# - 20000*(raceSize)) - (water2Distance-heroLocalDistance#)+80 + 60*diveLevel, 70+4*cos(gameTime#*2))
+	//Print(GetSpriteX(duck))
+	
+	if firstDuck2Race = 0
+		if duckDistance# > 76000
+			focalPoint# = (raceSize)*20000 - duckDistance#
+			usePoint# = focalPoint#
+		else
+			focalPoint# = GlideNumToZero(focalPoint#, 40)
+			usePoint# = focalPoint# + landDistance-heroLocalDistance#
+		endif
+		
+			//Print(raceSize)
+			//Print(areaSeen)
+			//Print(duckDistance#)
+			Print(raceSize)	
+			Print(raceQueue.length)	
+			
+			
+		SetSpriteFrame(water2S, 1+Mod(Round(usePoint#)/6, 60))
+		//SetSpriteFrame(water2TileS, 1+Mod(Round(landDistance-heroLocalDistance#)/6, 60))
+		SetSpriteFrame(water2TileS, 1+Mod(Round(usePoint#)/6, 60))
+		for i = water2TileS+1 to water2TileE-1
+			SetSpriteFrame(i, 1+Mod(GetSpriteCurrentFrame(water2TileS)-1 + Mod(i-1,2)*30, 60))
+		next i
+		
+		SetSpritePosition(duck, -1*(duckDistance# - 20000*(raceSize)) - (focalPoint#)+80 + 60*diveLevel, 70+4*cos(gameTime#*2))
+		SetSpriteX(hero, heroX#-focalPoint#)
+		SetSpriteX(water2Trees, (-w) + Mod(heroLocalDistance#-focalPoint#, w))
+	endif
+	
+	
 	//Print(GetSPriteX(duck))
 	//Print(raceSize)
 	//Print(raceQueue.length)
@@ -490,7 +524,7 @@ function DoWater2()
 	for i = 1 to spawnActive.length
 		spr = spawnActive[i].spr
 		if i = spawnActive.length then spawnActive[i].x = water2Distance-30+heroX#
-		SetSpriteX(spr, spawnActive[i].x-(water2Distance-heroLocalDistance#))
+		SetSpriteX(spr, spawnActive[i].x-(water2Distance-heroLocalDistance#) - focalPoint#)
 		if GetSpriteGroup(spr) <> SCRAP then SetSpriteY(spr, spawnActive[i].y)
 		if GetSpriteVisible(spr)
 			if GetSpriteCollision(spr, hero) and Abs((GetSpriteY(hero) - GetSpriteY(spr))) < 80
@@ -507,6 +541,8 @@ function DoWater2()
 					PlaySound(botKillS, volumeS*0.15)
 					diveBoost# = diveBoost#*2/3
 					diveBoostQueue = 0
+					SetParticlesPosition(enemyP, GetSpriteMiddleX(spr), GetSpriteMiddleY(spr))
+					ResetParticleCount(enemyP)
 					//if damageAmt# <= 0
 					//	damageAmt# = 255
 					//	boatSpeed# = 0

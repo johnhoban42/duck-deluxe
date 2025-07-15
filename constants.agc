@@ -167,7 +167,7 @@ global arrowI
 #constant lightP 1
 #constant splashP 2
 #constant featherP 3
-
+#constant enemyP 4
 
 #constant GOOD 1
 #constant BAD 2
