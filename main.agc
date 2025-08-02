@@ -22,9 +22,9 @@ SetWindowTitle("Race Against a Duck")
 SetWindowSize( 1280, 720, 0 )
 SetWindowAllowResize( 1 ) // allow the user to resize the window
 
-global debug = 0
+global debug = 1
 if debug = 0 then SetErrorMode(1)
-global nextScreen = water2
+global nextScreen = AIR2
 //SetPhysicsDebugOn()
 
 
@@ -232,6 +232,8 @@ tileI2 = LoadImage("waterTile2.png")
 
 global enemyPI
 enemyPI = LoadImage("enemyParticle.png")
+global chainI
+chainI = LoadImage("upgrade/chain.png")
 
 //CreateTextExpress(superStart, "Game loaded." + chr(10) + "Please click"+chr(10)+"to start.", 52, fontGI, 1, w/2, h/2-52, -10, 3)
 
@@ -321,7 +323,7 @@ do
 	if screen < UPGRADE
 		
 		
-		if GetRawKeyState(81) and debug = 1 then heroLocalDistance# = heroLocalDistance# - 100
+		if GetRawKeyState(81) then heroLocalDistance# = heroLocalDistance# - 100
 		
 		if screen = WATER
 			DoWater()
@@ -940,6 +942,7 @@ function DeleteScene(scene)
 		if scene = WATER2
 			SetSpriteVisible(water2S, 0)
 			SetSpriteVisible(water2TileS, 0)
+			DeleteSprite(water2SOver)
 			DeleteParticles(lightP)
 			DeleteParticles(splashP)
 			DeleteParticles(featherP)
@@ -969,7 +972,7 @@ function DeleteScene(scene)
 			DeleteSprite(eggBird)
 			
 			iMax = bulletActive.length
-			for i = 1 to iMax
+			for i = 0 to iMax-1
 				DeleteAnimatedSprite(bulletActive[1].spr)
 				if GetTweenExists(bulletActive[1].spr) then DeleteTween(bulletActive[1].spr)
 				bulletActive.remove(1)

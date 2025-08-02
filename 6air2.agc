@@ -52,7 +52,7 @@ function InitAir2()
 	FixSpriteToScreen(air2BBG, 1)
 	SetSpriteColor(air2BBG, 255, 181, 117, 255)
 	
-	slipEnd = 0
+	slipEnd = 4
 	for i = 1 to slipEnd
 		slipS[i] = CreateSprite(0)
 		spr = slipS[i]
@@ -216,7 +216,7 @@ function DoAir2()
 		spr = slipS[i]
 		waver# = gameTime#/(11-i) + 200*i
 		
-		SetSpriteX(spr, (w/2 + (w/8)*(1*sin(1*waver#) + 2*sin(0.5*waver#) + 0.25*sin(4*waver#)))/GetViewZoom())
+		SetSpriteX(spr, (w/2 + (w/8)*(1*sin(1*waver#) + 2*sin(0.5*waver#) + 0.25*sin(4*waver#))))
 		
 		//1*sin(1*X) + 2*sin(0.5*X) + 0.25*sin(4*X)
 		
@@ -226,7 +226,7 @@ function DoAir2()
 	
 	
 	
-	inc heroLocalDistance#, -air2DefSpeed#*fpsr#*30
+	inc heroLocalDistance#, -air2DefSpeed#*fpsr#
 	if GetSpriteHitGroup(AIR2, GetSpriteMiddleX(hero), GetSpriteMiddleY(hero)) or GetSpriteHitGroup(AIR2, GetSpriteX(hero), GetSpriteMiddleY(hero)) or GetSpriteHitGroup(AIR2, GetSpriteX(hero)+GetSpriteWidth(hero), GetSpriteMiddleY(hero))
 		inc heroLocalDistance#, -air2SlipSpeed#*fpsr#
 		SetSpriteColor(hero, 0, 255, 0, 255)
@@ -247,76 +247,9 @@ function DoAir2()
 	deleted = 0
 	for i = 1 to spawnActive.length
 		spr = spawnActive[i].spr
-		//if i = spawnActive.length then spawnActive[i].x = water2Distance-30+heroX#
-		//Want width to be small, so that rivers/bushes aren't affected
-		if GetSpriteWidth(spr) < 100
-			SetSpriteX(spr, spawnActive[i].x)
-			SetSpriteY(spr, spawnActive[i].y+(air2Distance-heroLocalDistance#))
-			//if GetSpriteGroup(spr) <> SCRAP then SetSpriteY(spr, spawnActive[i].y)
-			if GetSpriteVisible(spr)
-				
-				if spawnActive[i].cat = SCRAP
-					if GetSpriteGroup(spr) <> SCRAP then IncSpritePosition(spr, 60*cos(gameTime#/2), 40*sin(gameTime#/2))
-				endif
-				
-				if GetSpriteCollision(spr, hero) and Abs((GetSpriteY(hero) - GetSpriteY(spr))) < 80
-					
-					if spawnActive[i].cat = GOOD
-						if GetSpriteColorGreen(hero) <> 100 then inc diveBoostQueue, 1
-						PlaySound(collectS, volumeS)
-						//boatSpeed# = Max(boatSpeed#, sqrt(Min(boatSpeedMax, 20)*1.5))
-						
-						//PlaySound(rowGoodS, VolumeS*.8)
-					elseif spawnActive[i].cat = BAD
-						//diveDamage = 1
-						if GetSpriteColorGreen(hero) = 255 then PlaySound(hitS, volumeS)
-						SetSpriteColorGreen(hero, 0)
-						SetSpriteColorBlue(hero, 0)
-						//diveBoost# = 0
-						//diveBoostQueue = 0
-					elseif GetTweenExists(spr) = 0 //SCRAP
-						CollectScrap(WATER2)
-						SetSpriteGroup(spr, SCRAP)
-						PlaySprite(spr, 30)
-						CreateTweenSprite(spr, .6)
-						SetTweenSpriteY(spr, GetSpriteY(spr), GetSpriteY(spr) - GetSpriteHeight(spr)*1.5, TweenSmooth1())
-						//SetTweenSpriteAlpha(spr, 255, 0, TweenEaseOut2())
-						PlayTweenSprite(spr, spr, 0)
-						PlayTweenSprite(tweenSprFadeOut, spr, .1)
-						spawnActive[i].x = GetSpriteX(spr)
-					endif
-					if spawnActive[i].cat <> RAMP and GetSpriteWidth(spr) = GetSpriteHeight(spr) and GetSpriteGroup(spr) <> SCRAP
-						deleted = i
-						i = spawnActive.length
-					endif
-					
-					
-				endif
-				if spawnActive[i].cat = BAD and GetSpriteX(spawnActive[i].spr) < (w/5 + w/6*diveLevel)
-					//SetSpriteAngle(spr, 6.0*cos(gameTime#))
-					//spawnActive[i].x = spawnActive[i].x - 0.2*diveLevel*fpsr#
-					//if GetSpriteCurrentFrame(spr) <= 2 then PlaySprite(spr, 10, 1, 3, 4)
-				endif
-				if spawnActive[i].cat = GOOD
-					//SetSpriteColorBlue(spr, 185 + 70*sin( spawnActive[i].x-heroLocalDistance#))
-				endif
-				
-				
-			endif
-		else
-			//For the larger background chunks
-			SetSpriteY(spr, spawnActive[i].y + (air2Distance-heroLocalDistance#)/150.0)
-		endif
-		
+		//For the larger background chunks
+		SetSpriteY(spr, spawnActive[i].y + (air2Distance-heroLocalDistance#)/150.0)
 	next i
-	if deleted <> 0
-		if spawnActive[deleted].cat = GOOD
-			DeleteAnimatedSprite(spawnActive[deleted].spr)
-		else
-			DeleteSprite(spawnActive[deleted].spr)
-		endif
-		spawnActive.remove(deleted)
-	endif
 	
 	
 	if scrapErupted = 0 and Mod(gameTime#, 800) = 1
@@ -333,12 +266,17 @@ function DoAir2()
 			//Then let the bullet ride!
 			if GetSpriteVisible(bulletActive[i].spr) = 0 then SetSpriteVisible(bulletActive[i].spr, 1)
 			
+			destX = 0
+			destY = 0
+			
 			if bulletActive[i].formula = 1 and GetSpriteGroup(bulletActive[i].spr) <> SCRAP
-				originX = GetSpriteMiddleX(eggBird)
-				originY = GetSpriteMiddleY(eggBird)
-				SetSpriteX(bulletActive[i].spr, originX + 100*bulletActive[i].time/bulletActive[i].num)
-				SetSpriteY(bulletActive[i].spr, originY + bulletActive[i].time*100)
+				destX = w/2 + bulletActive[i].batchOffset + bulletActive[i].num*80
+				destY = GetSPriteMiddleY(eggBird) + 60 + bulletActive[i].time*300
 			endif
+			
+			GlideToX(bulletActive[i].spr, destX, 100)
+			GlideToY(bulletActive[i].spr, destY, 1000)
+			
 			if bulletActive[i].time < 2.5 then SetSpriteAngle(bulletActive[i].spr, bulletActive[i].time*500)
 			//Print(bulletActive[i].time)
 			
@@ -396,6 +334,7 @@ type bullet
 	formula as integer
 	isScrap as integer
 	num as float //This is the number that will be plugged into the formula
+	batchOffset as float //This should be the same for all in a batch
 
 endtype
 global bulletActive as bullet[0]
@@ -412,18 +351,21 @@ function MakeBullets()
 	pattern = Random(1, 1)
 	
 	bulletAmt = 0
-	if pattern = 1 then bulletAmt = 10
+	if pattern = 1 then bulletAmt = 4
 	
 	scrapAmt = 0
 	newB as bullet
 	
 	newB.formula = pattern
+	dir = Random (0, 1)
+	if dir = 0 then dir = -1
+	batchOffset = -400 + Random(0, 800)
 	
 	for i = 1 to bulletAmt
 		newB.spr = CreateSprite(eggBadI)
 		FixSpriteToScreen(newB.spr, 1)
 		SetSpriteVisible(newB.spr, 0)
-		SetSpriteExpress(newB.spr, 30, 30, 0, 0, 40)
+		SetSpriteExpress(newB.spr, 30, 30, GetSpriteMiddleX(eggBird)-15, GetSpriteMiddleY(eggBird)-15, 40)
 		newB.isScrap = 0
 		
 		if random(1, 15) = 15 and scrapAmt < 2
@@ -435,8 +377,10 @@ function MakeBullets()
 		endif
 		SetSpriteFrame(newB.spr, 1)
 		
+		newB.batchOffset = batchOffset
+		
 		newB.time = -i*0.3
-		newB.num = -bulletAmt/2 + i + 0.5
+		newB.num = -bulletAmt/2 + i*dir + 0.5
 		
 		bulletActive.insert(newB)
 	next i
