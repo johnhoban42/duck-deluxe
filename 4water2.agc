@@ -461,9 +461,9 @@ function DoWater2()
 	//Print(GetSpriteAngle(hero))
 	
 	
-	SetSpriteFrame(water2S, 1+Mod(Round(landDistance-heroLocalDistance#)/6, 60))
+	SetSpriteFrame(water2S, 1+Mod(Round(water2Distance-heroLocalDistance#)/6, 60))
 	SetSpriteFrame(water2SOver, GetSpriteCurrentFrame(water2S))
-	SetSpriteFrame(water2TileS, 1+Mod(Round(landDistance-heroLocalDistance#)/6, 60))
+	SetSpriteFrame(water2TileS, 1+Mod(Round(water2Distance-heroLocalDistance#)/6, 60))
 	for i = water2TileS+1 to water2TileE-1
 		
 		SetSpriteFrame(i, 1+Mod(GetSpriteCurrentFrame(water2TileS)-1 + Mod(i-1,2)*30, 60))

@@ -146,6 +146,7 @@ global tileEH	//Tile extra height, expanded to make them look connected together
 
 #constant air2BG 6001
 #constant air2BBG 6002
+#constant air2WindBG 6003
 
 global tileI1
 global tileI2

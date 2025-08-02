@@ -1276,31 +1276,31 @@ function SetPowers()
 	powers[4, 4, 5] = ""
 	
 	//Mountains/Air 2
-	powers[1, 1, 6] = ""
-	powers[1, 2, 6] = ""
-	powers[1, 3, 6] = ""
-	powers[1, 4, 6] = ""
+	powers[1, 1, 6] = "One Slipstream"
+	powers[1, 2, 6] = "Two Slipstreams"
+	powers[1, 3, 6] = "Three Slipstreams"
+	powers[1, 4, 6] = "Five Slipstreams"
 	
-	powers[2, 1, 6] = ""
-	powers[2, 2, 6] = ""
-	powers[2, 3, 6] = ""
-	powers[2, 4, 6] = ""
+	powers[2, 1, 6] = "Normal Width Wind"
+	powers[2, 2, 6] = "+35% Wide Wind"
+	powers[2, 3, 6] = "+70% Wide Wind"
+	powers[2, 4, 6] = "+120% Wide Wind"
 	
-	powers[3, 1, 6] = ""
-	powers[3, 2, 6] = ""
-	powers[3, 3, 6] = ""
-	powers[3, 4, 6] = ""
+	powers[3, 1, 6] = "x1 Wind Speed"
+	powers[3, 2, 6] = "x_ Wind Speed"
+	powers[3, 3, 6] = "x_ Wind Speed"
+	powers[3, 4, 6] = "x_ Wind Speed"
 	
-	powers[4, 1, 6] = ""
-	powers[4, 2, 6] = ""
-	powers[4, 3, 6] = ""
-	powers[4, 4, 6] = ""
+	powers[4, 1, 6] = "x1 Base Speed"
+	powers[4, 2, 6] = "x_ Base Speed"
+	powers[4, 3, 6] = "x_ Base Speed"
+	powers[4, 4, 6] = "x_ Base Speed"
 	
 	//Space 2
-	powers[1, 1, 7] = "x1 Start Speed"
-	powers[1, 2, 7] = "x1.5 Start Speed"
-	powers[1, 3, 7] = "x_ Start Speed"
-	powers[1, 4, 7] = "x_ Start Speed"
+	powers[1, 1, 7] = "x1 Base Speed"
+	powers[1, 2, 7] = "x1.5 Base Speed"
+	powers[1, 3, 7] = "x_ Base Speed"
+	powers[1, 4, 7] = "x_ Base Speed"
 	
 	powers[2, 1, 7] = ""
 	powers[2, 2, 7] = ""
@@ -1316,27 +1316,5 @@ function SetPowers()
 	powers[4, 2, 7] = "Big Combo"
 	powers[4, 3, 7] = "Bigger Combo"
 	powers[4, 4, 7] = "B"
-
-
-//Space 2
-	words[1, 1, 7] = "Doomed"
-	words[1, 2, 7] = "Desperate"
-	words[1, 3, 7] = "Destined"
-	words[1, 4, 7] = "Defending"
-	
-	words[2, 1, 7] = "Usurped"
-	words[2, 2, 7] = "Unraveled"
-	words[2, 3, 7] = "Ultimate"
-	words[2, 4, 7] = "Universal"
-	
-	words[3, 1, 7] = "Catasprohic"
-	words[3, 2, 7] = "Collapsed"
-	words[3, 3, 7] = "Colossal"
-	words[3, 4, 7] = "Candescent"
-	
-	words[4, 1, 7] = "Knave"
-	words[4, 2, 7] = "Knight"
-	words[4, 3, 7] = "King"
-	words[4, 4, 7] = "King of Kings"
 
 endfunction

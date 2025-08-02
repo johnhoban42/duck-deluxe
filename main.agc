@@ -970,6 +970,7 @@ function DeleteScene(scene)
 			DeleteSprite(air2BG)
 			DeleteSprite(air2BBG)
 			DeleteSprite(eggBird)
+			DeleteSprite(air2WindBG)
 			
 			iMax = bulletActive.length
 			for i = 0 to iMax-1
