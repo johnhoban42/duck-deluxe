@@ -156,7 +156,7 @@ function CreateSpriteExistingAnimation(spr, refSpr)
 endfunction
 
 function DeleteAnimatedSprite(spr)
-	DeleteSprite(spr)
+	if GetSpriteExists(spr) then DeleteSprite(spr)
 	//index = imageA.find(spr)
 	index = ArrayFind(imageA, spr)
 	
@@ -173,6 +173,22 @@ function DeleteAnimatedSprite(spr)
 	
 	//Check that the number after the current number is less than 30, to not accidentally find an image ID as an index
 endfunction
+
+function DeleteAnimatedSpriteEgg(spr)
+	DeleteSprite(spr)
+	index = ArrayFind(imageA, spr)
+	
+	if index <> -1
+		size = imageA[index+1] + 2
+		for i = 1 to size
+			if i > 1 then DeleteImage(imageA[index])
+			imageA.remove(index)
+		next i
+	endif
+	
+	//Check that the number after the current number is less than 30, to not accidentally find an image ID as an index
+endfunction
+
 
 function GetSpriteMiddleX(spr)
 	ret = GetSpriteX(spr) + GetSpriteWidth(spr)/2
@@ -1281,20 +1297,20 @@ function SetPowers()
 	powers[1, 3, 6] = "Three Slipstreams"
 	powers[1, 4, 6] = "Five Slipstreams"
 	
-	powers[2, 1, 6] = "Normal Width Wind"
+	powers[2, 1, 6] = "Not Wide Wind"
 	powers[2, 2, 6] = "+35% Wide Wind"
 	powers[2, 3, 6] = "+70% Wide Wind"
 	powers[2, 4, 6] = "+120% Wide Wind"
 	
 	powers[3, 1, 6] = "x1 Wind Speed"
-	powers[3, 2, 6] = "x_ Wind Speed"
-	powers[3, 3, 6] = "x_ Wind Speed"
-	powers[3, 4, 6] = "x_ Wind Speed"
+	powers[3, 2, 6] = "x2.5 Wind Speed"
+	powers[3, 3, 6] = "x4.4 Wind Speed"
+	powers[3, 4, 6] = "x8.9 Wind Speed"
 	
-	powers[4, 1, 6] = "x1 Base Speed"
-	powers[4, 2, 6] = "x_ Base Speed"
-	powers[4, 3, 6] = "x_ Base Speed"
-	powers[4, 4, 6] = "x_ Base Speed"
+	powers[4, 1, 6] = "x1 Duck Speed"
+	powers[4, 2, 6] = "x1.75 Duck Speed"
+	powers[4, 3, 6] = "x3.15 Duck Speed"
+	powers[4, 4, 6] = "x4.5 Duck Speed"
 	
 	//Space 2
 	powers[1, 1, 7] = "x1 Base Speed"

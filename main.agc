@@ -22,7 +22,7 @@ SetWindowTitle("Race Against a Duck")
 SetWindowSize( 1280, 720, 0 )
 SetWindowAllowResize( 1 ) // allow the user to resize the window
 
-global debug = 1
+global debug = 0
 if debug = 0 then SetErrorMode(1)
 global nextScreen = AIR2
 //SetPhysicsDebugOn()
@@ -103,6 +103,12 @@ LoadSoundOGG(boxSlideS, "sounds/boxSlide.ogg")
 LoadSoundOGG(crabS, "sounds/crab.ogg")
 #constant haltS 29
 LoadSoundOGG(haltS, "sounds/halt.ogg")
+#constant eggS 30
+LoadSoundOGG(eggS, "sounds/eggCrack.ogg")
+#constant jetstreamS 31
+LoadSoundOGG(jetstreamS, "sounds/jetstream.ogg")
+#constant fallS 32
+LoadSoundOGG(fallS, "sounds/fall.ogg")
 
 
 #constant introM 1
@@ -125,6 +131,8 @@ SetMusicLoopTimesOGG(titleM, 4.941, 33.030)
 
 #constant ambWater2 21
 LoadMusicOGG(ambWater2, "sounds/ambWater2.ogg")
+#constant ambAir2 23
+LoadMusicOGG(ambAir2, "sounds/ambAir2.ogg")
 #constant ambUpgrade2 25
 LoadMusicOGG(ambUpgrade2, "sounds/ambUpgrade2.ogg")
 
@@ -260,9 +268,9 @@ function SetRaceQueue(raceSet)
 		raceQueue.insert(LAND)
 		raceQueue.insert(AIR)
 	elseif raceSet = 2 //Race Against a Duck 2 order
+		raceQueue.insert(AIR2)
 		raceQueue.insert(WATER2)
 		raceQueue.insert(LAND2)
-		raceQueue.insert(AIR2)
 		raceQueue.insert(SPACE2)
 	endif
 	raceQueueRef = raceQueue
@@ -872,16 +880,45 @@ endfunction
 function CollectScrap(area)
 	PlaySound(scrapS, volumeS)
 	
-	if area = WATER or area = WATER2
-		num = Random(3, 5)
-		if scrapTotal < 10 then num = 5
-		inc scrapTotal, num
-	elseif area = LAND
-		num = Random(10, 14)
-		inc scrapTotal, num
-	else //AIR
-		num = Random(20, 29)
-		inc scrapTotal, num
+	if curRaceSet = 1
+		//RAAD1 numbers
+		if area = WATER or area = WATER2
+			num = Random(3, 5)
+			if scrapTotal < 10 then num = 5
+			inc scrapTotal, num
+		elseif area = LAND
+			num = Random(10, 14)
+			inc scrapTotal, num
+		else //AIR
+			num = Random(20, 29)
+			inc scrapTotal, num
+		endif
+	else
+		//RAAD2+ numbers
+		if curAreaSeen = 1
+			num = Random(3, 5)
+			if scrapTotal < 10 then num = 5
+			inc scrapTotal, num
+		elseif curAreaSeen = 2
+			num = Random(10, 14)
+			inc scrapTotal, num
+		elseif curAreaSeen = 3
+			num = Random(20, 29)
+			inc scrapTotal, num
+		elseif curAreaSeen = 4
+			num = Random(45, 60)
+			inc scrapTotal, num
+		elseif curAreaSeen = 5
+			//These numbers and below aren't balanced yet
+			num = Random(20, 29)
+			inc scrapTotal, num
+		elseif curAreaSeen = 6
+			num = Random(20, 29)
+			inc scrapTotal, num
+		else
+			num = Random(20, 29)
+			inc scrapTotal, num
+		endif
 	endif
 	
 	UpdateScrapText()
@@ -909,7 +946,7 @@ function SetInstructionText(sceneL)
 	elseif sceneL = AIR2
 		SetTextString(instruct, "SPACE - Turn" + CHR(10) + "Touch Slipstream - Speed Up" + CHR(10) + "")
 	elseif sceneL = SPACE2
-		SetTextString(instruct, "MASH the keys!" + CHR(10) + "BOOST your speed!" + CHR(10) + "WIN the race!!")
+		SetTextString(instruct, "MASH the sequence!" + CHR(10) + "BOOST your speed!" + CHR(10) + "WIN the race!!")
 	endif
 endfunction
 
@@ -974,9 +1011,12 @@ function DeleteScene(scene)
 			
 			iMax = bulletActive.length
 			for i = 0 to iMax-1
-				DeleteAnimatedSprite(bulletActive[1].spr)
+				DeleteSprite(bulletActive[1].spr)
 				if GetTweenExists(bulletActive[1].spr) then DeleteTween(bulletActive[1].spr)
 				bulletActive.remove(1)
+			next i
+			for i = 1 to slipS.length
+				if GetSpriteExists(slipS[i]) then DeleteSprite(slipS[i])
 			next i
 			
 		endif
@@ -1083,26 +1123,26 @@ function PlayRaceCutScene(scene)
 	//next i
 	
 	
-	while GetSpriteCurrentFrame(cutsceneSpr) < 4
-		
-		gameTime# = 0
-		
-		if scene = WATER
-			SetSpritePosition(hero, heroX#, heroY# + 10*Abs(sin(gameTime#/8)) + 6*Abs(cos(gameTime#/3)))
-			DrawWater()
-			IncSpriteY(duck, 10*Abs(sin(gameTime#/9)) + 5*Abs(cos(gameTime#/4)))
-		elseif scene = WATER2
-			//Put stuff here to make the scene feel alive while the timer is going off
-		endif
-		
-		if frameCheck <> GetSpriteCurrentFrame(cutsceneSpr) and GetSpriteCurrentFrame(cutsceneSpr) <> 1
-			PlaySound(beepReadyS, volumeS)
-			frameCheck = GetSpriteCurrentFrame(cutsceneSpr)
-		endif
-		
-		SyncG()
-		
-	endwhile
+//~	while GetSpriteCurrentFrame(cutsceneSpr) < 4
+//~		
+//~		gameTime# = 0
+//~		
+//~		if scene = WATER
+//~			SetSpritePosition(hero, heroX#, heroY# + 10*Abs(sin(gameTime#/8)) + 6*Abs(cos(gameTime#/3)))
+//~			DrawWater()
+//~			IncSpriteY(duck, 10*Abs(sin(gameTime#/9)) + 5*Abs(cos(gameTime#/4)))
+//~		elseif scene = WATER2
+//~			//Put stuff here to make the scene feel alive while the timer is going off
+//~		endif
+//~		
+//~		if frameCheck <> GetSpriteCurrentFrame(cutsceneSpr) and GetSpriteCurrentFrame(cutsceneSpr) <> 1
+//~			PlaySound(beepReadyS, volumeS)
+//~			frameCheck = GetSpriteCurrentFrame(cutsceneSpr)
+//~		endif
+//~		
+//~		SyncG()
+//~		
+//~	endwhile
 	
 	PlaySound(beepGoS, volumeS)
 	PlaySound(windSS, volumeS)
@@ -1128,6 +1168,8 @@ endfunction
 function StopAmbientMusic()
 	StopMusicOgg(ambWater2)
 	StopSound(swimmingS)
+	StopMusicOGG(ambAir2)
+	StopSound(jetstreamS)
 	StopMusicOGG(ambUpgrade2)
 endfunction
 
@@ -1139,6 +1181,14 @@ function FreezeGameplay()
 		DeleteParticles(featherP)
 		for i = 1 to spawnActive.length
 			StopSprite(spawnActive[i].spr)
+		next i
+		
+	endif
+	
+	if screen = AIR2
+		StopSprite(hero)
+		for i = 1 to bulletActive.length
+			StopSprite(bulletActive[i].spr)
 		next i
 		
 	endif

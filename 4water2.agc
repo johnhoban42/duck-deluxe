@@ -142,6 +142,7 @@ function InitWater2()
 		inc water2TileE, 1
 	next i
 	
+	FixParticlesToScreen(enemyP, 0)
 	
 	
 	CreateParticles(lightP, 0, 0)
