@@ -156,7 +156,7 @@ function CreateSpriteExistingAnimation(spr, refSpr)
 endfunction
 
 function DeleteAnimatedSprite(spr)
-	DeleteSprite(spr)
+	if GetSpriteExists(spr) then DeleteSprite(spr)
 	//index = imageA.find(spr)
 	index = ArrayFind(imageA, spr)
 	
@@ -173,6 +173,22 @@ function DeleteAnimatedSprite(spr)
 	
 	//Check that the number after the current number is less than 30, to not accidentally find an image ID as an index
 endfunction
+
+function DeleteAnimatedSpriteEgg(spr)
+	DeleteSprite(spr)
+	index = ArrayFind(imageA, spr)
+	
+	if index <> -1
+		size = imageA[index+1] + 2
+		for i = 1 to size
+			if i > 1 then DeleteImage(imageA[index])
+			imageA.remove(index)
+		next i
+	endif
+	
+	//Check that the number after the current number is less than 30, to not accidentally find an image ID as an index
+endfunction
+
 
 function GetSpriteMiddleX(spr)
 	ret = GetSpriteX(spr) + GetSpriteWidth(spr)/2
@@ -1255,90 +1271,6 @@ function SetPowers()
 	powers[4, 4, 4] = "x3 Dive Speed"
 	
 	//City/Land 2
-	powers[1, 1, 5] = ""
-	powers[1, 2, 5] = ""
-	powers[1, 3, 5] = ""
-	powers[1, 4, 5] = ""
-	
-	powers[2, 1, 5] = ""
-	powers[2, 2, 5] = ""
-	powers[2, 3, 5] = ""
-	powers[2, 4, 5] = ""
-	
-	powers[3, 1, 5] = ""
-	powers[3, 2, 5] = ""
-	powers[3, 3, 5] = ""
-	powers[3, 4, 5] = ""
-	
-	powers[4, 1, 5] = ""
-	powers[4, 2, 5] = ""
-	powers[4, 3, 5] = ""
-	powers[4, 4, 5] = ""
-	
-	//Mountains/Air 2
-	powers[1, 1, 6] = ""
-	powers[1, 2, 6] = ""
-	powers[1, 3, 6] = ""
-	powers[1, 4, 6] = ""
-	
-	powers[2, 1, 6] = ""
-	powers[2, 2, 6] = ""
-	powers[2, 3, 6] = ""
-	powers[2, 4, 6] = ""
-	
-	powers[3, 1, 6] = ""
-	powers[3, 2, 6] = ""
-	powers[3, 3, 6] = ""
-	powers[3, 4, 6] = ""
-	
-	powers[4, 1, 6] = ""
-	powers[4, 2, 6] = ""
-	powers[4, 3, 6] = ""
-	powers[4, 4, 6] = ""
-	
-	//Space 2
-	powers[1, 1, 7] = "x1 Start Speed"
-	powers[1, 2, 7] = "x1.5 Start Speed"
-	powers[1, 3, 7] = "x_ Start Speed"
-	powers[1, 4, 7] = "x_ Start Speed"
-	
-	powers[2, 1, 7] = ""
-	powers[2, 2, 7] = ""
-	powers[2, 3, 7] = ""
-	powers[2, 4, 7] = ""
-	
-	powers[3, 1, 7] = "No Mistakes"
-	powers[3, 2, 7] = "Second Chance"
-	powers[3, 3, 7] = "Third Chance"
-	powers[3, 4, 7] = "5 "
-	
-	powers[4, 1, 7] = "Normal Combo"
-	powers[4, 2, 7] = "Big Combo"
-	powers[4, 3, 7] = "Bigger Combo"
-	powers[4, 4, 7] = "B"
-
-
-//Space 2
-	words[1, 1, 7] = "Doomed"
-	words[1, 2, 7] = "Desperate"
-	words[1, 3, 7] = "Destined"
-	words[1, 4, 7] = "Defending"
-	
-	words[2, 1, 7] = "Usurped"
-	words[2, 2, 7] = "Unraveled"
-	words[2, 3, 7] = "Ultimate"
-	words[2, 4, 7] = "Universal"
-	
-	words[3, 1, 7] = "Catasprohic"
-	words[3, 2, 7] = "Collapsed"
-	words[3, 3, 7] = "Colossal"
-	words[3, 4, 7] = "Candescent"
-	
-	words[4, 1, 7] = "Knave"
-	words[4, 2, 7] = "Knight"
-	words[4, 3, 7] = "King"
-	words[4, 4, 7] = "King of Kings"
-
 powers[1, 1, 5] = ""
 powers[1, 2, 5] = "+1 Available Lane"
 powers[1, 3, 5] = "+2 Available Lanes"
@@ -1358,5 +1290,47 @@ powers[4, 1, 5] = ""
 powers[4, 2, 5] = "x1.2 Boost Spawn Rate"
 powers[4, 3, 5] = "x1.6 Boost Spawn Rate"
 powers[4, 4, 5] = "x2 Boost Spawn Rate"
+	
+	//Mountains/Air 2
+	powers[1, 1, 6] = "One Slipstream"
+	powers[1, 2, 6] = "Two Slipstreams"
+	powers[1, 3, 6] = "Three Slipstreams"
+	powers[1, 4, 6] = "Five Slipstreams"
+	
+	powers[2, 1, 6] = "Not Wide Wind"
+	powers[2, 2, 6] = "+35% Wide Wind"
+	powers[2, 3, 6] = "+70% Wide Wind"
+	powers[2, 4, 6] = "+120% Wide Wind"
+	
+	powers[3, 1, 6] = "x1 Wind Speed"
+	powers[3, 2, 6] = "x2.5 Wind Speed"
+	powers[3, 3, 6] = "x4.4 Wind Speed"
+	powers[3, 4, 6] = "x8.9 Wind Speed"
+	
+	powers[4, 1, 6] = "x1 Duck Speed"
+	powers[4, 2, 6] = "x1.75 Duck Speed"
+	powers[4, 3, 6] = "x3.15 Duck Speed"
+	powers[4, 4, 6] = "x4.5 Duck Speed"
+	
+	//Space 2
+	powers[1, 1, 7] = "x1 Base Speed"
+	powers[1, 2, 7] = "x1.5 Base Speed"
+	powers[1, 3, 7] = "x_ Base Speed"
+	powers[1, 4, 7] = "x_ Base Speed"
+	
+	powers[2, 1, 7] = ""
+	powers[2, 2, 7] = ""
+	powers[2, 3, 7] = ""
+	powers[2, 4, 7] = ""
+	
+	powers[3, 1, 7] = "No Mistakes"
+	powers[3, 2, 7] = "Second Chance"
+	powers[3, 3, 7] = "Third Chance"
+	powers[3, 4, 7] = "5 "
+	
+	powers[4, 1, 7] = "Normal Combo"
+	powers[4, 2, 7] = "Big Combo"
+	powers[4, 3, 7] = "Bigger Combo"
+	powers[4, 4, 7] = "B"
 
 endfunction

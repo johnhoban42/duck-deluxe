@@ -110,6 +110,7 @@ global fish3I
 
 #constant water2S 2007
 #constant water2BG 2008
+#constant water2SOver = 2009
 
 //#constant land2S 2008
 //#constant air2S 2009
@@ -145,6 +146,7 @@ global tileEH	//Tile extra height, expanded to make them look connected together
 
 #constant air2BG 6001
 #constant air2BBG 6002
+#constant air2WindBG 6003
 
 global tileI1
 global tileI2
@@ -167,7 +169,8 @@ global arrowI
 #constant lightP 1
 #constant splashP 2
 #constant featherP 3
-
+#constant enemyP 4
+#constant eggP 5
 
 #constant GOOD 1
 #constant BAD 2

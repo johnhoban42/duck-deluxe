@@ -20,8 +20,16 @@ global scrapErupted = 0
 
 global air2X# = 200
 #constant heroAir2Y 190
+global slipStreamOffset = 0
+global airHurtTimer# = 0
+global slipStreamUse# = 0
+global jetSoundInstance = 0
+
 
 function InitAir2()
+	
+	PlayMusicOGG(ambAir2, 1)
+	SetMusicVolumeOGG(ambAir2, ambVol*volumeS)
 	
 	heroLocalDistance# = air2Distance
 	
@@ -29,6 +37,16 @@ function InitAir2()
 	
 	LoadSpriteExpress(hero, "duckA2.png", 100, 100, w/2, h/2 + heroAir2Y, 7)
 	FixSpriteToScreen(hero, 0)
+	SetSpriteShape(hero, 1)
+	
+	slipStreamUse# = 0
+	air2X# = 400
+	airHurtTimer# = 0
+	air2TurnTarget = 0
+	air2Dir# = 1
+	
+	LoadSpriteExpress(duck, "upgradeR1.png", 90, 90, 460, 300, 210)
+	FixSpriteToScreen(duck, 1)
 	
 	//LoadAnimatedSprite(air2BG, "mbg\m4", 8)
 	CreateSprite(air2BG, 0)
@@ -44,7 +62,7 @@ function InitAir2()
 	next i
 	SetSpriteExpress(air2BG, h*2, h, 0, 0, 200)
 	SetSpriteMiddleScreen(air2BG)
-	PlaySprite(air2BG, 5+10, 1, 1, 16)
+	//PlaySprite(air2BG, 5+10, 1, 1, 16)
 	FixSpriteToScreen(air2BG, 1)
 	SetSpriteColorAlpha(air2BG, 170)
 	
@@ -52,7 +70,17 @@ function InitAir2()
 	FixSpriteToScreen(air2BBG, 1)
 	SetSpriteColor(air2BBG, 255, 181, 117, 255)
 	
-	slipEnd = 0
+	LoadSpriteExpress(air2WindBG, "mesaBG/windLayer.png", w, h*2, 0, -h, 250)
+	FixSpriteToScreen(air2WindBG, 1)
+	SetSpriteColorAlpha(air2WindBG, 100)
+	
+	
+	//Setting the variables based on upgrades
+	//First, creating the slipstreams
+	//upgrades[1, 6] = 3
+	slipEnd = 1 + upgrades[1, 6] + upgrades[1, 6]/3
+	//upgrades[2, 6] = 3
+	slipWid = 50 * (1 + .35*upgrades[2, 6] + .25*upgrades[2, 6]/3)
 	for i = 1 to slipEnd
 		slipS[i] = CreateSprite(0)
 		spr = slipS[i]
@@ -63,6 +91,17 @@ function InitAir2()
 		//Tessalate the slipstream image
 		//SetSpriteExpress(slipS[i])
 	next i
+	
+	slipStreamOffset = Random(0, 36000)
+	if debug then slipStreamOffset = 0
+	
+	//Speed when in a slipstream
+	air2SlipSpeed# = 0.4 * (1 + 1.5*upgrades[3, 6] + 1.4*upgrades[3, 6]/3 + 2*upgrades[3, 6]/3)
+	//Default speed
+	air2DefSpeed# = 0.1 * (1 + .75*upgrades[3, 6] + .65*upgrades[3, 6]/3 + .6*upgrades[3, 6]/3)
+	//Movement is also be enhanced by default speed
+	air2Vel# = 2.0 + .25*upgrades[4, 6]
+	air2Accel# = .015 + .005*upgrades[4, 6]
 	
 	
 	newS as spawn
@@ -148,24 +187,26 @@ function InitAir2()
 		inc spawnS, 1
 	next i
 	
-	//Volcanoes
-	/*
-	volcanoI = LoadImage("mesaBG\volcano.png") //as integer[6]
-	//for i = 1 to 6
-		//volcanoI[i] = LoadImage("mesaBG\shrubpatch" + str(i) + ".png")
-		trashBag.insert(volcanoI)
-	//next i
-	volcanoSize = 190
-	for i = 0 to 14
-		newS.spr = spawnS
-		CreateSpriteExpressImage(spawnS, volcanoI, volcanoSize, volcanoSize, randomX1-650-200 - Random(0, 300) + w*Mod(i,3), Random(0, h)+h/2 - i/3*h, 250)
-		newS.y = GetSpriteY(spawnS)
-		//SetSpriteDepth(spawnS, 180)
-		SetSpriteColor(spawnS, 255, 200, 140, 255)
-		spawnActive.insert(newS)
-		inc spawnS, 1
-	next i
-	*/
+	FixParticlesToScreen(enemyP, 1)
+	
+	CreateParticlesExpress(eggP, 10, 10, 4, 170, 500)
+	img = LoadImage("splash.png")
+	SetParticlesImage(eggP, img)
+	trashBag.insert(img)
+	SetParticlesStartZone(eggP, -10, -1, 10, 1)
+	SetParticlesPosition(eggP, 9999, 9999)
+	SetParticlesDirection(eggP, 0, -200)
+	life# = .2
+	SetParticlesLife(eggP, life#)
+	r = 240
+	g = 234
+	b = 214
+	AddParticlesColorKeyFrame(eggP, 0, r, g, b, 255)
+	AddParticlesColorKeyFrame(eggP, life#*4/5, r, g, b, 255)
+	AddParticlesColorKeyFrame(eggP, life#, r, g, b, 0)
+	AddParticlesForce(eggP, 0, life#, 0, 1000)
+	FixParticlesToScreen(eggP, 1)
+	
 	//The evil bird
 	eggBird = LoadSprite("mesaBG/mesaBird.png")
 	SetSpriteExpress(eggBird, 129, 129, w/2-129/2, 80, 20)
@@ -177,20 +218,23 @@ endfunction
 function DoAir2()
 	
 	SetViewZoom(1 - .65*sqrt((air2Distance-heroLocalDistance#)/air2Distance))
+	//if GetSpriteAngle(hero) > 0 then SetViewZoom(1 - .65*sqrt((air2Distance-heroLocalDistance#)/air2Distance) + .002*(360-GetSpriteAngle(hero)))
 	SetSpriteY(air2BBG, 0 - h*Mod(heroLocalDistance#, air2Distance*50)/(air2Distance*50))
 	SetViewOffset(0, -(air2Distance-heroLocalDistance#)/10)
 	
 	//SetSpritePosition(hero, heroX#, 500)
-	SetSpriteX(hero, air2X# + GetSpriteWidth(hero)/2)
+	SetSpriteX(hero, air2X# - GetSpriteWidth(hero)/2)
 	SetSpriteSize(hero, 100/GetViewZoom(), 100/GetViewZoom())
-	SetSpriteY(hero, (h/2 + GetViewOffsetY()) + heroAir2Y*(1/GetViewZoom())) //-30 + 520*sqrt((air2Distance-heroLocalDistance#)/air2Distance))
+	SetSpriteY(hero, (h/2 + GetSpriteHeight(hero)/2 - 50 + GetViewOffsetY()) + heroAir2Y*(1/GetViewZoom()) - 15*slipStreamUse#) //-30 + 520*sqrt((air2Distance-heroLocalDistance#)/air2Distance))
 	
+	SetSpriteX(duck, w/2 - GetSpriteWidth(duck) + 300*sin(gameTime#/10))
+	SetSpriteY(duck, h*4/5 + (duckDistance# - 20000*(raceSize) - (heroLocalDistance#-air2Distance)))
 	
 	//dec heroLocalDistance#, 0.1*fpsr#
 	
-	if GetSpriteMiddleX(hero) > w/2 + 400/GetViewZoom() or (inputSelect and air2Dir# > 0) then air2TurnTarget = -1
-	if GetSpriteMiddleX(hero) < w/2 - 400/GetViewZoom() or (inputSelect and air2Dir# < 0)  then air2TurnTarget = 1
-	
+	if GetSpriteMiddleX(hero) > w/2 + 600/GetViewZoom() or (inputSelect and air2Dir# > 0) then air2TurnTarget = -1
+	if GetSpriteMiddleX(hero) < w/2 - 600/GetViewZoom() or (inputSelect and air2Dir# < 0)  then air2TurnTarget = 1
+	if (inputSelect) then PlaySound(collectS, volumeS/4)
 	
 	
 	//Change the ducks acceleration
@@ -198,6 +242,8 @@ function DoAir2()
 	
 	//Increase the duck X
 	air2X# = air2X# + air2Vel#*air2Dir#/GetViewZoom()
+	//Originally thought that getting hit in air should make you go slower, but it feels cooler to go faster (losing control)
+	if airHurtTimer# <> 0 then air2X# = air2X# + air2Vel#*air2Dir#/GetViewZoom() *5/3*(360-airHurtTimer#)/360
 	
 	print(air2X#)
 	
@@ -214,32 +260,73 @@ function DoAir2()
 	//Updating the slipstreams
 	for i = 1 to slipEnd
 		spr = slipS[i]
-		waver# = gameTime#/(11-i) + 200*i
+		waver# = (gameTime#+slipStreamOffset)/(11-i) + 200*i
 		
-		SetSpriteX(spr, (w/2 + (w/8)*(1*sin(1*waver#) + 2*sin(0.5*waver#) + 0.25*sin(4*waver#)))/GetViewZoom())
+		SetSpriteX(spr, (w/2 + (w/8)*(1*sin(1*waver#) + 2*sin(0.5*waver#) + 0.25*sin(4*waver#))))
 		
 		//1*sin(1*X) + 2*sin(0.5*X) + 0.25*sin(4*X)
 		
+		SetSpriteColorAlpha(slipS[i], 100)
+		if airHurtTimer# <> 0
+			SetSpriteColorAlpha(slipS[i], Max(0, Min(100, (airHurtTimer#-260))))
+		endif
 		
 	next i
 	
 	
 	
 	
-	inc heroLocalDistance#, -air2DefSpeed#*fpsr#*30
+	heroLocalDistance# = heroLocalDistance# - air2DefSpeed#*fpsr#
+	SetSpriteY(air2WindBG, GetSpriteY(air2WindBG) + air2DefSpeed#*fpsr#*1.2)
+	
+	inSlipstream = 0
 	if GetSpriteHitGroup(AIR2, GetSpriteMiddleX(hero), GetSpriteMiddleY(hero)) or GetSpriteHitGroup(AIR2, GetSpriteX(hero), GetSpriteMiddleY(hero)) or GetSpriteHitGroup(AIR2, GetSpriteX(hero)+GetSpriteWidth(hero), GetSpriteMiddleY(hero))
-		inc heroLocalDistance#, -air2SlipSpeed#*fpsr#
+		if slipStreamUse# < 0.99
+			slipStreamUse# = 1 - GlideNumToZero(1-slipStreamUse#, 100)
+		else
+			slipStreamUse# = 1
+		endif
+		SetSpriteY(air2WindBG, GetSpriteY(air2WindBG) + air2SlipSpeed#*fpsr#*1.4*(GetSpriteColorAlpha(slipS[1])/100.0))
 		SetSpriteColor(hero, 0, 255, 0, 255)
+		inSlipstream = 1
+		if GetSoundInstances(jetstreamS) = 0 then jetSoundInstance = PlaySound(jetstreamS, volumeS, 1)
+	else
+		if slipStreamUse# > 0.01
+			slipStreamUse# = GlideNumToZero(slipStreamUse#, 100)
+		else
+			slipStreamUse# = 0
+		endif
+		if GetSoundInstances(jetstreamS) > 0 then StopSound(jetstreamS)
+		jetSoundInstance = 0
+	endif
+	//Speeding the hero up based on slipstream
+	heroLocalDistance# = heroLocalDistance# + (slipStreamUse# * -air2SlipSpeed#*fpsr#*(GetSpriteColorAlpha(slipS[1])/100.0))
+	Print(slipStreamUse#)
+	
+	if GetSoundInstancePlaying(jetSoundInstance) then	SetSoundInstanceVolume(jetSoundInstance, slipStreamUse#*volumeS)
+	
+	if GetSpriteY(air2WindBG) > 0 then IncSpriteY(air2WindBG, -h)
+	
+	//Egg bird moving back and forth
+	SetSpriteX(eggBird, w/2 - GetSpriteWidth(eggBird)/2 + 100*sin(gameTime#/20))
+	SetSpriteY(eggBird, 70 + 10*slipStreamUse#*slipStreamUse#)
+	
+	//if heroLocalDistance# < air2Distance*3/5 and GetSpriteCurrentFrame(air2BG) <= 16 then PlaySprite(air2BG, 5+10, 1, 17, 24)
+	//if heroLocalDistance# < air2Distance*2/5 and GetSpriteCurrentFrame(air2BG) <= 24 then PlaySprite(air2BG, 5+10, 1, 25, 28)
+	//if heroLocalDistance# < air2Distance*1/5 and GetSpriteCurrentFrame(air2BG) <= 28 then PlaySprite(air2BG, 5+10, 1, 29, 30)
+	
+	
+	if heroLocalDistance# > air2Distance*3/5
+		SetSpriteFrame(air2BG, 1+Mod(Round(air2Distance-heroLocalDistance#)/12, 16))
+	elseif heroLocalDistance# > air2Distance*2/5 
+		SetSpriteFrame(air2BG, 1+Mod(Round(air2Distance-heroLocalDistance#)/12, 8)+16)
+	elseif heroLocalDistance# > air2Distance*1/5
+		SetSpriteFrame(air2BG, 1+Mod(Round(air2Distance-heroLocalDistance#)/12, 4)+24)
+	else
+		SetSpriteFrame(air2BG, 1+Mod(Round(air2Distance-heroLocalDistance#)/12, 2)+28)
 	endif
 	
-
 	
-	
-	
-	if heroLocalDistance# < air2Distance*3/5 and GetSpriteCurrentFrame(air2BG) <= 16 then PlaySprite(air2BG, 5+10, 1, 17, 24)
-	if heroLocalDistance# < air2Distance*2/5 and GetSpriteCurrentFrame(air2BG) <= 24 then PlaySprite(air2BG, 5+10, 1, 25, 28)
-	if heroLocalDistance# < air2Distance*1/5 and GetSpriteCurrentFrame(air2BG) <= 28 then PlaySprite(air2BG, 5+10, 1, 29, 30)
-		
 	
 	
 	
@@ -247,103 +334,63 @@ function DoAir2()
 	deleted = 0
 	for i = 1 to spawnActive.length
 		spr = spawnActive[i].spr
-		//if i = spawnActive.length then spawnActive[i].x = water2Distance-30+heroX#
-		//Want width to be small, so that rivers/bushes aren't affected
-		if GetSpriteWidth(spr) < 100
-			SetSpriteX(spr, spawnActive[i].x)
-			SetSpriteY(spr, spawnActive[i].y+(air2Distance-heroLocalDistance#))
-			//if GetSpriteGroup(spr) <> SCRAP then SetSpriteY(spr, spawnActive[i].y)
-			if GetSpriteVisible(spr)
-				
-				if spawnActive[i].cat = SCRAP
-					if GetSpriteGroup(spr) <> SCRAP then IncSpritePosition(spr, 60*cos(gameTime#/2), 40*sin(gameTime#/2))
-				endif
-				
-				if GetSpriteCollision(spr, hero) and Abs((GetSpriteY(hero) - GetSpriteY(spr))) < 80
-					
-					if spawnActive[i].cat = GOOD
-						if GetSpriteColorGreen(hero) <> 100 then inc diveBoostQueue, 1
-						PlaySound(collectS, volumeS)
-						//boatSpeed# = Max(boatSpeed#, sqrt(Min(boatSpeedMax, 20)*1.5))
-						
-						//PlaySound(rowGoodS, VolumeS*.8)
-					elseif spawnActive[i].cat = BAD
-						//diveDamage = 1
-						if GetSpriteColorGreen(hero) = 255 then PlaySound(hitS, volumeS)
-						SetSpriteColorGreen(hero, 0)
-						SetSpriteColorBlue(hero, 0)
-						//diveBoost# = 0
-						//diveBoostQueue = 0
-					elseif GetTweenExists(spr) = 0 //SCRAP
-						CollectScrap(WATER2)
-						SetSpriteGroup(spr, SCRAP)
-						PlaySprite(spr, 30)
-						CreateTweenSprite(spr, .6)
-						SetTweenSpriteY(spr, GetSpriteY(spr), GetSpriteY(spr) - GetSpriteHeight(spr)*1.5, TweenSmooth1())
-						//SetTweenSpriteAlpha(spr, 255, 0, TweenEaseOut2())
-						PlayTweenSprite(spr, spr, 0)
-						PlayTweenSprite(tweenSprFadeOut, spr, .1)
-						spawnActive[i].x = GetSpriteX(spr)
-					endif
-					if spawnActive[i].cat <> RAMP and GetSpriteWidth(spr) = GetSpriteHeight(spr) and GetSpriteGroup(spr) <> SCRAP
-						deleted = i
-						i = spawnActive.length
-					endif
-					
-					
-				endif
-				if spawnActive[i].cat = BAD and GetSpriteX(spawnActive[i].spr) < (w/5 + w/6*diveLevel)
-					//SetSpriteAngle(spr, 6.0*cos(gameTime#))
-					//spawnActive[i].x = spawnActive[i].x - 0.2*diveLevel*fpsr#
-					//if GetSpriteCurrentFrame(spr) <= 2 then PlaySprite(spr, 10, 1, 3, 4)
-				endif
-				if spawnActive[i].cat = GOOD
-					//SetSpriteColorBlue(spr, 185 + 70*sin( spawnActive[i].x-heroLocalDistance#))
-				endif
-				
-				
-			endif
-		else
-			//For the larger background chunks
-			SetSpriteY(spr, spawnActive[i].y + (air2Distance-heroLocalDistance#)/150.0)
-		endif
-		
+		//For the larger background chunks
+		SetSpriteY(spr, spawnActive[i].y + (air2Distance-heroLocalDistance#)/150.0)
 	next i
-	if deleted <> 0
-		if spawnActive[deleted].cat = GOOD
-			DeleteAnimatedSprite(spawnActive[deleted].spr)
-		else
-			DeleteSprite(spawnActive[deleted].spr)
-		endif
-		spawnActive.remove(deleted)
-	endif
 	
 	
-	if scrapErupted = 0 and Mod(gameTime#, 800) = 1
+	if scrapErupted = 0 and Mod(gameTime#, 1600) < 10
 		scrapErupted = 1
 		MakeBullets()
-	elseif Mod(gameTime#, 800) > 200
+	elseif Mod(gameTime#, 1600) > 200
 		scrapErupted = 0
 	endif
-	
+
 	for i = 1 to bulletActive.length
 		inc bulletActive[i].time, GetFrameTime()
+		if inSlipstream then inc bulletActive[i].time, GetFrameTime()/4
 		if bulletActive[i].time > 0 and bulletActive[i].time < 9999
 			//Decrease the bullet's timer until it is below 0...
 			//Then let the bullet ride!
 			if GetSpriteVisible(bulletActive[i].spr) = 0 then SetSpriteVisible(bulletActive[i].spr, 1)
 			
+			destX = 0
+			destY = 0
+			
 			if bulletActive[i].formula = 1 and GetSpriteGroup(bulletActive[i].spr) <> SCRAP
-				originX = GetSpriteMiddleX(eggBird)
-				originY = GetSpriteMiddleY(eggBird)
-				SetSpriteX(bulletActive[i].spr, originX + 100*bulletActive[i].time/bulletActive[i].num)
-				SetSpriteY(bulletActive[i].spr, originY + bulletActive[i].time*100)
+				destX = w/2 + bulletActive[i].batchOffset + bulletActive[i].num*80
+				destY = GetSpriteMiddleY(eggBird) + 90 + bulletActive[i].time*150
 			endif
-			if bulletActive[i].time < 2.5 then SetSpriteAngle(bulletActive[i].spr, bulletActive[i].time*500)
+			if bulletActive[i].formula = 2 and GetSpriteGroup(bulletActive[i].spr) <> SCRAP
+				destX = w/2 + bulletActive[i].batchOffset + 200*sin(40.0*bulletActive[i].time)*bulletActive[i].flip
+				destY = GetSpriteMiddleY(eggBird) + 90 + bulletActive[i].time*150
+			endif
+			if bulletActive[i].formula = 3 and GetSpriteGroup(bulletActive[i].spr) <> SCRAP
+				destX = w/2 + bulletActive[i].batchOffset + bulletActive[i].num*55
+				destY = GetSpriteMiddleY(eggBird) + 90 + 10*bulletActive[i].time^4
+			endif
+			if bulletActive[i].formula = 4 and GetSpriteGroup(bulletActive[i].spr) <> SCRAP
+				waveTime# = bulletActive[i].batchOffset + bulletActive[i].time*60
+				destX = w/2 + 200*(1*sin(1*waveTime#) + 2*sin(0.5*waveTime#) + 0.25*sin(4*waveTime#))
+				
+				//bulletActive[i].batchOffset + bulletActive[i].num*55
+				destY = GetSpriteMiddleY(eggBird) + 90 + 30*bulletActive[i].time + 310*sin(5.0*waveTime#)*bulletActive[i].flip
+			endif
+			
+			
+			GlideToX(bulletActive[i].spr, destX, 100)
+			GlideToY(bulletActive[i].spr, destY, 1000)
+			
+			if bulletActive[i].time < 2.5 then SetSpriteAngle(bulletActive[i].spr, 90*Round(bulletActive[i].time*500/90))
 			//Print(bulletActive[i].time)
 			
+				//Print(bulletActive[i].isScrap)
 			//Hatch the egg, becomes either scrap or evil bird
 			if bulletActive[i].time > 2.5 and GetSpriteFrameCount(bulletActive[i].spr) = 1
+				PlaySound(eggS, volumeS/5.0)
+				SetParticlesPosition(eggP, GetSpriteMiddleX(bulletActive[i].spr), GetSpriteY(bulletActive[i].spr))
+				ResetParticleCount(eggP)
+					
 				SetSpriteAngle(bulletActive[i].spr, 0)
 				ClearSpriteAnimationFrames(bulletActive[i].spr)
 				if bulletActive[i].isScrap = 1
@@ -362,10 +409,7 @@ function DoAir2()
 			endif
 			
 			if GetSpriteCollision(hero, bulletActive[i].spr)
-				if bulletActive[i].isScrap = 0
-					//Evil mini bird
-					bulletActive[i].time = 9000
-				else
+				if bulletActive[i].isScrap = 1
 					//Scrap
 					CollectScrap(AIR2)
 					spr = bulletActive[i].spr
@@ -377,14 +421,47 @@ function DoAir2()
 					PlayTweenSprite(spr, spr, 0)
 					PlayTweenSprite(tweenSprFadeOut, spr, .1)
 					bulletActive[i].time = 9999
+				else
+					//Evil mini bird
+					bulletActive[i].time = 9000
+					if airHurtTimer# = 0
+						airHurtTimer# = 3	//Resetting the hurt timer only when it isn't already active
+						PlaySound(fallS, volumeS)
+					endif
+					PlaySound(hitS, volumeS)
+					PlaySound(botKillS, volumeS*0.15)
+					SetParticlesPosition(enemyP, GetSpriteMiddleX(bulletActive[i].spr), GetSpriteY(bulletActive[i].spr))
+					ResetParticleCount(enemyP)
 				endif	
 			endif
 			
 			if GetSpriteY(bulletActive[i].spr) > 2000
 				bulletActive[i].time = 9999
 			endif
+		else
+			//Getting the bullet into place
+			//SetSpriteX(bulletActive[i].spr, w/2 - GetSpriteWidth(bulletActive[i].spr)/2 + 400*sin(gameTime#/20))
 		endif
 	next i
+	Print(GetSpriteAngle(hero))
+	//Ramifications of damage
+	
+	if airHurtTimer# > 0 and airHurtTimer# <= 360
+		airHurtTimer# = airHurtTimer# + .65*fpsr#
+		saveBigger = 0
+		SetSpriteAngle(hero, 90*Round(((360-airHurtTimer#)^2/120)/90) )
+		SetSpriteColor(hero, 255, 255-Min(255, 360-airHurtTimer#), 255-Min(255, 360-airHurtTimer#), 255)
+		//SetSpriteSizeSquare(hero, (100.0 - (360-airHurtTimer#)/4.0)/GetViewZoom())
+		SetSpriteSizeSquare(hero, (100.0 + ((airHurtTimer#/360.0)*(airHurtTimer#/360.0)-(airHurtTimer#/360.0))*160)/GetViewZoom())
+	endif	
+	if airHurtTimer# > 360
+		SetSpriteAngle(hero, 0)
+		SetSpriteColor(hero, 255, 255, 255, 255)
+		SetSpriteSizeSquare(hero, 100/GetViewZoom())
+		airHurtTimer# = 0
+	endif
+	
+	
 	//Print(GetFrameTime())
 	
 endfunction
@@ -396,6 +473,8 @@ type bullet
 	formula as integer
 	isScrap as integer
 	num as float //This is the number that will be plugged into the formula
+	batchOffset as float //This should be the same for all in a batch
+	flip as integer	//1 or -1, for making a pattern backwards
 
 endtype
 global bulletActive as bullet[0]
@@ -403,30 +482,55 @@ global bulletActive as bullet[0]
 function MakeBullets()
 	
 	if GetImageExists(eggBadI) = 0
-		eggBadI = LoadImage("mesaBG/eggRed.png")
+		eggBadI = LoadImage("mesaBG/egg.png")
 		eggGoodI = LoadImage("mesaBG/eggScrap.png")
 		miniBird1I = LoadImage("mesaBG/minibird1.png")
 		miniBird2I = LoadImage("mesaBG/minibird2.png")
 	endif
 	
-	pattern = Random(1, 1)
 	
-	bulletAmt = 0
-	if pattern = 1 then bulletAmt = 10
 	
 	scrapAmt = 0
 	newB as bullet
 	
-	newB.formula = pattern
+	//Balances the bullet patterns, the more upgrades you get, the more varied the patterns
+	formulaEnd = 2
+	if upgrades[1, 6] + upgrades[2, 6] + upgrades[3, 6] >= 3 then formulaEnd = 3
+	if upgrades[1, 6] + upgrades[2, 6] + upgrades[3, 6] >= 4 then formulaEnd = 4
+	//if heroLocalDistance# < air2Distance*3/4 then formulaEnd = 3
+	//if heroLocalDistance# < air2Distance/2 then formulaEnd = 4
+	//if heroLocalDistance# < air2Distance/4 then formulaEnd = 5
+	
+	newB.formula = Random(1, formulaEnd)
+	//newB.formula = 4
+	
+	newB.flip = Random (0, 1)
+	if newB.flip = 0 then newB.flip = -1
+	batchOffset = -200 + Random(0, 400)
+	
+	bulletAmt = 0
+	if newB.formula = 1 then bulletAmt = 4
+	if newB.formula = 2 then bulletAmt = 5
+	if newB.formula = 3 then bulletAmt = 7
+	if newB.formula = 4 then bulletAmt = 1
+	nextScrap = 0
 	
 	for i = 1 to bulletAmt
 		newB.spr = CreateSprite(eggBadI)
 		FixSpriteToScreen(newB.spr, 1)
 		SetSpriteVisible(newB.spr, 0)
-		SetSpriteExpress(newB.spr, 30, 30, 0, 0, 40)
+		SetSpriteExpress(newB.spr, 30, 30, GetSpriteMiddleX(eggBird)-15, GetSpriteMiddleY(eggBird)+20, 40)
 		newB.isScrap = 0
 		
-		if random(1, 15) = 15 and scrapAmt < 2
+		
+		
+		if (random(1, 7) = 5 and scrapAmt < (formulaEnd)) or nextScrap or newB.formula = 4
+			if nextScrap
+				dec nextScrap, 1
+				scrapAmt = formulaEnd
+			else
+				if newB.formula = 3 then nextScrap = 2	//This makes sure that the next egg in pattern will be scrap
+			endif
 			newB.isScrap = 1
 			inc scrapAmt, 1
 			AddSpriteAnimationFrame(newB.spr, eggGoodI)
@@ -435,8 +539,13 @@ function MakeBullets()
 		endif
 		SetSpriteFrame(newB.spr, 1)
 		
-		newB.time = -i*0.3
-		newB.num = -bulletAmt/2 + i + 0.5
+		newB.batchOffset = batchOffset
+		
+		if newB.formula = 1 then newB.time = -i*0.3
+		if newB.formula = 2 then newB.time = -i*0.5
+		if newB.formula = 3 then newB.time = 0
+		if newB.formula = 4 then newB.time = 0
+		newB.num = -bulletAmt/2 + i*newB.flip + 0.5
 		
 		bulletActive.insert(newB)
 	next i

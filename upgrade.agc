@@ -108,11 +108,11 @@ function CreatePod(row, col)
 	SetSpriteExpress(pod.sprBuy, 98*.7, 42*.7, GetSpriteX(spr)+275, GetSpriteY(pod.sprUpBG)+GetSpriteHeight(pod.sprUpBG)-67, 80)
 	SetPodBuyColor(pod)
 	
-	pod.sprChainL = CreateSprite(0)
-	SetSpriteExpress(pod.sprChainL, 10, GetSpriteHeight(spr), GetSpriteX(spr)+5, GetSpriteMiddleY(spr), 150)
+	pod.sprChainL = CreateSprite(chainI)
+	SetSpriteExpress(pod.sprChainL, 10*2, 96*2, GetSpriteX(spr)+15, GetSpriteY(spr)-110, 150)
 	
-	pod.sprChainR = CreateSprite(0)
-	SetSpriteExpress(pod.sprChainR, 10, GetSpriteHeight(spr), GetSpriteX(spr)+GetSpriteWidth(spr)-15, GetSpriteMiddleY(spr), 150)
+	pod.sprChainR = CreateSprite(chainI)
+	SetSpriteExpress(pod.sprChainR, 10*2, 96*2, GetSpriteX(spr)+GetSpriteWidth(spr)-25, GetSpriteY(spr)-110, 150)
 	
 	pod.twnSideSway = CreateTweenSprite(.8)
 	SetTweenSpriteX(pod.twnSideSway, GetSpriteX(spr)-8, GetSpriteX(spr), TweenOvershoot())
@@ -210,7 +210,12 @@ function CreateUpgrade2()
 	for i = 0 to areaSeen*4-1
 		curPod = CreatePod(Mod(i, 4), i/4)
 		upPods[i] = curPod
+		if Mod(i, 4) = 3
+			//SetSpriteVisible(upPods[i].sprChainL, 0)
+			//SetSpriteVisible(upPods[i].sprChainR, 0)
+		endif
 	next i
+	
 	
 	for col = 0 to areaSeen - 1
 		upCols[col] = LoadSprite("upgrade/mode" + str(raceQueueRef[col]) + ".png")
@@ -226,6 +231,7 @@ function CreateUpgrade2()
 	FixSpriteToScreen(scrapBG, 1)
 	
 	LoadSpriteExpress(startRace, "nextRace.png", 420/2.5, 165/2.5, GetSpriteX(upPods[areaSeen*4-1].sprBG)+500, 350, 5)
+	SetSpritePosition(startRace, GetSpriteX(upPods[areaSeen*4-1].sprBG)+500, 350)
 	
 	PlayTweenSprite(tweenSprFadeOut, coverS, 0)
 	
@@ -300,6 +306,7 @@ function DoUpgrade2()
 			PlayTweenCustom(upPods[i].twnUpgradeDown, 0)
 			if oldSel > -1 and oldSel <> startRace then PlayTweenCustom(upPods[oldSel].twnUpgradeUp, 0)
 			
+			SetSpritePosition(startRace, GetSpriteX(upPods[areaSeen*4-1].sprBG)+500, 350)
 			
 			PlaySound(screenSlideS, volumeS*0.1)
 			
@@ -390,8 +397,9 @@ function DoUpgrade2()
 	
 	//Adjusting the start race button, pulses if it's highlighted
 	SetSpriteSize(startRace, 420/2.5, 165/2.5)
-	SetSpritePosition(startRace, GetSpriteX(upPods[areaSeen*4-1].sprBG)+500, 350)
+	//if GetTweenSpritePlaying(
 	if selectedPod = startRace
+		SetSpritePosition(startRace, GetSpriteX(upPods[areaSeen*4-1].sprBG)+500, 350)
 		SetSpriteSize(startRace, GetSpriteWidth(startRace) + sin(gameTime#)*14, GetSpriteHeight(startRace) + sin(gameTime#)*14)
 		SetSpritePosition(startRace, GetSpriteX(startRace) - sin(gameTime#)*7, GetSpriteY(startRace) - sin(gameTime#)*7)
 		if inputSelect then StartRace2()
@@ -481,6 +489,7 @@ function DeleteUpgrade2()
 	DeleteSprite(upgradeBG)
 	DeleteSprite(scrapBG)
 	if GetTextExists(scrapText) then DeleteText(scrapText)		
+	DeleteMusicOGG(upgrade2M)
 	
 	StopAmbientMusic()
 	EmptyTrashBag()
