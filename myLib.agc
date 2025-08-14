@@ -1271,25 +1271,25 @@ function SetPowers()
 	powers[4, 4, 4] = "x3 Dive Speed"
 	
 	//City/Land 2
-	powers[1, 1, 5] = ""
-	powers[1, 2, 5] = ""
-	powers[1, 3, 5] = ""
-	powers[1, 4, 5] = ""
-	
-	powers[2, 1, 5] = ""
-	powers[2, 2, 5] = ""
-	powers[2, 3, 5] = ""
-	powers[2, 4, 5] = ""
-	
-	powers[3, 1, 5] = ""
-	powers[3, 2, 5] = ""
-	powers[3, 3, 5] = ""
-	powers[3, 4, 5] = ""
-	
-	powers[4, 1, 5] = ""
-	powers[4, 2, 5] = ""
-	powers[4, 3, 5] = ""
-	powers[4, 4, 5] = ""
+powers[1, 1, 5] = ""
+powers[1, 2, 5] = "+1 Available Lane"
+powers[1, 3, 5] = "+2 Available Lanes"
+powers[1, 4, 5] = "+3 Available Lanes"
+
+powers[2, 1, 5] = ""
+powers[2, 2, 5] = "x1.2 Base Speed"
+powers[2, 3, 5] = "x1.4 Base Speed"
+powers[2, 4, 5] = "x1.6 Base Speed"
+
+powers[3, 1, 5] = ""
+powers[3, 2, 5] = "x1.5 Boost Time"
+powers[3, 3, 5] = "x2 Boost Time"
+powers[3, 4, 5] = "x2.5 Boost Time"
+
+powers[4, 1, 5] = ""
+powers[4, 2, 5] = "x1.2 Boost Spawn Rate"
+powers[4, 3, 5] = "x1.6 Boost Spawn Rate"
+powers[4, 4, 5] = "x2 Boost Spawn Rate"
 	
 	//Mountains/Air 2
 	powers[1, 1, 6] = "One Slipstream"
