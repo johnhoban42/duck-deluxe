@@ -27,6 +27,9 @@ global mashPos = 1
 global onSplit = 0
 global splitPos
 
+global spaceBoost# = 0
+global spaceBoostCooldown#
+
 global oops as integer[5]
 
 function CreateMashInputSprite(spr, dir)
@@ -43,6 +46,7 @@ function CreateMashSequence()
 	
 	DeleteMashSequence()
 	
+	mashLenMax = 4
 	curMashLen = mashLenMax - Random(0,2)
 	
 	mash as mashInput
@@ -52,7 +56,7 @@ function CreateMashSequence()
 	splitPos = 999
 	isSplit = Random(1, 1)
 	if isSplit = 1
-		splitPos = Random(2, curMashLen-1)
+		splitPos = Random(curMashLen/2, curMashLen-1)
 	endif
 	
 	dir = 1
@@ -117,8 +121,9 @@ function InitSpace2()
 	
 	CreateMashSequence()
 	
-	
-	CreateSpriteExpress(hero, 80, 80, w/2-40, 300, 5)
+	wid = 80
+	CreateSpriteExpress(hero, wid, wid, 300, 300, 5)
+	LoadSpriteExpress(duck, "swampfoe1a.png", wid, wid, 800, 300, 60)
 	
 	
 	//Gameplay setting
@@ -142,15 +147,41 @@ endfunction
 
 function DoSpace2()
 	
-	dec heroLocalDistance#, spaceSpeed#*fpsr#
+	heroLocalDistance# = heroLocalDistance# - spaceSpeed#*fpsr#
+
+
+
+		
+	//After a successful boost, make the difference go more in favor of the hero
+	//EXCEPT for when they are neck and neck! Check a threshold if the hero distance is less than the duck distance
+	if spaceBoost# > 0
+		spaceBoost# = spaceBoost# - GetFrameTime()
+		heroLocalDistance# = heroLocalDistance# - spaceSpeed#*fpsr#*spaceBoost#*1.5
+	endif
+	print(spaceBoost#)
+	
+	visualBoost# = (spaceBoost#^2 - spaceBoost#)*30
+	
+	diff# = Min(140, Max(-140, ((20000*curAreaSeen - heroLocalDistance#) - (20000*raceSize - duckDistance#))/40.0 - visualBoost#))
+	if diff# > 0 and (20000*curAreaSeen - heroLocalDistance#) < (20000*raceSize - duckDistance#) then diff# = -1
+	
+	SetSpriteSizeSquare(hero, 150+diff#)
+	SetSpritePosition(hero, w/3-GetSpriteWidth(hero)/2, h*2/5-GetSpriteHeight(hero)/2)
+	SetSpriteSizeSquare(duck, 150-diff#)
+	SetSpritePosition(duck, w*2/3-GetSpriteWidth(duck)/2, h*2/5-GetSpriteHeight(duck)/2)
+	Print(diff#)
+	
+	if duckDistance# < 20000*(raceSize-curAreaSeen) then PlayTweenSprite(tweenSprFadeOut, duck, 0)
+	
+	SetSpriteAngle(hero, -10 + 20*cos(gameTime#))
 	
 	if inputSelect
 		CreateMashSequence()
 		
 	endif
 	
-	Print(mashPos)
-	Print(onSplit)
+	//Print(mashPos)
+	//Print(onSplit)
 	
 	if inputUp or inputDown or inputLeft or inputRight
 		contMash = 0
@@ -193,6 +224,7 @@ function DoSpace2()
 					CreateMashSequence()
 					PlaySound(boostS, volumeS/3)
 					spaceSpeed# = spaceSpeed#*spaceSpeedMult#
+					spaceBoost# = 1
 				endif
 			else
 				//WRONG INPUT!
@@ -223,13 +255,13 @@ function DoSpace2()
 		
 	endif 
 	
-	SetSpriteAngle(hero, -10 + 20*cos(gameTime#))
+	
 	
 	SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(waterDistance - heroLocalDistance#)/waterDistance)/areaSeen)
 	SetSpriteX(duckIcon, Min(GetSpriteX(progBack)-GetSpriteWidth(duckIcon)/2 + (GetSpriteWidth(progBack)*(20000 - (duckDistance#-40000))/20000)/areaSeen, GetSpriteX(progBack)+GetSpriteWidth(progBack)-GetSpriteWidth(duckIcon)))
 	
 	
-	Print(spaceSpeed#)
+	//Print(spaceSpeed#)
 	
 	Print(mashPos)
 	Print(MashList[mashPos].dir)

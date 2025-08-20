@@ -24,7 +24,7 @@ SetWindowAllowResize( 1 ) // allow the user to resize the window
 
 global debug = 0
 if debug = 0 then SetErrorMode(1)
-global nextScreen = AIR2
+global nextScreen = LAND2
 //SetPhysicsDebugOn()
 
 
@@ -268,10 +268,10 @@ function SetRaceQueue(raceSet)
 		raceQueue.insert(LAND)
 		raceQueue.insert(AIR)
 	elseif raceSet = 2 //Race Against a Duck 2 order
-		raceQueue.insert(AIR2)
+		raceQueue.insert(SPACE2)
 		raceQueue.insert(WATER2)
 		raceQueue.insert(LAND2)
-		raceQueue.insert(SPACE2)
+		raceQueue.insert(AIR2)
 	endif
 	raceQueueRef = raceQueue
 	
@@ -350,7 +350,7 @@ do
 		endif
 		
 		//Progress bar at top
-		SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(waterDistance - heroLocalDistance#)/waterDistance)/areaSeen)
+		SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(curAreaSeen*waterDistance - heroLocalDistance#)/waterDistance)/areaSeen)
 		SetSpriteX(duckIcon, Min(GetSpriteX(progBack)-GetSpriteWidth(duckIcon)/2 + (GetSpriteWidth(progBack)*(20000*raceSize - (duckDistance#))/20000)/areaSeen, GetSpriteX(progBack)+GetSpriteWidth(progBack)-GetSpriteWidth(duckIcon)))
 		
 		if GetSpriteExists(cutsceneSpr) then IncSpriteY(cutsceneSpr, -2*fpsr#)

@@ -358,7 +358,7 @@ function DoAir2()
 			destY = 0
 			
 			if bulletActive[i].formula = 1 and GetSpriteGroup(bulletActive[i].spr) <> SCRAP
-				destX = w/2 + bulletActive[i].batchOffset + bulletActive[i].num*80
+				destX = w/2 + bulletActive[i].batchOffset + bulletActive[i].num*90
 				destY = GetSpriteMiddleY(eggBird) + 90 + bulletActive[i].time*150
 			endif
 			if bulletActive[i].formula = 2 and GetSpriteGroup(bulletActive[i].spr) <> SCRAP

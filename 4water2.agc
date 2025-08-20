@@ -107,7 +107,7 @@ function InitWater2()
 	SetSpriteSize(water2SOver, w, w/1000*90)
 	SetSpriteY(water2SOver, GetSpriteY(water2S))
 	SetSpriteDepth(water2SOver, 70)
-	SetSpriteScissor(water2SOver, 0, 150, w, h)
+	SetSpriteScissor(water2SOver, 0, 148, w, h)
 	
 	
 	LoadSpriteExpress(water2Trees, "w2BG/mangroves2.png", w*2, w/1000*370, 0, GetSpriteY(water2S)-(w/1000*370)+40, 85)

@@ -640,6 +640,8 @@ function DoUpgrade()
 		//The next three lines are identical to the title screen - should it be combined into a little function? IDK
 		SetRaceQueue(curRaceSet)
 		
+		SetViewOffset(0, 0)
+		
 	endif
 	
 endfunction
