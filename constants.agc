@@ -157,6 +157,14 @@ global eggGoodI
 global miniBird1I
 global miniBird2I
 
+//Space 2 Sprites
+global pressThis
+global pressThisBeam
+global pressThisBeam2
+
+global spaceBoostS
+global spaceScrapS
+
 #constant spawnStartS 10001
 global spawnS = spawnStartS
 
@@ -171,6 +179,7 @@ global arrowI
 #constant featherP 3
 #constant enemyP 4
 #constant eggP 5
+#constant shineP 6
 
 #constant GOOD 1
 #constant BAD 2

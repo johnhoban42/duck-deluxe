@@ -341,7 +341,7 @@ function DoWater2()
 	//IncSpriteY(cutsceneSpr, -2*fpsr#)
 	//waterXMax = -
 	heroX# = Min(Max(heroX#, 70), 420)
-	SetSpritePosition(hero, heroX#, heroY# + 22 + (GetSpriteMiddleY(water2S)) - GetSpriteHeight(hero) + 30 + 4*Abs(sin(gameTime#/8)) + 2*Abs(cos(gameTime#/3)))
+	SetSpritePosition(hero, heroX#, heroY# + 26 + (GetSpriteMiddleY(water2S)) - GetSpriteHeight(hero) + 30 + 4*Abs(sin(gameTime#/8)) + 2*Abs(cos(gameTime#/3)))
 	if diveBoost# > 0 and heroY# <= 0
 		IncSpriteY(hero, (1-diveHop#)*(-diveBoost#*36 - 10))
 		SetSpriteAngle(hero, Max(-5, -diveBoost#*15 + 20))
@@ -495,8 +495,9 @@ function DoWater2()
 		
 	endif
 	
-	SetSpritePosition(duck, -1*(duckDistance# - 20000*(raceSize)) - (water2Distance-heroLocalDistance#)+80 + 60*diveLevel, 70+4*cos(gameTime#*2))
-	//Print(GetSpriteX(duck))
+	SetSpritePosition(duck, -1*(duckDistance# - 20000*(raceSize - (curAreaSeen-1))) - (water2Distance-heroLocalDistance#)+80 + 60*diveLevel, 70+4*cos(gameTime#*2))
+	//SetSpritePosition(duck, -1*(duckDistance# - 20000*(raceSize-1)) - (water2Distance-heroLocalDistance#)+80 + 60*diveLevel, 70+4*cos(gameTime#*2))
+	Print(GetSpriteX(duck))
 	
 	if firstDuck2Race = 0
 		if duckDistance# > 76000
@@ -515,7 +516,7 @@ function DoWater2()
 			
 			
 		SetSpriteFrame(water2S, abs(1+Mod(Round(usePoint#)/6, 60)))
-	SetSpriteFrame(water2SOver, GetSpriteCurrentFrame(water2S))
+		SetSpriteFrame(water2SOver, GetSpriteCurrentFrame(water2S))
 		//SetSpriteFrame(water2TileS, 1+Mod(Round(landDistance-heroLocalDistance#)/6, 60))
 		SetSpriteFrame(water2TileS, abs(1+Mod(Round(usePoint#)/6, 60)))
 		for i = water2TileS+1 to water2TileE-1

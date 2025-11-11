@@ -109,7 +109,13 @@ LoadSoundOGG(eggS, "sounds/eggCrack.ogg")
 LoadSoundOGG(jetstreamS, "sounds/jetstream.ogg")
 #constant fallS 32
 LoadSoundOGG(fallS, "sounds/fall.ogg")
+#constant oopsS 33
+LoadSoundOGG(oopsS, "sounds/oops.ogg")
 
+global spaceCSE as integer[13]
+for i = 1 to 13
+	spaceCSE[i] = LoadSoundOgg("sounds/spaceC" + str(i) + ".ogg")
+next i
 
 #constant introM 1
 LoadMusicOGG(introM, "music/intro.ogg")
@@ -133,6 +139,8 @@ SetMusicLoopTimesOGG(titleM, 4.941, 33.030)
 LoadMusicOGG(ambWater2, "sounds/ambWater2.ogg")
 #constant ambAir2 23
 LoadMusicOGG(ambAir2, "sounds/ambAir2.ogg")
+#constant ambSpace2 24
+LoadMusicOGG(ambSpace2, "sounds/ambSpace2.ogg")
 #constant ambUpgrade2 25
 LoadMusicOGG(ambUpgrade2, "sounds/ambUpgrade2.ogg")
 
@@ -270,8 +278,8 @@ function SetRaceQueue(raceSet)
 	elseif raceSet = 2 //Race Against a Duck 2 order
 		raceQueue.insert(SPACE2)
 		raceQueue.insert(WATER2)
-		raceQueue.insert(LAND2)
 		raceQueue.insert(AIR2)
+		raceQueue.insert(LAND2)
 	endif
 	raceQueueRef = raceQueue
 	
@@ -361,6 +369,8 @@ do
 				PlayTweenSprite(tweenSprFadeIn, coverS, 0)
 				PlaySound(windMS, volumeS)
 				WaitFadeTween()
+				SetViewOffset(0, 0)
+				SetViewZoom(1)
 				DeleteScene(screen)
 				screen = 0
 				nextScreen = raceQueue[0]
@@ -921,6 +931,12 @@ function CollectScrap(area)
 		endif
 	endif
 	
+	//Bit of extra balancing for space
+	if area = SPACE2
+		num = 0.4*MashList.length
+		inc scrapTotal, num
+	endif
+	
 	UpdateScrapText()
 	//Updating the scrap textbox
 	
@@ -1023,6 +1039,13 @@ function DeleteScene(scene)
 		
 		if scene = SPACE2
 			DeleteMashSequence()
+			DeleteSprite(pressThis)
+			DeleteSprite(pressThisBeam)
+			DeleteSprite(pressThisBeam2)
+			for i = 0 to oops.length
+				if GetSpriteExists(oops[i]) then DeleteSprite(oops[i])
+			next i
+			if GetSpriteExists(spaceScrapS) then DeleteAnimatedSprite(spaceScrapS)
 		endif
 		
 		iMax = spawnActive.length
@@ -1170,6 +1193,7 @@ function StopAmbientMusic()
 	StopSound(swimmingS)
 	StopMusicOGG(ambAir2)
 	StopSound(jetstreamS)
+	StopMusicOGG(ambSpace2)
 	StopMusicOGG(ambUpgrade2)
 endfunction
 

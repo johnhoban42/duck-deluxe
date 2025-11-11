@@ -232,9 +232,12 @@ function DoAir2()
 	
 	//dec heroLocalDistance#, 0.1*fpsr#
 	
-	if GetSpriteMiddleX(hero) > w/2 + 600/GetViewZoom() or (inputSelect and air2Dir# > 0) then air2TurnTarget = -1
-	if GetSpriteMiddleX(hero) < w/2 - 600/GetViewZoom() or (inputSelect and air2Dir# < 0)  then air2TurnTarget = 1
-	if (inputSelect) then PlaySound(collectS, volumeS/4)
+	//Turning, but you can't turn if you're hurt
+	if (airHurtTimer# = 0 or airHurtTimer# > 350)
+		if GetSpriteMiddleX(hero) > w/2 + 600/GetViewZoom() or (inputSelect and air2Dir# > 0) then air2TurnTarget = -1
+		if GetSpriteMiddleX(hero) < w/2 - 600/GetViewZoom() or (inputSelect and air2Dir# < 0)  then air2TurnTarget = 1
+		if (inputSelect) then PlaySound(collectS, volumeS/4)
+	endif
 	
 	
 	//Change the ducks acceleration
@@ -358,7 +361,7 @@ function DoAir2()
 			destY = 0
 			
 			if bulletActive[i].formula = 1 and GetSpriteGroup(bulletActive[i].spr) <> SCRAP
-				destX = w/2 + bulletActive[i].batchOffset + bulletActive[i].num*90
+				destX = w/2 + bulletActive[i].batchOffset + bulletActive[i].num*110
 				destY = GetSpriteMiddleY(eggBird) + 90 + bulletActive[i].time*150
 			endif
 			if bulletActive[i].formula = 2 and GetSpriteGroup(bulletActive[i].spr) <> SCRAP

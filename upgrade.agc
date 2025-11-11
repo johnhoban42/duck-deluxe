@@ -491,6 +491,8 @@ function DeleteUpgrade2()
 	if GetTextExists(scrapText) then DeleteText(scrapText)		
 	DeleteMusicOGG(upgrade2M)
 	
+	SetViewOffset(0, 0)
+	
 	StopAmbientMusic()
 	EmptyTrashBag()
 endfunction
