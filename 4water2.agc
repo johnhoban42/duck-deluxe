@@ -273,9 +273,10 @@ function InitWater2()
 		else
 			inc scrapWeight, 1
 			CreateSpriteExpress(spawnS, 10, 10, w, h, 8)
+			scrapSet = GetScrapRank()
 			rnd = Random(1,8)
 			for j = 1 to 4
-				AddSpriteAnimationFrame(spawnS, scrapImgs[rnd, 1, j])//First index will be a random
+				AddSpriteAnimationFrame(spawnS, scrapImgs[rnd, scrapSet, j])//First index will be a random
 			next j
 			PlaySprite(spawnS, 3+Random(1,3))
 			newS.size = 60
@@ -312,7 +313,7 @@ function InitWater2()
 	newS.cat = RAMP
 	newS.x = water2Distance+370
 	newS.y = 100
-	CreateSprite(spawnS, 0)
+	LoadSprite(spawnS, "finishRod.png")
 	SetSpriteDepth(spawnS, 18)
 	SetSpriteSize(spawnS, 20, 700)
 	spawnActive.insert(newS)
@@ -500,19 +501,27 @@ function DoWater2()
 	Print(GetSpriteX(duck))
 	
 	if firstDuck2Race = 0
+		if duckDistance# < 79990 and GetMusicPlayingOGG(waterM) = 0
+			PlayMusicOGG(waterM, 1)
+			SetMusicVolumeOGG(waterM, 100)
+			SetMusicSystemVolumeOGG(100)
+		endif
+		
 		if duckDistance# > 76000
 			focalPoint# = (raceSize)*20000 - duckDistance#
 			usePoint# = focalPoint#
+			SetMusicVolumeOGG(waterM, 100)
 		else
 			focalPoint# = GlideNumToZero(focalPoint#, 40)
 			usePoint# = focalPoint# + landDistance-heroLocalDistance#
+			SetMusicVolumeOGG(waterM, 100 - 50 - Min(100*(76000.0 - (duckDistance#))/20000, 50))
 		endif
 		
 			//Print(raceSize)
 			//Print(areaSeen)
-			//Print(duckDistance#)
-			Print(raceSize)	
-			Print(raceQueue.length)	
+			Print(duckDistance#)
+			Print(GetMusicPlayingOGG(waterM))	
+			//Print(raceQueue.length)	
 			
 			
 		SetSpriteFrame(water2S, abs(1+Mod(Round(usePoint#)/6, 60)))

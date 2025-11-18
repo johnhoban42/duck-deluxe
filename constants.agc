@@ -56,15 +56,20 @@ global fish3I
 
 #constant scrapText 1010
 
-#constant progFront 1011
+//#constant progFront 1011
 #constant progBack 1012
 #constant heroIcon 1013
 #constant duckIcon 1014
-#constant flag1 1015
-#constant flag2 1016
-#constant flag3 1017
+//#constant flag1 1015
+//#constant flag2 1016
+//#constant flag3 1017
 #constant cutsceneSpr 1018
 #constant coverS 1019
+
+global progFronts as integer[7]
+global progFlags as integer[7]
+
+//The above IDs need to be set manually for LoadAnimatedSprite to work
 
 #constant waterBarFront 1021
 #constant waterBarBack 1022

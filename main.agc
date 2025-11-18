@@ -23,6 +23,7 @@ SetWindowSize( 1280, 720, 0 )
 SetWindowAllowResize( 1 ) // allow the user to resize the window
 
 global debug = 0
+global release = 0
 if debug = 0 then SetErrorMode(1)
 global nextScreen = LAND2
 //SetPhysicsDebugOn()
@@ -261,7 +262,8 @@ global raceQueue as integer[0]
 global raceQueueRef as integer[0]
 global curRaceSet = 2
 global raceSize = 0
-if debug = 0 then SetRaceQueue(curRaceSet)
+//if debug = 0 then SetRaceQueue(curRaceSet)
+if release = 0 then SetRaceQueue(curRaceSet)
 //SetRaceQueue(curRaceSet)
 
 function SetRaceQueue(raceSet)
@@ -278,8 +280,8 @@ function SetRaceQueue(raceSet)
 	elseif raceSet = 2 //Race Against a Duck 2 order
 		raceQueue.insert(SPACE2)
 		raceQueue.insert(WATER2)
-		raceQueue.insert(AIR2)
 		raceQueue.insert(LAND2)
+		raceQueue.insert(AIR2)
 	endif
 	raceQueueRef = raceQueue
 	
@@ -357,6 +359,11 @@ do
 			DoSpace2()
 		endif
 		
+		Print(areaSeen)
+		Print(curAreaSeen)
+		//for i = 0 to raceQueue.length
+			//Print(GetSpriteX(progFlags[i]))
+		//next i
 		//Progress bar at top
 		SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(curAreaSeen*waterDistance - heroLocalDistance#)/waterDistance)/areaSeen)
 		SetSpriteX(duckIcon, Min(GetSpriteX(progBack)-GetSpriteWidth(duckIcon)/2 + (GetSpriteWidth(progBack)*(20000*raceSize - (duckDistance#))/20000)/areaSeen, GetSpriteX(progBack)+GetSpriteWidth(progBack)-GetSpriteWidth(duckIcon)))
@@ -364,7 +371,7 @@ do
 		if GetSpriteExists(cutsceneSpr) then IncSpriteY(cutsceneSpr, -2*fpsr#)
 		
 		if heroLocalDistance# <= 0
-			if raceQueue.length > 0
+			if raceQueue.length >= 0
 				//Loading in the next race
 				PlayTweenSprite(tweenSprFadeIn, coverS, 0)
 				PlaySound(windMS, volumeS)
@@ -385,7 +392,10 @@ do
 				StopMusicOGG(airM)
 				
 				HideUIText()
-				LoadSpriteExpress(finishS, "finishHero.png", 924, 429, 0, 0, 4)
+				finStr$ = "finishHero.png"
+				if curRaceSet = 1 then finStr$ = "finishHero.png"
+				if curRaceSet = 2 then finStr$ = "finishDuck.png"
+				LoadSpriteExpress(finishS, finStr$, 924, 429, 0, 0, 4)
 				FixSpriteToScreen(finishS, 1)
 				SetSpriteMiddleScreen(finishS)
 				PlayTweenSprite(tweenSprFadeOut, coverS, 0)
@@ -433,7 +443,10 @@ do
 			firstDuck2Race = 1
 			
 			HideUIText()
-			LoadSpriteExpress(finishS, "finishDuck.png", 924, 429, 0, 0, 4)
+			finStr$ = "finishHero.png"
+			if curRaceSet = 1 then finStr$ = "finishDuck.png"
+			if curRaceSet = 2 then finStr$ = "finishHero.png"
+			LoadSpriteExpress(finishS, finStr$, 924, 429, 0, 0, 4)
 			FixSpriteToScreen(finishS, 1)
 			SetSpriteMiddleScreen(finishS)
 			PlayTweenSprite(tweenSprFadeOut, coverS, 0)
@@ -494,7 +507,7 @@ do
 				DeleteScene(screen)
 				screen = 0
 				//TODO - change this current race set out to correspond with different menu screen buttons
-				curRaceSet = 1
+				curRaceSet = 2
 				SetRaceQueue(curRaceSet)
 				
 				duckSpeed# = duckSpeedDefault#
@@ -724,48 +737,82 @@ function SetupScene(scene)
 		if duckSpeed# = 100 then duckDistance# = 20000*(raceSize-areaSeen)
 		
 		
-				
-		CreateSpriteExpress(progBack, 610, 35, 0, 50, 9)
-		SetSpriteMiddleScreenX(progBack)
-		SetSpriteColor(progBack, 100, 100, 100, 0)
-		DeleteSprite(progFront)
-		LoadSpriteExpress(progFront, "mapBar" + Str(areaSeen) + ".png", GetSpriteWidth(progBack), GetSpriteHeight(progBack)-10, GetSpriteX(progBack), GetSpriteY(progBack)+5, 7)
-		//SetSpriteColor(progFront, 170, 170, 170, 255)
-		
-		if curRaceSet < 3
+		if GetSpriteExists(progBack) = 0
+			//Only creating the top UI sprites if they don't exist yet
+			CreateSpriteExpress(progBack, 610, 35, 0, 50, 9)
+			SetSpriteMiddleScreenX(progBack)
+			SetSpriteColor(progBack, 100, 100, 100, 0)
+			FixSpriteToScreen(progBack, 1)
+			
+			progFlags[1] = 1051
+			progFlags[2] = 1052
+			progFlags[3] = 1053
+			progFlags[4] = 1054
+			progFlags[5] = 1055
+			progFlags[6] = 1056
+			progFlags[7] = 1057
+			
+			for i = 1 to 7
+				progFronts[i] = LoadSprite("mapBars/mapBar" + Str(i) + ".png")
+				SetSpriteExpress(progFronts[i], GetSpriteWidth(progBack), GetSpriteHeight(progBack)-10, GetSpriteX(progBack), GetSpriteY(progBack)+5, 7)
+				FixSpriteToScreen(progFronts[i], 1)
+				//Sleep(2000)
+				if i < 7
+					if i = 1 then LoadAnimatedSprite(progFlags[i], "flag", 7)
+					if i > 1 then CreateSpriteExistingAnimation(progFlags[i], progFlags[1])
+					PlaySprite(progFlags[i], 15, 1, 1, 7)
+				else
+					LoadAnimatedSprite(progFlags[i], "finish", 9)
+					PlaySprite(progFlags[i], 15, 1, 1, 9)
+					SetSpriteDepth(progFlags[i], 3)
+				endif
+				SetSpriteExpress(progFlags[i], 36, 36, GetSpriteX(progBack) - 40 + GetSpriteWidth(progBack)*(i+1)/areaSeen, GetSpriteY(progBack)-25, 8)
+				FixSpriteToScreen(progFlags[i], 1)
+			next i
+			IncSpritePosition(progFlags[7], -5, 16)
+			SetSpriteDepth(progFlags[7], 3)
+			
 			LoadSpriteExpress(heroIcon, "game" + str(curRaceSet) + "IconHero.png", 40, 40, GetSpriteX(progBack)-20, GetSpriteMiddleY(progBack)-20, 5)
+			FixSpriteToScreen(heroIcon, 1)
 			LoadSpriteExpress(duckIcon, "game" + str(curRaceSet) + "IconDuck.png", 40, 40, GetSpriteX(progBack)-20, GetSpriteMiddleY(progBack)-20, 6)
-			SetSpriteSize(duckIcon, 100*40/90, 100*40/90) //This line makes it dissapear???
+			FixSpriteToScreen(duckIcon, 1)
+			SetSpriteSize(duckIcon, 100*40/90, 100*40/90) //This line makes it dissapear???	//IDK what that first comment means
 			SetSpriteY(duckIcon, GetSpriteMiddleY(progBack) - GetSpriteHeight(duckIcon)/2)
+			
+		else
+			//This is setting things for every time a map is reloaded
+			SetSpriteVisible(heroIcon, 1)
+			SetSpriteVisible(duckIcon, 1)
 		endif
-		
-		
-		LoadAnimatedSprite(flag1, "flag", 7)
-		LoadAnimatedSprite(flag2, "flag", 7)
-		LoadAnimatedSprite(flag3, "finish", 9)
-		PlaySprite(flag1, 15, 1, 1, 7)
-		PlaySprite(flag2, 15, 1, 1, 7)
-		PlaySprite(flag3, 15, 1, 1, 9)
-		for i = flag1 to flag3
-			SetSpriteExpress(i, 36, 36, GetSpriteX(progBack) - 40 + GetSpriteWidth(progBack)*(i-flag1+1)/areaSeen, GetSpriteY(progBack)-25, 8)
-			SetSpriteVisible(i, 1)
-			if (i-flag1+1 > areaSeen) then SetSpriteVisible(i, 0)
+		//The below is done every time a map reloads
+		//Setting the position of the flags correctly
+		for i = 1 to 7
+			
+			SetSpriteVisible(progFronts[i], 1)
+			SetSpriteScissor(progFronts[i], 0, 0, 1, 1)
+			SetSpriteX(progFlags[i], GetSpriteX(progBack) - 40 + GetSpriteWidth(progBack)*(i)/areaSeen)
 		next i
-		SetSpriteDepth(flag3, 3)
-		IncSpriteX(flag3, -5)
-		IncSpriteY(flag3, 16)
-		
+		//Making the appropriate flags visible
+		for i = 1 to areaSeen
+			SetSpriteVisible(progFlags[i], 1)
+		next i
+		//Making the finish line visible if the last race segment has been seen
+		if areaSeen = raceQueueRef.length+1
+			SetSpriteVisible(progFlags[areaSeen], 0)
+			SetSpriteVisible(progFlags[7], 1)
+			SetSpriteX(progFlags[7], GetSpriteX(progBack) - 40 + GetSpriteWidth(progBack)-5)
+		endif
+		//Adjusting the maps seen for each race segment
+		for i = 1 to areaSeen
+			SetSpriteVisible(progFronts[raceQueueRef[i-1]], 1)
+			SetSpriteScissor(progFronts[raceQueueRef[i-1]], GetSpriteX(progBack) + GetSpriteWidth(progBack)*((i-1.0)/areaSeen), 0, GetSpriteX(progBack) + GetSpriteWidth(progBack)*((i+0.0)/areaSeen), h)
+		next i
+
 		SetSpriteColor(coverS, 255, 255, 255, 255)
 		PlayTweenSprite(tweenSprFadeOut, coverS, 0)
 		
 		
-		FixSpriteToScreen(progBack, 1)
-		FixSpriteToScreen(progFront, 1)
-		FixSpriteToScreen(heroIcon, 1)
-		FixSpriteToScreen(duckIcon, 1)
-		FixSpriteToScreen(flag1, 1)
-		FixSpriteToScreen(flag2, 1)
-		FixSpriteToScreen(flag3, 1)
+		
 		
 		if raceSize-2 = raceQueue.length then PlayRaceCutScene(scene)	//What is this if statement??? Haha	//Turns out it was essential to making the game work
 		//PlayRaceCutScene(scene)
@@ -792,7 +839,7 @@ function SetupScene(scene)
 		
 		SetSpriteVisible(bg, 0)
 			
-		LoadSpriteExpress(logo, "logo.png", 460, 460, 0, 0, 20)
+		LoadSpriteExpress(logo, "logo2.png", 460, 460, 0, 0, 20)
 		SetSpriteMiddleScreen(logo)
 		IncSpriteY(logo, -70)
 		
@@ -941,6 +988,21 @@ function CollectScrap(area)
 	//Updating the scrap textbox
 	
 endfunction
+
+function GetScrapRank()
+	returnSet = curAreaSeen //For when it's 3 or 4 races
+	//The idea is that a longer race hits every trigger on the way down
+	if raceQueueRef.length >= 4	//When it's 5 races
+		if curAreaSeen > 2 then dec returnSet, 1
+	endif
+	if raceQueueRef.length >= 5	//When it's 6 races
+		if curAreaSeen > 4 then dec returnSet, 1
+	endif
+	if raceQueueRef.length >= 6	//When it's 7 races
+		if curAreaSeen > 6 then dec returnSet, 1
+	endif
+
+endfunction returnSet
 
 function UpdateScrapText()
 	
@@ -1100,15 +1162,23 @@ function DeleteScene(scene)
 		
 		
 	if scene = WATER or scene = LAND or scene = AIR or scene = WATER2 or scene = LAND2 or scene = AIR2 or scene = SPACE2
-		//These are deleted for every gameplay section
-		DeleteSprite(progBack)
-		DeleteSprite(progFront)
-		DeleteSprite(heroIcon)
-		DeleteSprite(duckIcon)
+		//These are hidden for every gameplay section
+		SetSpriteVisible(progBack, 0)
+		for i = 1 to 7
+			SetSpriteVisible(progFronts[i], 0)
+			SetSpriteVisible(progFlags[i], 0)
+		next i
+		SetSpriteVisible(heroIcon, 0)
+		SetSpriteVisible(duckIcon, 0)
 		
-		DeleteAnimatedSprite(flag1)
-		DeleteAnimatedSprite(flag2)
-		DeleteAnimatedSprite(flag3)
+		//DeleteSprite(progBack)
+		//DeleteSprite(progFront)
+		//DeleteSprite(heroIcon)
+		//DeleteSprite(duckIcon)
+		
+		//DeleteAnimatedSprite(flag1)
+		//DeleteAnimatedSprite(flag2)
+		//DeleteAnimatedSprite(flag3)
 		
 	endif
 	
@@ -1125,6 +1195,12 @@ function PlayRaceCutScene(scene)
 	PlaySprite(cutsceneSpr, 1, 0, 1, 4)
 	SetSpriteDepth(cutsceneSpr, 2)
 	FixSpriteToScreen(cutsceneSpr, 1)
+	
+	if firstDuck2Race = 0
+		duckDistance# = 80000
+		StopMusicOGG(waterM)
+	endif
+	
 	
 	//Doing the scene twice to get the sprites in place
 	//for i = 1 to 2
@@ -1145,27 +1221,34 @@ function PlayRaceCutScene(scene)
 		endif
 	//next i
 	
+	SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(curAreaSeen*waterDistance - heroLocalDistance#)/waterDistance)/areaSeen)
+	SetSpriteX(duckIcon, Min(GetSpriteX(progBack)-GetSpriteWidth(duckIcon)/2 + (GetSpriteWidth(progBack)*(20000*raceSize - (duckDistance#))/20000)/areaSeen, GetSpriteX(progBack)+GetSpriteWidth(progBack)-GetSpriteWidth(duckIcon)))
 	
-//~	while GetSpriteCurrentFrame(cutsceneSpr) < 4
-//~		
-//~		gameTime# = 0
-//~		
-//~		if scene = WATER
-//~			SetSpritePosition(hero, heroX#, heroY# + 10*Abs(sin(gameTime#/8)) + 6*Abs(cos(gameTime#/3)))
-//~			DrawWater()
-//~			IncSpriteY(duck, 10*Abs(sin(gameTime#/9)) + 5*Abs(cos(gameTime#/4)))
-//~		elseif scene = WATER2
-//~			//Put stuff here to make the scene feel alive while the timer is going off
-//~		endif
-//~		
-//~		if frameCheck <> GetSpriteCurrentFrame(cutsceneSpr) and GetSpriteCurrentFrame(cutsceneSpr) <> 1
-//~			PlaySound(beepReadyS, volumeS)
-//~			frameCheck = GetSpriteCurrentFrame(cutsceneSpr)
-//~		endif
-//~		
-//~		SyncG()
-//~		
-//~	endwhile
+	//Only playing the cutscene if a release is active
+	if release = 1
+	
+		while GetSpriteCurrentFrame(cutsceneSpr) < 4
+			Print(GetMusicPlayingOGG(waterM))	
+			gameTime# = 0
+			
+			if scene = WATER
+				SetSpritePosition(hero, heroX#, heroY# + 10*Abs(sin(gameTime#/8)) + 6*Abs(cos(gameTime#/3)))
+				DrawWater()
+				IncSpriteY(duck, 10*Abs(sin(gameTime#/9)) + 5*Abs(cos(gameTime#/4)))
+			elseif scene = WATER2
+				//Put stuff here to make the scene feel alive while the timer is going off
+			endif
+			
+			if frameCheck <> GetSpriteCurrentFrame(cutsceneSpr) and GetSpriteCurrentFrame(cutsceneSpr) <> 1
+				PlaySound(beepReadyS, volumeS)
+				frameCheck = GetSpriteCurrentFrame(cutsceneSpr)
+			endif
+			
+			SyncG()
+			
+		endwhile
+
+	endif
 	
 	PlaySound(beepGoS, volumeS)
 	PlaySound(windSS, volumeS)

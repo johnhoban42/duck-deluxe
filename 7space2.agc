@@ -58,7 +58,7 @@ function CreateMashSequence()
 	DeleteMashSequence()
 	
 	//The minimum length is 2, otherwise it will start on a split
-	mashLenMax = 4 + 3 + upgrades[4, 7]
+	mashLenMax = 4 + upgrades[4, 7]
 	curMashLen = mashLenMax - Random(0,2)
 	
 	mash as mashInput
@@ -132,9 +132,10 @@ function CreateMashSequence()
 	spaceScrapS = -1
 	if isSplit = 1
 		CreateSpriteExpress(spawnS, 10, 10, w, h, 8)
+		scrapSet = GetScrapRank()
 		rnd = Random(1,8)
 		for j = 1 to 4
-			AddSpriteAnimationFrame(spawnS, scrapImgs[rnd, 4, j])//First index will be a random
+			AddSpriteAnimationFrame(spawnS, scrapImgs[rnd, scrapSet, j])//First index will be a random
 		next j
 		PlaySprite(spawnS, 3+Random(1,3))
 		newS.size = 50
@@ -256,7 +257,7 @@ function DoSpace2()
 	endif
 	print(spaceBoost#)
 	
-	visualBoost# = (spaceBoost#^2 - spaceBoost#)*40
+	visualBoost# = (spaceBoost#^2 - spaceBoost#)*100
 	
 	diff# = Min(140, Max(-140, ((20000*curAreaSeen - heroLocalDistance#) - (20000*raceSize - duckDistance#))/40.0 - visualBoost#))
 	if diff# > 0 and (20000*curAreaSeen - heroLocalDistance#) < (20000*raceSize - duckDistance#) then diff# = -1
@@ -269,7 +270,7 @@ function DoSpace2()
 	
 	if duckDistance# < 20000*(raceSize-curAreaSeen) then PlayTweenSprite(tweenSprFadeOut, duck, 0)
 	
-	SetSpriteAngle(hero, -10 + 20*cos(gameTime#))
+	SetSpriteAngle(hero, -6 + 12*cos(gameTime#))
 	
 	if inputSelect
 		CreateMashSequence()

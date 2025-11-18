@@ -69,6 +69,8 @@ function CreatePod(row, col)
 	spr = pod.sprBG
 	//SetSpriteExpress(spr, 362, 100, 10 + col*364, 80 + row*142, 50) //Pre-making them longer
 	SetSpriteExpress(spr, 372, 100, 10 + col*374, 80 + row*142, 50) 
+	//SetSpriteShapeBox(pod.sprBG, -372/2, -40, 372/2, 150, 0)
+	SetSpriteShapeBox(pod.sprBG, -372/2, -40, 372/2, 80, 0)
 	//SetSpriteColor(spr, 80, 80, 80, 255)
 	//SetSpriteColorAlpha(spr, 100)
 	
@@ -95,6 +97,7 @@ function CreatePod(row, col)
 	pod.sprUpBG = LoadSprite("upgrade/upgradeBG.png")
 	SetSpriteExpress(pod.sprUpBG, GetSpriteWidth(spr)-38, 110, 0, GetSpriteY(spr)+GetSpriteHeight(spr)-80, 100)
 	SetSpriteX(pod.sprUpBG, GetSpriteMiddleX(spr) - GetSpriteWidth(pod.sprUpBG)/2)
+	//SetSpriteShape(pod.sprUpBG, 2)
 	//SetSpriteColor(pod.sprUpBG, 10, 80, 10, 255)
 	//SetSpriteColor(pod.sprUpBG, 150, 150, 150, 255)
 	
@@ -106,6 +109,7 @@ function CreatePod(row, col)
 	
 	pod.sprBuy = LoadSprite("upgrade/buy.png")
 	SetSpriteExpress(pod.sprBuy, 98*.7, 42*.7, GetSpriteX(spr)+275, GetSpriteY(pod.sprUpBG)+GetSpriteHeight(pod.sprUpBG)-67, 80)
+	//SetSpriteShape(pod.sprBuy, 2)
 	SetPodBuyColor(pod)
 	
 	pod.sprChainL = CreateSprite(chainI)
@@ -200,13 +204,16 @@ function CreateUpgrade2()
 		raceQueueRef.insert(LAND)
 		raceQueueRef.insert(AIR)
 		areaSeen = raceQueueRef.length +1
+		SetPhysicsDebugOn()
 	endif
+	
+	
+		
 	
 	upPods.length = -1
 	upPods.length = areaSeen*4
 	
 	curPod as p
-	
 	for i = 0 to areaSeen*4-1
 		curPod = CreatePod(Mod(i, 4), i/4)
 		upPods[i] = curPod
@@ -215,7 +222,6 @@ function CreateUpgrade2()
 			//SetSpriteVisible(upPods[i].sprChainR, 0)
 		endif
 	next i
-	
 	
 	for col = 0 to areaSeen - 1
 		upCols[col] = LoadSprite("upgrade/mode" + str(raceQueueRef[col]) + ".png")
@@ -237,7 +243,7 @@ function CreateUpgrade2()
 	
 endfunction
 function DoUpgrade2()
-	
+	if debug = 1 then scrapTotal = 10000
 	triggerMove = 0
 	if inputLeft then triggerMove = -4
 	if inputRight then triggerMove = 4
@@ -287,24 +293,29 @@ function DoUpgrade2()
 	for i = 0 to upPods.length-1
 		curP = upPods[i]
 		
-		if ((Button(curP.sprBG) or Button(curP.sprUpBG)) and i <> selectedPod) or (triggerMove <> 0 and i = selectedPod+triggerMove)
+		if ((Button(curP.sprUpBG) or Button(curP.sprBG)) and i <> selectedPod) or (triggerMove <> 0 and i = selectedPod+triggerMove)
 			oldSel = selectedPod
 			selectedPod = i
 			upPods[i].isSelected = 1
-			if oldSel > -1 then upPods[oldSel].isSelected = 0
+			if oldSel > -1 and oldSel <= upPods.length then upPods[oldSel].isSelected = 0
 			//if oldSel <> startRace then upPods[oldSel].isSelected = 0
+			
+			//Sleep(1000)
 			
 			PlaySound(chainShakeS, volumeS*0.04)
 			PlaySound(boxSlideS, volumeS*0.08)
 			
 			UpdateAllTweens(1)
 			
+			//Adjusting the boxes so that the selected one is bigger, for button press checks when scrolling (for some reason only the main bg of the pod is good)
+			SetSpriteShapeBox(upPods[i].sprBG, -372/2, -40, 372/2, 144, 0)
+			
 			//Updating the buy button on that panel
 			SetPodBuyColor(curP)
 			
 			//Moving the upgrade panel down on the selected upgrade
 			PlayTweenCustom(upPods[i].twnUpgradeDown, 0)
-			if oldSel > -1 and oldSel <> startRace then PlayTweenCustom(upPods[oldSel].twnUpgradeUp, 0)
+			if oldSel > -1 and oldSel <= upPods.length and oldSel <> startRace then PlayTweenCustom(upPods[oldSel].twnUpgradeUp, 0)
 			
 			SetSpritePosition(startRace, GetSpriteX(upPods[areaSeen*4-1].sprBG)+500, 350)
 			
@@ -331,11 +342,13 @@ function DoUpgrade2()
 				endif
 			next j
 			i = upPods.length
+		
 		endif
 		
+		if selectedPod = startRace then SetSpriteShapeBox(upPods[i].sprBG, -372/2, -40, 372/2, 80, 0) //Resetting shapes of all pods when startrace is picked
 		
 		//Buying an upgrade
-		if ((((Button(curP.sprBG) or Button(curP.sprUpBG) or inputSelect) and i = selectedPod)) and upgrades[curP.row+1, curP.rID] < 3) and scrapTotal >= GetCost2(curP.row, curP.column, curP.rID)
+		if ((((Button(curP.sprBG) or Button(curP.sprUpBG) or Button(curP.sprBuy) or inputSelect) and i = selectedPod)) and upgrades[curP.row+1, curP.rID] < 3) and scrapTotal >= GetCost2(curP.row, curP.column, curP.rID)
 			PlayTweenSprite(curP.twnBuyWhite, curP.sprCover, 0)
 			PlayTweenSprite(curP.twnBuyClear, curP.sprCover, .45)
 			PlayTweenCustom(curP.twnBuyTuck, 0)
@@ -387,12 +400,22 @@ function DoUpgrade2()
 	
 	//Making sure all pieces of the pod (and the screen view) are set correctly
 	for i = 0 to upPods.length-1
+//~		if selectedPod <> startRace
+//~			GlideToX(upPods[i].sprBG, 10 + (i/4)*374 - ((78+32*areaSeen)*(selectedPod/4)), 40) 
+//~		else
+//~			GlideToX(upPods[i].sprBG, 10 + (i/4)*374 - ((78+32*areaSeen)*((upPods.length-1)/4)), 40) 
+//~		endif
+		//SetSpriteX(upPods[i].sprBG, 10 + (i/4)*374) 
 		AlignPod(upPods[i])
 	next i
-	if selectedPod <> startRace 
-		GlideViewOffset(((78+32*areaSeen)*(selectedPod/4)), 0, 40, 2)
-	else
-		GlideViewOffset(((78+32*areaSeen)*((upPods.length-1)/4)), 0, 40, 2)
+	
+	//Won't update the scroll if not enough areas were seen yet
+	if areaSeen > 2
+		if selectedPod <> startRace
+			GlideViewOffset(((78+32*areaSeen)*(selectedPod/4)), 0, 40, 2)
+		else
+			GlideViewOffset(((78+32*areaSeen)*((upPods.length-1)/4)), 0, 40, 2)
+		endif
 	endif
 	
 	//Adjusting the start race button, pulses if it's highlighted
@@ -406,7 +429,7 @@ function DoUpgrade2()
 	endif
 	if Button(startRace) then StartRace2()
 	
-	Print(GetSpriteHit(GetPointerX(), GetPointerY()))
+	//Print(Hover(upPods[14].sprUpBG))
 endfunction
 function AlignPod(curP as p)
 	spr = curP.sprBG

@@ -248,7 +248,7 @@ endfunction
 
 function Hover(sprite) 
 	if GetSpriteExists(sprite) = 0 then exitfunction 0	//Added in to make sure bad buttons aren't targeted
-	returnValue = GetSpriteHitTest(sprite, GetPointerX()+GetViewOffsetX(), GetPointerY())
+	returnValue = GetSpriteHitTest(sprite, GetPointerX()+GetViewOffsetX(), GetPointerY()+GetViewOffsetY())
 endfunction returnValue
 
 function Button(sprite) 
