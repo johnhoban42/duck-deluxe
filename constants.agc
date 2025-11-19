@@ -56,15 +56,20 @@ global fish3I
 
 #constant scrapText 1010
 
-#constant progFront 1011
+//#constant progFront 1011
 #constant progBack 1012
 #constant heroIcon 1013
 #constant duckIcon 1014
-#constant flag1 1015
-#constant flag2 1016
-#constant flag3 1017
+//#constant flag1 1015
+//#constant flag2 1016
+//#constant flag3 1017
 #constant cutsceneSpr 1018
 #constant coverS 1019
+
+global progFronts as integer[7]
+global progFlags as integer[7]
+
+//The above IDs need to be set manually for LoadAnimatedSprite to work
 
 #constant waterBarFront 1021
 #constant waterBarBack 1022
@@ -77,6 +82,8 @@ global fish3I
 
 #constant cutsceneSpr2 1027 //Endig
 #constant cutsceneSpr3 1028	//Intro
+
+#constant contRace 1029
 
 #constant landBoost1 1031
 #constant landBoost2 1032
@@ -157,6 +164,14 @@ global eggGoodI
 global miniBird1I
 global miniBird2I
 
+//Space 2 Sprites
+global pressThis
+global pressThisBeam
+global pressThisBeam2
+
+global spaceBoostS
+global spaceScrapS
+
 #constant spawnStartS 10001
 global spawnS = spawnStartS
 
@@ -171,6 +186,7 @@ global arrowI
 #constant featherP 3
 #constant enemyP 4
 #constant eggP 5
+#constant shineP 6
 
 #constant GOOD 1
 #constant BAD 2

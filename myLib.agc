@@ -248,13 +248,13 @@ endfunction
 
 function Hover(sprite) 
 	if GetSpriteExists(sprite) = 0 then exitfunction 0	//Added in to make sure bad buttons aren't targeted
-	returnValue = GetSpriteHitTest(sprite, GetPointerX()+GetViewOffsetX(), GetPointerY())
+	returnValue = GetSpriteHitTest(sprite, GetPointerX()+GetViewOffsetX(), GetPointerY()+GetViewOffsetY())
 endfunction returnValue
 
 function Button(sprite) 
 	returnValue = GetPointerPressed() and Hover(sprite)
 	if selectTarget = sprite and inputSelect then returnValue = 1
-	if returnValue = 1 and screen <> UPGRADE then PlaySound(selectS, volumeS)
+	if returnValue = 1 and screen <> UPGRADE and screen <> TITLE then PlaySound(selectS, volumeS)
 endfunction returnValue
 
 function GetSpriteVisibleR(sprite)
@@ -1314,23 +1314,23 @@ powers[4, 4, 5] = "x2 Boost Spawn Rate"
 	
 	//Space 2
 	powers[1, 1, 7] = "x1 Base Speed"
-	powers[1, 2, 7] = "x1.5 Base Speed"
-	powers[1, 3, 7] = "x_ Base Speed"
-	powers[1, 4, 7] = "x_ Base Speed"
+	powers[1, 2, 7] = "x1.75 Base Speed"
+	powers[1, 3, 7] = "x3 Base Speed"
+	powers[1, 4, 7] = "x5 Base Speed"
 	
-	powers[2, 1, 7] = ""
-	powers[2, 2, 7] = ""
-	powers[2, 3, 7] = ""
-	powers[2, 4, 7] = ""
+	powers[2, 1, 7] = "Low Scrap Chance"
+	powers[2, 2, 7] = "Decent Scrap Chance"
+	powers[2, 3, 7] = "Fine Scrap Chance"
+	powers[2, 4, 7] = "Great Scrap Chance"
 	
 	powers[3, 1, 7] = "No Mistakes"
 	powers[3, 2, 7] = "Second Chance"
-	powers[3, 3, 7] = "Third Chance"
-	powers[3, 4, 7] = "5 "
+	powers[3, 3, 7] = "Three Strikes"
+	powers[3, 4, 7] = "Five Leaf Clover"
 	
 	powers[4, 1, 7] = "Normal Combo"
-	powers[4, 2, 7] = "Big Combo"
-	powers[4, 3, 7] = "Bigger Combo"
-	powers[4, 4, 7] = "B"
+	powers[4, 2, 7] = "Better Combo"
+	powers[4, 3, 7] = "Mega Combo"
+	powers[4, 4, 7] = "Zetta Combo"
 
 endfunction

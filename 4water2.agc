@@ -107,7 +107,7 @@ function InitWater2()
 	SetSpriteSize(water2SOver, w, w/1000*90)
 	SetSpriteY(water2SOver, GetSpriteY(water2S))
 	SetSpriteDepth(water2SOver, 70)
-	SetSpriteScissor(water2SOver, 0, 150, w, h)
+	SetSpriteScissor(water2SOver, 0, 148, w, h)
 	
 	
 	LoadSpriteExpress(water2Trees, "w2BG/mangroves2.png", w*2, w/1000*370, 0, GetSpriteY(water2S)-(w/1000*370)+40, 85)
@@ -273,9 +273,10 @@ function InitWater2()
 		else
 			inc scrapWeight, 1
 			CreateSpriteExpress(spawnS, 10, 10, w, h, 8)
+			scrapSet = GetScrapRank()
 			rnd = Random(1,8)
 			for j = 1 to 4
-				AddSpriteAnimationFrame(spawnS, scrapImgs[rnd, 1, j])//First index will be a random
+				AddSpriteAnimationFrame(spawnS, scrapImgs[rnd, scrapSet, j])//First index will be a random
 			next j
 			PlaySprite(spawnS, 3+Random(1,3))
 			newS.size = 60
@@ -312,7 +313,7 @@ function InitWater2()
 	newS.cat = RAMP
 	newS.x = water2Distance+370
 	newS.y = 100
-	CreateSprite(spawnS, 0)
+	LoadSprite(spawnS, "finishRod.png")
 	SetSpriteDepth(spawnS, 18)
 	SetSpriteSize(spawnS, 20, 700)
 	spawnActive.insert(newS)
@@ -341,7 +342,7 @@ function DoWater2()
 	//IncSpriteY(cutsceneSpr, -2*fpsr#)
 	//waterXMax = -
 	heroX# = Min(Max(heroX#, 70), 420)
-	SetSpritePosition(hero, heroX#, heroY# + 22 + (GetSpriteMiddleY(water2S)) - GetSpriteHeight(hero) + 30 + 4*Abs(sin(gameTime#/8)) + 2*Abs(cos(gameTime#/3)))
+	SetSpritePosition(hero, heroX#, heroY# + 26 + (GetSpriteMiddleY(water2S)) - GetSpriteHeight(hero) + 30 + 4*Abs(sin(gameTime#/8)) + 2*Abs(cos(gameTime#/3)))
 	if diveBoost# > 0 and heroY# <= 0
 		IncSpriteY(hero, (1-diveHop#)*(-diveBoost#*36 - 10))
 		SetSpriteAngle(hero, Max(-5, -diveBoost#*15 + 20))
@@ -495,27 +496,36 @@ function DoWater2()
 		
 	endif
 	
-	SetSpritePosition(duck, -1*(duckDistance# - 20000*(raceSize)) - (water2Distance-heroLocalDistance#)+80 + 60*diveLevel, 70+4*cos(gameTime#*2))
-	//Print(GetSpriteX(duck))
+	SetSpritePosition(duck, -1*(duckDistance# - 20000*(raceSize - (curAreaSeen-1))) - (water2Distance-heroLocalDistance#)+80 + 60*diveLevel, 70+4*cos(gameTime#*2))
+	//SetSpritePosition(duck, -1*(duckDistance# - 20000*(raceSize-1)) - (water2Distance-heroLocalDistance#)+80 + 60*diveLevel, 70+4*cos(gameTime#*2))
+	Print(GetSpriteX(duck))
 	
 	if firstDuck2Race = 0
+		if duckDistance# < 79990 and GetMusicPlayingOGG(waterM) = 0
+			PlayMusicOGG(waterM, 1)
+			SetMusicVolumeOGG(waterM, 100)
+			SetMusicSystemVolumeOGG(100)
+		endif
+		
 		if duckDistance# > 76000
 			focalPoint# = (raceSize)*20000 - duckDistance#
 			usePoint# = focalPoint#
+			SetMusicVolumeOGG(waterM, 100)
 		else
 			focalPoint# = GlideNumToZero(focalPoint#, 40)
 			usePoint# = focalPoint# + landDistance-heroLocalDistance#
+			SetMusicVolumeOGG(waterM, 100 - 50 - Min(100*(76000.0 - (duckDistance#))/20000, 50))
 		endif
 		
 			//Print(raceSize)
 			//Print(areaSeen)
-			//Print(duckDistance#)
-			Print(raceSize)	
-			Print(raceQueue.length)	
+			Print(duckDistance#)
+			Print(GetMusicPlayingOGG(waterM))	
+			//Print(raceQueue.length)	
 			
 			
 		SetSpriteFrame(water2S, abs(1+Mod(Round(usePoint#)/6, 60)))
-	SetSpriteFrame(water2SOver, GetSpriteCurrentFrame(water2S))
+		SetSpriteFrame(water2SOver, GetSpriteCurrentFrame(water2S))
 		//SetSpriteFrame(water2TileS, 1+Mod(Round(landDistance-heroLocalDistance#)/6, 60))
 		SetSpriteFrame(water2TileS, abs(1+Mod(Round(usePoint#)/6, 60)))
 		for i = water2TileS+1 to water2TileE-1

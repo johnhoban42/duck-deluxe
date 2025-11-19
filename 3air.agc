@@ -84,6 +84,7 @@ function InitAir()
 			SetSpriteShape(spawnS, 3)
 			if upgrades[2, 3] < 1 then newS.cat = BAD
 		else
+			//if
 			LoadSpriteExpress(spawnS, "scrap" + Str(4 + Random(1,3)) + ".png", 10, 10, w, h, 8)
 			newS.size = 30
 		endif
