@@ -23,7 +23,7 @@ SetWindowSize( 1280, 720, 0 )
 SetWindowAllowResize( 1 ) // allow the user to resize the window
 
 global debug = 0
-global release = 0
+global release = 1
 if debug = 0 then SetErrorMode(1)
 global nextScreen = LAND2
 //SetPhysicsDebugOn()
@@ -112,6 +112,10 @@ LoadSoundOGG(jetstreamS, "sounds/jetstream.ogg")
 LoadSoundOGG(fallS, "sounds/fall.ogg")
 #constant oopsS 33
 LoadSoundOGG(oopsS, "sounds/oops.ogg")
+#constant clickUpS 34
+LoadSoundOGG(clickUpS, "sounds/clickUp.ogg")
+#constant clickDownS 35
+LoadSoundOGG(clickDownS, "sounds/clickDown.ogg")
 
 global spaceCSE as integer[13]
 for i = 1 to 13
@@ -278,10 +282,10 @@ function SetRaceQueue(raceSet)
 		raceQueue.insert(LAND)
 		raceQueue.insert(AIR)
 	elseif raceSet = 2 //Race Against a Duck 2 order
-		raceQueue.insert(SPACE2)
 		raceQueue.insert(WATER2)
-		raceQueue.insert(LAND2)
 		raceQueue.insert(AIR2)
+		raceQueue.insert(SPACE2)
+		raceQueue.insert(LAND2)
 	endif
 	raceQueueRef = raceQueue
 	
@@ -390,6 +394,7 @@ do
 				StopMusicOGG(waterM)
 				StopMusicOGG(landM)
 				StopMusicOGG(airM)
+				SaveGame()
 				
 				HideUIText()
 				finStr$ = "finishHero.png"
@@ -439,6 +444,7 @@ do
 			StopMusicOGG(landM)
 			StopMusicOGG(airM)
 			StopAmbientMusic()
+			SaveGame()
 			FreezeGameplay()
 			firstDuck2Race = 1
 			
@@ -476,45 +482,9 @@ do
 	endif
 	
 	if screen = TITLE
-		if GetSpritePlaying(cutsceneSpr3) = 0 and GetSpriteVisible(cutsceneSpr3) = 1
-			PlayMusicOGG(titleM, 1)
-			SetSpriteColor(coverS, 0, 0, 0, 255)
-			SetSpriteVisible(cutsceneSpr3, 0)
-			SetSpriteVisible(coverS, 1)
-			SetSpriteVisible(bg, 1)
-			PlayTweenSprite(tweenSprFadeOut, coverS, .3)
-			SetTextVisible(cutsceneSpr, 0)
-			
-		endif
+		if curRaceSet = 1 then DoTitle1()
+		if curRaceSet = 2 then DoTitle2()
 		
-		if inputSelect or Button(startRace) or GetPointerPressed()
-			
-			if GetSpriteVisible(cutsceneSpr3) and GetTextVisible(cutsceneSpr) = 0
-				SetTextVisible(cutsceneSpr, 1)
-				PlaySound(selectS, volumeS)
-			elseif GetSpritePlaying(cutsceneSpr3) and GetTextVisible(cutsceneSpr) and inputSelect
-				StopSprite(cutsceneSpr3)
-				PlaySound(selectS, volumeS)
-				
-				if GetMusicPlayingOGG(introM) then StopMusicOGG(introM)
-			elseif Button(startRace) or inputSelect
-				if inputSelect then PlaySound(selectS, volumeS)
-				SetSpriteColor(coverS, 255, 255, 255, 0)
-				PlayTweenSprite(tweenSprFadeIn, coverS, 0)
-				PlaySound(windMS, volumeS)
-				PlaySound(clapS, volumeS)
-				WaitFadeTween()
-				DeleteScene(screen)
-				screen = 0
-				//TODO - change this current race set out to correspond with different menu screen buttons
-				curRaceSet = 2
-				SetRaceQueue(curRaceSet)
-				
-				duckSpeed# = duckSpeedDefault#
-				if GetMusicPlayingOGG(introM) then StopMusicOGG(introM)
-				if GetMusicPlayingOGG(titleM) then StopMusicOGG(titleM)
-			endif
-		endif
 	endif
 	
 	if screen = FINISH
@@ -768,6 +738,7 @@ function SetupScene(scene)
 				endif
 				SetSpriteExpress(progFlags[i], 36, 36, GetSpriteX(progBack) - 40 + GetSpriteWidth(progBack)*(i+1)/areaSeen, GetSpriteY(progBack)-25, 8)
 				FixSpriteToScreen(progFlags[i], 1)
+				SetSpriteVisible(progFlags[i], 0)
 			next i
 			IncSpritePosition(progFlags[7], -5, 16)
 			SetSpriteDepth(progFlags[7], 3)
@@ -829,24 +800,13 @@ function SetupScene(scene)
 	elseif scene = TITLE
 		SetBG(TITLE)
 		
-		SetSpriteVisible(cutsceneSpr3, 1)
-		SetSpriteExpress(cutsceneSpr3, h, h, 0, 0, 10)
-		SetSpriteMiddleScreen(cutsceneSpr3)
-		PlaySprite(cutsceneSpr3, 3, 0, 1, 60)
+		if curRaceSet = 1
+			CreateTitle1()
+		else
+			CreateTitle2()
+		endif
 		
-		CreateTextExpress(cutsceneSpr, "Press SPACE to skip.", 40, fontMI, 2, w-20, h-60, -6, 8)
-		SetTextVisible(cutsceneSpr, 0)
 		
-		SetSpriteVisible(bg, 0)
-			
-		LoadSpriteExpress(logo, "logo2.png", 460, 460, 0, 0, 20)
-		SetSpriteMiddleScreen(logo)
-		IncSpriteY(logo, -70)
-		
-		LoadSpriteExpress(startRace, "startButton.png", 230, 230, 0, 0, 20)
-		SetSpriteMiddleScreen(startRace)
-		IncSpriteY(startRace, 230)
-		PlayMusicOGG(introM, 0)
 	
 	elseif scene = FINISH
 	
@@ -923,7 +883,8 @@ function SetBG(scene)
 		SetSpriteExpress(bg3, w, w*1.5, 0, -w*.6, 998)
 		
 	elseif scene = TITLE
-		LoadSprite(bg, "bgL.png")
+		if curRaceSet = 1 then LoadSprite(bg, "bgL.png")
+		if curRaceSet = 2 then LoadSprite(bg, "bgLEvil.png")
 		SetSpriteExpress(bg, w, w, 0, -h*.1, 999)
 		IncSpriteY(bg, -100)
 		
@@ -1143,6 +1104,8 @@ function DeleteScene(scene)
 		DeleteText(cutsceneSpr)
 		DeleteSprite(logo)
 		DeleteSprite(startRace)
+		if GetSpriteExists(contRace) then DeleteSprite(contRace)
+		if GetTextExists(contRace) then GetTextExists(contRace)
 	
 	elseif scene = FINISH
 		

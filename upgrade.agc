@@ -169,6 +169,7 @@ function SetPodBuyColor(pod as p)
 	endif
 endfunction
 function CreateUpgrade2()
+	SetViewOffset(0, 0)
 	
 	//areaSeen = 4
 	if curRaceSet = 2
@@ -188,7 +189,7 @@ function CreateUpgrade2()
 	//General upgrade music, for duck 3/DX/challenge mode
 	
 	
-	LoadSpriteExpress(upgradeBG, "upgrade2-1.png", w, h, 0, 0, 900)
+	LoadSpriteExpress(upgradeBG, "upgrade2-" + str(areaSeen) + ".png", w, h, 0, 0, 900)
 	FixSpriteToScreen(upgradeBG, 1)
 	selectedPod = -1
 	

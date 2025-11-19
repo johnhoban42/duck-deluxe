@@ -254,7 +254,7 @@ endfunction returnValue
 function Button(sprite) 
 	returnValue = GetPointerPressed() and Hover(sprite)
 	if selectTarget = sprite and inputSelect then returnValue = 1
-	if returnValue = 1 and screen <> UPGRADE then PlaySound(selectS, volumeS)
+	if returnValue = 1 and screen <> UPGRADE and screen <> TITLE then PlaySound(selectS, volumeS)
 endfunction returnValue
 
 function GetSpriteVisibleR(sprite)

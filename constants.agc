@@ -83,6 +83,8 @@ global progFlags as integer[7]
 #constant cutsceneSpr2 1027 //Endig
 #constant cutsceneSpr3 1028	//Intro
 
+#constant contRace 1029
+
 #constant landBoost1 1031
 #constant landBoost2 1032
 #constant landBoost3 1033
