@@ -234,9 +234,7 @@ function DoWater()
 			else
 				PlaySound(rowBadS, volumeS)
 			endif
-			//Print(boatSpeed#)
-			//Sync()
-			//Sleep(1000)
+
 		endif
 		
 		SetSpriteFrame(waterS, 1+Mod(Round(waterDistance-heroLocalDistance#)/6, 52))
@@ -326,10 +324,7 @@ function DrawWater()
 		SetSpriteColorAlpha(spr, (255 - Min(255, -(GetSpriteY(hero)+120) + 2.4*(GetSpriteY(spr)-GetSpriteY(hero)+120))))
 		if GetSpriteColorAlpha(spr) <= 10 then SetSpriteVisible(spr, 0)
 	endif
-	//Print(duckDistance#)
-	//Print(dis)
-	//Print(GetSpriteX(duck))
-	
+
 	for i = 1 to spawnActive.length
 		//if i = 61 then Print(spawnActive[i].y)
 		spr = spawnActive[i].spr

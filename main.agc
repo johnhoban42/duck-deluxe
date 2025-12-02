@@ -23,9 +23,9 @@ SetWindowSize( 1280, 720, 0 )
 SetWindowAllowResize( 1 ) // allow the user to resize the window
 
 global debug = 0
-global release = 1
+global release = 0
 if debug = 0 then SetErrorMode(1)
-global nextScreen = LAND2
+global nextScreen = air2
 //SetPhysicsDebugOn()
 
 
@@ -44,7 +44,8 @@ SetSyncRate(30, 0) // 30fps instead of 60 to save battery
 SetScissor(0,0,0,0 ) // use the maximum available screen space, no black borders
 UseNewDefaultFonts( 1 ) // since version 2.0.22 we can use nicer default fonts
 
-SetVSync(1)
+SetPhysicsDebugOn()
+//SetVSync(1)
 
 #constant hitS 1
 LoadSoundOGG(hitS, "sounds/hit.ogg")
@@ -282,9 +283,9 @@ function SetRaceQueue(raceSet)
 		raceQueue.insert(LAND)
 		raceQueue.insert(AIR)
 	elseif raceSet = 2 //Race Against a Duck 2 order
+		raceQueue.insert(SPACE2)
 		raceQueue.insert(WATER2)
 		raceQueue.insert(AIR2)
-		raceQueue.insert(SPACE2)
 		raceQueue.insert(LAND2)
 	endif
 	raceQueueRef = raceQueue
@@ -345,7 +346,7 @@ do
 	if screen < UPGRADE
 		
 		
-		if GetRawKeyState(81) then heroLocalDistance# = heroLocalDistance# - 100
+		if GetRawKeyState(81) then heroLocalDistance# = heroLocalDistance# - 20*fpsr#
 		
 		if screen = WATER
 			DoWater()
@@ -363,8 +364,6 @@ do
 			DoSpace2()
 		endif
 		
-		Print(areaSeen)
-		Print(curAreaSeen)
 		//for i = 0 to raceQueue.length
 			//Print(GetSpriteX(progFlags[i]))
 		//next i
@@ -423,14 +422,14 @@ do
 				
 		endif
 				
-		dec duckDistance#, duckSpeed#*fpsr#
-		if duckDistance# < 20000*(raceSize-areaSeen) then duckSpeed# = 100
+		duckDistance# = duckDistance# - duckSpeed#*fpsr#
+		if duckDistance# < 20000*(raceSize-areaSeen) then duckSpeed# = 5*fpsr#
 		//Below is the old, hardcoded values for speeding the duck up when he reaches an undiscovered section - the above line is the updated one, though it may not work (needs testing)
 		//if duckDistance# < 40000 and areaSeen = 1 then duckSpeed# = 100
 		//if duckDistance# < 20000 and areaSeen = 2 then duckSpeed# = 100
-		if GetRawKeyPressed(82) then duckSpeed# = 100
+		if GetRawKeyPressed(82) then duckSpeed# = 8*fpsr#
 		if GetSpriteExists(cutsceneSpr)
-			if GetSpriteCurrentFrame(cutsceneSpr) <> 4 then inc duckDistance#, duckSpeed#*fpsr#
+			if GetSpriteCurrentFrame(cutsceneSpr) <> 4 then duckDistance# = duckDistance# + duckSpeed#*fpsr#
 		endif
 		
 		if GetSpriteExists(hero2)
@@ -557,16 +556,19 @@ do
     
     if debug = 1
     		//Print( ScreenFPS() )
-	    Print(GetRawLastKey())
+	    //Print(GetRawLastKey())
 	    //Print(HeroX#)
 	    //if GetSpriteExists(hero)
 	    //		Print(GetSpriteX(Hero))
 	    //		Print(GetSpriteY(Hero))
 		//endif
-		Print(duckSpeed#)
+		//Print(duckSpeed#)
 		
 	endif
-	Print(fpsr#)
+	Print("fpsr: " + Str(fpsr#))
+	Print("Cur FPS" + Str(ScreenFPS()))
+	Print(ScreenFPS()*fpsr#)
+	Print("Game Timer: " + str(gameTime#))
     Sync()
 loop
 
@@ -1191,7 +1193,6 @@ function PlayRaceCutScene(scene)
 	if release = 1
 	
 		while GetSpriteCurrentFrame(cutsceneSpr) < 4
-			Print(GetMusicPlayingOGG(waterM))	
 			gameTime# = 0
 			
 			if scene = WATER

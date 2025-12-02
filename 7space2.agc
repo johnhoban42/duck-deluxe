@@ -255,7 +255,6 @@ function DoSpace2()
 		spaceBoost# = spaceBoost# - GetFrameTime()
 		heroLocalDistance# = heroLocalDistance# - spaceSpeed#*fpsr#*spaceBoost#*1.5
 	endif
-	print(spaceBoost#)
 	
 	visualBoost# = (spaceBoost#^2 - spaceBoost#)*100
 	
@@ -266,7 +265,6 @@ function DoSpace2()
 	SetSpritePosition(hero, w/3-GetSpriteWidth(hero)/2, h*2/5-GetSpriteHeight(hero)/2)
 	SetSpriteSizeSquare(duck, 150-diff#)
 	SetSpritePosition(duck, w*2/3-GetSpriteWidth(duck)/2, h*2/5-GetSpriteHeight(duck)/2)
-	Print(diff#)
 	
 	if duckDistance# < 20000*(raceSize-curAreaSeen) then PlayTweenSprite(tweenSprFadeOut, duck, 0)
 	
@@ -426,7 +424,8 @@ function DoSpace2()
 		
 	endif 
 	
-	if fpsr# < 5
+	//if fpsr# < 5
+	if ScreenFPS()*fpsr# < 550 and fpsr# < 28
 		//Updating the mash list positions, so the current one is centered
 		for i = 0 to MashList.length
 			offset# = -i + mashPos + splitPos*onSplit //-i+0.5 + mashPos
@@ -454,8 +453,8 @@ function DoSpace2()
 	
 	//Print(spaceSpeed#)
 	
-	Print(mashPos)
-	Print(MashList[mashPos].dir)
-	Print(GetSpriteHit(GetPointerX(), GetPointerY()))
+	//Print(mashPos)
+	//Print(MashList[mashPos].dir)
+	//Print(GetSpriteHit(GetPointerX(), GetPointerY()))
 	
 endfunction
