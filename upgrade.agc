@@ -464,6 +464,7 @@ function AlignPod(curP as p)
 	
 endfunction
 function StartRace2()
+	SaveGame()
 	duckSpeed# = duckSpeedDefault#
 	StopMusicOGG(upgrade2M)
 	PlaySound(selectS, volumeS)

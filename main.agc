@@ -23,7 +23,7 @@ SetWindowSize( 1280, 720, 0 )
 SetWindowAllowResize( 1 ) // allow the user to resize the window
 
 global debug = 0
-global release = 0
+global release = 1
 if debug = 0 then SetErrorMode(1)
 global nextScreen = air2
 //SetPhysicsDebugOn()
@@ -43,9 +43,11 @@ SetOrientationAllowed(1, 1, 1, 1) // allow both portrait and landscape on mobile
 SetSyncRate(30, 0) // 30fps instead of 60 to save battery
 SetScissor(0,0,0,0 ) // use the maximum available screen space, no black borders
 UseNewDefaultFonts( 1 ) // since version 2.0.22 we can use nicer default fonts
+SetDefaultMagFilter(0)
+SetDefaultMinFilter(0)
 
-SetPhysicsDebugOn()
-//SetVSync(1)
+//SetPhysicsDebugOn()
+SetVSync(1)
 
 #constant hitS 1
 LoadSoundOGG(hitS, "sounds/hit.ogg")
@@ -200,6 +202,7 @@ SetPowers()
 //Overhead variables
 global fpsr# = 100
 global screen = 0
+global paused = 0
 
 //Gameplay variables
 global heroX# = 0
@@ -283,9 +286,9 @@ function SetRaceQueue(raceSet)
 		raceQueue.insert(LAND)
 		raceQueue.insert(AIR)
 	elseif raceSet = 2 //Race Against a Duck 2 order
-		raceQueue.insert(SPACE2)
-		raceQueue.insert(WATER2)
 		raceQueue.insert(AIR2)
+		raceQueue.insert(WATER2)
+		raceQueue.insert(SPACE2)
 		raceQueue.insert(LAND2)
 	endif
 	raceQueueRef = raceQueue
@@ -342,8 +345,24 @@ do
 		endif
 	endif
 
+	//Pausing/Unpausing game
+	if ((paused = 0 and (GetRawKeyPressed(27) or Button(pauseButtonCol))) or (paused = 1 and (GetPointerPressed() or inputSelect or GetRawKeyPressed(27)))) and screen < UPGRADE 
+		paused = Mod(paused+1, 2)
+		if GetSpriteCurrentFrame(cutsceneSpr) < 4 and paused = 1 then paused = 0 //Can't pause during the intro cutscene!
+		if paused = 0
+			DeleteSprite(pauseScreen)
+			//Get rid of the pause screen artifacts
+		endif
+	endif
 
-	if screen < UPGRADE
+	if paused
+		if GetSpriteExists(pauseScreen) = 0
+			LoadSpriteExpress(pauseScreen, "pauseScreen.png", w, h, 0, 0, 1)
+			FixSpriteToScreen(pauseScreen, 1)
+		endif
+	endif
+
+	if screen < UPGRADE and paused = 0
 		
 		
 		if GetRawKeyState(81) then heroLocalDistance# = heroLocalDistance# - 20*fpsr#
@@ -566,9 +585,10 @@ do
 		
 	endif
 	Print("fpsr: " + Str(fpsr#))
-	Print("Cur FPS" + Str(ScreenFPS()))
-	Print(ScreenFPS()*fpsr#)
-	Print("Game Timer: " + str(gameTime#))
+	Print("Cur FPS: " + Str(ScreenFPS()))
+	Print(GetRawLastKey())
+	//Print(ScreenFPS()*fpsr#)
+	//Print("Game Timer: " + str(gameTime#))
     Sync()
 loop
 
@@ -686,6 +706,11 @@ function SetupScene(scene)
 		next i
 		
 		SetInstructionText(scene)
+		
+		LoadSpriteExpress(pauseButton, "pauseButton.png", 75, 75, w - 100, 100, 5)
+		FixSpriteToScreen(pauseButton, 1)
+		CreateSpriteExpress(pauseButtonCol, GetSpriteWidth(pauseButton), GetSpriteHeight(pauseButton), GetSpriteX(pauseButton), GetSpriteY(pauseButton), 5)
+		SetSpriteVisible(pauseButtonCol, 0)
 		
 		//Duck will be the first spawnable object
 		
@@ -999,6 +1024,8 @@ function DeleteScene(scene)
 		if GetSpriteExists(hero2) then DeleteSprite(hero2)		
 		DeleteAnimatedSprite(duck)
 		if GetParticlesExists(enemyP) then DeleteParticles(enemyP)
+		DeleteSprite(pauseButton)
+		DeleteSprite(pauseButtonCol)
 		
 		if scene = WATER
 			SetSpriteVisible(waterS, 0)
@@ -1048,6 +1075,7 @@ function DeleteScene(scene)
 			DeleteSprite(air2BG)
 			DeleteSprite(air2BBG)
 			DeleteSprite(eggBird)
+			DeleteSprite(airFinishLine)
 			DeleteSprite(air2WindBG)
 			
 			iMax = bulletActive.length

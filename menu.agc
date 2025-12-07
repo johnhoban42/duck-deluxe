@@ -196,7 +196,7 @@ function DoTitle2()
 		elseif Button(startRace) and firstDuck2Race = 1 and GetTextY(contRace) > 700
 			GlideTextToSpot(contRace, w/2, 580, 10)
 			
-		elseif (Button(contRace) and firstDuck2Race = 1) or Button(startRace) or inputSelect
+		elseif ((Button(contRace) and firstDuck2Race = 1) or Button(startRace) or inputSelect) and GetSpritePlaying(cutsceneSpr3) = 0
 			
 			if Button(startRace) or (firstDuck2Race = 0)
 				PlaySprite(startRace, 15, 0, 2, 3)
@@ -231,13 +231,45 @@ endfunction
 
 
 function SaveGame()
+//~	OpenToWrite(1, "duck2Save.txt")
+//~	
+//~	WriteLine(1, str(scrapTotal))
+//~	WriteLine(1, str(areaSeen))
+//~	WriteLine(1, str(firstDuck2Race))
+//~	
+//~	CloseFile(1)
+	
+	
 	SaveSharedVariable("scrapTotal", str(scrapTotal))
 	SaveSharedVariable("areaSeen", str(areaSeen))
 	SaveSharedVariable("firstDuck2Race", str(firstDuck2Race))
+	for i = 1 to 4
+		for j = 1 to 7
+			SaveSharedVariable("upgrade" + str(i) + str(j), str(upgrades[i, j]))
+		next j
+	next i
+	
 endfunction
 
 function LoadGame()
+//~	OpenToRead(1, "duck2Save.txt")
+//~	
+//~	scrapTotal = Val(ReadLine(1))
+//~	areaSeen = Val(ReadLine(1))
+//~	firstDuck2Race = Val(ReadLine(1))
+//~	
+//~	CloseFile(1)
+	
 	scrapTotal = val(LoadSharedVariable("scrapTotal", "0"))
-	areaSeen = val(LoadSharedVariable("areaSeen", "1"))
+	areaSeen = val(LoadSharedVariable("areaSeen", "0"))
 	firstDuck2Race = val(LoadSharedVariable("firstDuck2Race", "0"))
+	for i = 1 to 4
+		for j = 1 to 7
+			upgrades[i, j] = val(LoadSharedVariable("upgrade" + str(i) + str(j), "0"))
+		next j
+	next i
+	
 endfunction
+
+
+

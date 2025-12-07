@@ -45,7 +45,7 @@ function InitAir2()
 	air2TurnTarget = 0
 	air2Dir# = 1
 	
-	LoadSpriteExpress(duck, "upgradeR1.png", 90, 90, 460, 300, 210)
+	LoadSpriteExpress(duck, "upgradeR1.png", 100, 100, 460, 300, 190)
 	FixSpriteToScreen(duck, 1)
 	
 	//LoadAnimatedSprite(air2BG, "mbg\m4", 8)
@@ -212,6 +212,16 @@ function InitAir2()
 	SetSpriteExpress(eggBird, 129, 129, w/2-129/2, 80, 20)
 	FixSpriteToScreen(eggBird, 1)
 		
+		
+	airFinishLine = LoadSprite("finishRod.png")
+	SetSpriteSize(airFinishLine, 20, 700)
+	SetSpriteDepth(airFinishLine, 10)
+	SetSpriteOffset(airFinishLine, 10, 350)
+	SetSpriteAngle(airFinishLine, 90)
+	SetSpriteMiddleScreenX(airFinishLine)
+	FixSpriteToScreen(airFinishLine, 1)
+	
+	//spawnActive.insert(newS)
 	
 endfunction
 
@@ -230,6 +240,8 @@ function DoAir2()
 	SetSpriteX(duck, w/2 - GetSpriteWidth(duck) + 300*sin(gameTime#/10))
 	SetSpriteY(duck, h*4/5 + (duckDistance# - 20000*(raceSize) - (heroLocalDistance#-air2Distance)))
 	
+	SetSpriteY(airFinishLine, GetSpriteY(hero) - heroLocalDistance#*1.5 + 1310)
+	//Print("Finish Line Y: " + Str(GetSpriteY(airFinishLine)))
 	//dec heroLocalDistance#, 0.1*fpsr#
 	
 	//Turning, but you can't turn if you're hurt
@@ -311,6 +323,7 @@ function DoAir2()
 	//Egg bird moving back and forth
 	SetSpriteX(eggBird, w/2 - GetSpriteWidth(eggBird)/2 + 100*sin(gameTime#/20))
 	SetSpriteY(eggBird, 70 + 10*slipStreamUse#*slipStreamUse#)
+	if heroLocalDistance# > air2Distance*39/40 then IncSpriteYFloat(eggBird, -(heroLocalDistance# - air2Distance*39/40))
 	
 	//if heroLocalDistance# < air2Distance*3/5 and GetSpriteCurrentFrame(air2BG) <= 16 then PlaySprite(air2BG, 5+10, 1, 17, 24)
 	//if heroLocalDistance# < air2Distance*2/5 and GetSpriteCurrentFrame(air2BG) <= 24 then PlaySprite(air2BG, 5+10, 1, 25, 28)
@@ -379,7 +392,7 @@ function DoAir2()
 				if time# < .5
 					destX = GetSpriteMiddleX(eggBird) + time#/0.5*(bulletActive[i].batchOffset + 200*sin(50.0*time#)*bulletActive[i].flip)
 				else
-					destX = GetSpriteMiddleX(eggBird) + bulletActive[i].batchOffset + 200*sin(50.0*time#)*bulletActive[i].flip
+					destX = GetSpriteMiddleX(eggBird) + bulletActive[i].batchOffset + 200*sin(30.0*time#)*bulletActive[i].flip
 				endif
 				//destY = GetSpriteMiddleY(eggBird) + 90 + time#*150
 				destY = GetSpriteMiddleY(eggBird) + time#*85
@@ -531,7 +544,7 @@ function MakeBullets()
 	//if heroLocalDistance# < air2Distance*3/4 then formulaEnd = 3
 	//if heroLocalDistance# < air2Distance/2 then formulaEnd = 4
 	//if heroLocalDistance# < air2Distance/4 then formulaEnd = 5
-	formulaEnd = 4
+	//formulaEnd = 4
 	newB.formula = Random(1, formulaEnd)
 	//A bit of fun logic below - if a rare rouge scrap egg was laid, then the function is called again to get another egg group to spawn
 	if scrapErupted = 1 and newB.formula = 4
@@ -581,7 +594,7 @@ function MakeBullets()
 		newB.batchOffset = batchOffset
 		
 		if newB.formula = 1 then newB.time = -i*0.3
-		if newB.formula = 2 then newB.time = -i*0.5
+		if newB.formula = 2 then newB.time = -i*0.75
 		if newB.formula = 3 then newB.time = 0
 		if newB.formula = 4 then newB.time = 0
 		newB.num = -bulletAmt/2 + i*newB.flip + 0.5
