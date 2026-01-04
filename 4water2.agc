@@ -513,7 +513,7 @@ function DoWater2()
 		else
 			focalPoint# = GlideNumToZero(focalPoint#, 40)
 			usePoint# = focalPoint# + landDistance-heroLocalDistance#
-			SetMusicVolumeOGG(waterM, 100 - 50 - Min(100*(76000.0 - (duckDistance#))/20000, 50))
+			SetMusicVolumeOGG(waterM, 100 - 45 - Min(100*(76000.0 - (duckDistance#))/20000, 50))
 		endif
 		
 			//Print(raceSize)
@@ -583,7 +583,7 @@ function DoWater2()
 					PlayTweenSprite(spr, spr, 0)
 					PlayTweenSprite(tweenSprFadeOut, spr, .1)
 				endif
-				if spawnActive[i].cat <> RAMP and GetSpriteWidth(spr) = GetSpriteHeight(spr) and GetSpriteGroup(spr) <> SCRAP
+				if GetSpriteWidth(spr) = GetSpriteHeight(spr) and GetSpriteGroup(spr) <> SCRAP
 					deleted = i
 					i = spawnActive.length
 				endif

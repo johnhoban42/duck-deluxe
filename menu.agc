@@ -2,12 +2,69 @@
 // Created: 25-04-01
 
 global menuInitialized = 0
+global menuLineSelected = 1
+global menuThumbnail
+global menuDescText
+
+type menuItem
+	id as string
+	name as string
+	desc as string
+	
+	txt as integer
+	//parent as menuItem
+endtype
+
+global mainMenuLine as menuItem[0]
 
 function InitMenu()
-	for i = 1 to 3
-		myTxt = CreateText("")
-		SetTextExpress(myTxt, "Race Against a Duck " + Str(i), 80, fontGI, 0, 60, 200 + i*100, -22, 10)
+	//for i = 1 to 3
+	//	myTxt = CreateText("")
+	//	SetTextExpress(myTxt, "Race Against a Duck " + Str(i), 80, fontGI, 0, 60, 200 + i*100, -22, 10)
+	//next i
+	
+	OpenToRead(2, "menuOptions.txt")
+	newItem$ = ReadLine(2)
+	nLine as menuItem
+	
+	lineMainID = 0
+	
+	while (newItem$ <> "")
+		
+		if Left(newItem$, 1) <> "~"
+			//Is a new head title
+			inc lineMainID, 1	//This gets incremented when a new head title appears
+			if lineMainID <> 1 then mainMenuLine.insert(nLine)
+			
+			nLine.id = str(lineMainID)
+			
+			if FindStringCount(newItem$, "=") > 0 then newItem$ = GetStringToken(newItem$, "=", 1)
+			nLine.name = newItem$
+			
+		else
+			//Is a description
+			nLine.desc = newItem$
+		endif
+		
+		
+		newItem$ = ReadLine(2)
+	endwhile
+	mainMenuLine.insert(nLine)
+
+	for i = 1 to mainMenuLine.length
+		mainMenuLine[i].txt = CreateText("")
+		SetTextExpress(mainMenuLine[i].txt, mainMenuLine[i].name, 50, fontMI, 0, 40, 40 + 80*i, -10, 20)
+		//SetTextColor(mainMenuLine[i].txt, 100, 100, 100, 255)
 	next i
+	SetTextX(mainMenuLine[menuLineSelected].txt, 65)
+	
+	CloseFile(2)
+	
+	menuThumbnail = CreateSprite(0)
+	SetSpriteExpress(menuThumbnail, 400, 400, 600, 130, 40)
+	SetSpriteColor(menuThumbnail, 100, 100, 100, 255)
+	
+	
 endfunction
 
 function DoMenu()
@@ -17,10 +74,69 @@ function DoMenu()
 		menuInitialized = 1
 	endif
 	
+	//Changing the selected menu line item
+	if InputUp or InputDown
+		
+		PlaySound(selectS, volumeS)
+		SetTextX(mainMenuLine[menuLineSelected].txt, 40)
+		if InputDown
+			inc menuLineSelected, 1
+		elseif InputUp
+			dec menuLineSelected, 1
+		endif
+		if menuLineSelected = 0 then menuLineSelected = mainMenuLine.length
+		if menuLineSelected > mainMenuLine.length then menuLineSelected = 1
+		SetTextX(mainMenuLine[menuLineSelected].txt, 65)
+		
+	endif
 	
+	
+	for i = 1 to mainMenuLine.length		
+		
+		for j = 0 to Len(mainMenuLine[i].name)
+			SetTextCharY(mainMenuLine[i].txt, j, 1*Sin(gameTime#+j*2+i*20))
+			if i = menuLineSelected then SetTextCharY(mainMenuLine[i].txt, j, 5*Sin(gameTime#-j*12+i*20))
+		next j
+	next i
+	
+	Print(menuLineSelected)
+	//Print(GetTextY(mainMenuLine[2].txt))
 	//Leaving the main menu
-	if 0 = 1
-		//Delete objects here
+	
+	leaveMenu = 0
+	if inputSelect
+		//TODO: check that the existing option can be selected
+		if menuLineSelected = 1 //RAaD ReDucks
+			curRaceSet = 1
+			leaveMenu = 1
+			webVersion = 0
+		elseif menuLineSelected = 2 //RAaD 2
+			curRaceSet = 2
+			leaveMenu = 1
+		elseif menuLineSelected = 6	//RAaD Original
+			curRaceSet = 1
+			leaveMenu = 1
+			webVersion = 1
+		endif
+	endif
+	
+	if leaveMenu = 1
+		
+		if curRaceSet = 1 or curRaceSet = 2
+			SetRaceQueue(curRaceSet)
+			nextScreen = TITLE
+			screen = 0
+		endif
+		PlaySound(beepGoS, volumeS)
+		
+		for i = 1 to mainMenuLine.length
+			DeleteText(mainMenuLine[i].txt)
+		next i
+		while mainMenuLine.length > 0
+			mainMenuLine.remove(0)
+		endwhile
+		DeleteSprite(menuThumbnail)
+		
 		menuInitialized = 0
 	endif
 	
@@ -79,7 +195,7 @@ function DoTitle1()
 			DeleteScene(screen)
 			screen = 0
 			//TODO - change this current race set out to correspond with different menu screen buttons
-			curRaceSet = 2
+			if isDuckDeluxe = 0 then curRaceSet = 2
 			SetRaceQueue(curRaceSet)
 			
 			duckSpeed# = duckSpeedDefault#

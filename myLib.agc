@@ -318,12 +318,12 @@ function SetTextExpress(txt, content$, size, fontI, alignment, x, y, spacing, de
 	SetTextDepth(txt, depth)
 endfunction
 
-function IncSpriteX(spr, amt)
-	SetSpriteX(spr, GetSpriteX(spr)+amt)
+function IncSpriteX(spr, amt#)
+	SetSpriteX(spr, GetSpriteX(spr)+amt#)
 endfunction
 
-function IncSpriteY(spr, amt)
-	SetSpriteY(spr, GetSpriteY(spr)+amt)
+function IncSpriteY(spr, amt#)
+	SetSpriteY(spr, GetSpriteY(spr)+amt#)
 endfunction
 
 function IncSpriteXFloat(spr, amt#)

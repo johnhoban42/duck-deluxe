@@ -576,7 +576,7 @@ function MakeBullets()
 		
 		
 		
-		if (random(1, 7) = 5 and scrapAmt < (formulaEnd)) or nextScrap or newB.formula = 4
+		if (random(1, 5) = 5 and scrapAmt < (formulaEnd)) or nextScrap or newB.formula = 4
 			if nextScrap
 				dec nextScrap, 1
 				scrapAmt = formulaEnd
