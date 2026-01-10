@@ -27,8 +27,9 @@ global boostDrain# = .0022
 
 function InitLand()
 	
-	
-	SetMusicVolumeOGG(landM, 100)
+	//if webVersion = 0 then PlayMusicOGG(ambLand1, 1)
+	//SetMusicVolumeOGG(ambLand1, ambVol*volumeS)
+	//SetMusicVolumeOGG(landM, 100)
 	
 	CreateSpriteExpress(hero, 128, 128, w, h, 10)
 	heroX# = w/2

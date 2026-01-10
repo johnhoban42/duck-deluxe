@@ -172,8 +172,8 @@ endfunction
 
 function InitSpace2()
 	
-	PlayMusicOGG(ambSpace2, 1)
-	SetMusicVolumeOGG(ambSpace2, ambVol*volumeS)
+	//PlayMusicOGG(ambSpace2, 1)
+	//SetMusicVolumeOGG(ambSpace2, ambVol*volumeS)
 	
 	//No boosts... but INCREASED SPEED!
 	

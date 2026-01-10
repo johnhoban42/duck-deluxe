@@ -113,6 +113,7 @@ function DoMenu()
 		elseif menuLineSelected = 2 //RAaD 2
 			curRaceSet = 2
 			leaveMenu = 1
+			webVersion = 0
 		elseif menuLineSelected = 6	//RAaD Original
 			curRaceSet = 1
 			leaveMenu = 1

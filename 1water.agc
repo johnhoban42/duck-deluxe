@@ -21,7 +21,8 @@ global fixedWaterSpeed# = .013
 global frameCheck = 0
 
 function InitWater()
-	
+	//if webVersion = 0 then PlayMusicOGG(ambWater1, 1)
+	//SetMusicVolumeOGG(ambWater1, ambVol*volumeS)
 	heroX# = w/2
 	heroY# = h*2/3 - 50
 	CreateSpriteExpress(hero, 140, 140, w, h, 10)

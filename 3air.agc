@@ -18,7 +18,9 @@ global spinLeft# = 0
 
 function InitAir()
 	
-	SetMusicVolumeOGG(airM, 100)
+	//if webVersion = 0 then PlayMusicOGG(ambAir1, 1)
+	//SetMusicVolumeOGG(ambAir1, ambVol*volumeS)
+	//SetMusicVolumeOGG(airM, 100)
 	
 	heroX# = w/2
 	heroY# = h*2/3 - 50

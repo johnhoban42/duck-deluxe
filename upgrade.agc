@@ -172,7 +172,30 @@ function CreateUpgrade2()
 	SetViewOffset(0, 0)
 	
 	//areaSeen = 4
-	if curRaceSet = 2
+	if curRaceSet = 1
+		
+		LoadSpriteExpress(upgradeBG, "upgradebg" + str(areaSeen) + ".png", w, h, 0, 0, 900)
+		
+		LoadMusicOGG(upgrade2M, "music/upgrade.ogg")
+		PlayMusicOGG(ambUpgrade1, 1)
+		SetMusicVolumeOGG(ambUpgrade1, ambVol)
+		
+		CreateSpriteExpress(instruct, 320, 320, w/2+180 + (areaSeen-1)*56, h/2 - 30, 60)
+		img1 = LoadImage("upgradeR1.png")
+		AddSpriteAnimationFrame(instruct, img1)
+		img2 = LoadImage("upgradeR2.png")
+		AddSpriteAnimationFrame(instruct, img2)
+		trashBag.insert(img1)
+		trashBag.insert(img2)
+		PlaySprite(instruct, 2, 1, 1, 2)
+		LoadSpriteExpress(vehicle4, "upgradeV" + str(areaSeen) + ".png", GetSpriteWidth(instruct), GetSpriteWidth(instruct), GetSpriteX(instruct), GetSpriteY(instruct), 70)
+		FixSpriteToScreen(instruct, 1)
+		FixSpriteToScreen(vehicle4, 1)
+		
+	elseif curRaceSet = 2
+		
+		LoadSpriteExpress(upgradeBG, "upgrade2-" + str(areaSeen) + ".png", w, h, 0, 0, 900)
+		
 		if areaSeen = 1
 			LoadMusicOGG(upgrade2M, "music/upgrade2-1.ogg")
 			SetMusicLoopTimesOGG(upgrade2M, 3.692, -1)
@@ -180,16 +203,21 @@ function CreateUpgrade2()
 		if areaSeen = 2 then LoadMusicOGG(upgrade2M, "music/upgrade2-2.ogg")
 		if areaSeen = 3 then LoadMusicOGG(upgrade2M, "music/upgrade2-3.ogg")
 		if areaSeen >= 4 then LoadMusicOGG(upgrade2M, "music/upgrade2-4.ogg")
+		
+		PlayMusicOGG(ambUpgrade2, 1)
+		SetMusicVolumeOGG(ambUpgrade2, ambVol*.2)
+		
+	else
+		//General upgrade music, for duck 3/DX/challenge mode
 	endif
 	if GetMusicExistsOGG(upgrade2M) = 0 then LoadMusicOGG(upgrade2M, "music/upgrade.ogg")
 	
+	
 	PlayMusicOGG(upgrade2M, 1)
-	PlayMusicOGG(ambUpgrade2, 1)
-	SetMusicVolumeOGG(ambUpgrade2, ambVol*.2)
-	//General upgrade music, for duck 3/DX/challenge mode
 	
 	
-	LoadSpriteExpress(upgradeBG, "upgrade2-" + str(areaSeen) + ".png", w, h, 0, 0, 900)
+	
+	
 	FixSpriteToScreen(upgradeBG, 1)
 	selectedPod = -1
 	
@@ -516,6 +544,9 @@ function DeleteUpgrade2()
 	if GetTextExists(scrapText) then DeleteText(scrapText)		
 	DeleteMusicOGG(upgrade2M)
 	
+	if GetSpriteExists(instruct) then DeleteSprite(instruct)
+	if GetSpriteExists(vehicle4) then DeleteSprite(vehicle4)
+		
 	SetViewOffset(0, 0)
 	
 	StopAmbientMusic()

@@ -28,8 +28,8 @@ global jetSoundInstance = 0
 
 function InitAir2()
 	
-	PlayMusicOGG(ambAir2, 1)
-	SetMusicVolumeOGG(ambAir2, ambVol*volumeS)
+	//PlayMusicOGG(ambAir2, 1)
+	//SetMusicVolumeOGG(ambAir2, ambVol*volumeS)
 	
 	heroLocalDistance# = air2Distance
 	

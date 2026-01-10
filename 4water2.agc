@@ -28,7 +28,7 @@ global featherBoostTop
 
 //This is only used for the funny zoom for the very first race
 global focalPoint#
-global firstDuck2Race = 0
+global firstDuck2Race = 1
 //Water tile visibility could be an upgrade variable?
 //waterTileAlpha
 
@@ -40,8 +40,8 @@ function InitWater2()
 	
 	if debug then firstDuck2Race = 1
 	
-	PlayMusicOGG(ambWater2, 1)
-	SetMusicVolumeOGG(ambWater2, ambVol*volumeS)
+	//PlayMusicOGG(ambWater2, 1)
+	//SetMusicVolumeOGG(ambWater2, ambVol*volumeS)
 	
 	heroX# = 120
 	heroY# = 0
