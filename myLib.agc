@@ -80,23 +80,23 @@ function SyncG()
     Sync()
 endfunction
 
-function max(num1, num2)
-	ret = 0	
-	if num1 > num2
-		ret = num1
+function max(num1#, num2#)
+	ret# = 0	
+	if num1# > num2#
+		ret# = num1#
 	else
-		ret = num2
+		ret# = num2#
 	endif
-endfunction ret
+endfunction ret#
 
-function min(num1, num2)
+function min(num1#, num2#)
 	ret = 0	
-	if num1 < num2
-		ret = num1
+	if num1# < num2#
+		ret# = num1#
 	else
-		ret = num2
+		ret# = num2#
 	endif
-endfunction ret
+endfunction ret#
 
 global imageA as Integer[0]
 

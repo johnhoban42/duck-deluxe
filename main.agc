@@ -1096,7 +1096,11 @@ function SetInstructionText(sceneL)
 			SetTextString(instruct, "LEFT/RIGHT - Move" + CHR(10) + "SPACE with Full Bar - Row")
 		endif
 	elseif sceneL = LAND
-		SetTextString(instruct, "LEFT/RIGHT - Move" + CHR(10) + "UP - Jump" + CHR(10) + "SPACE - Use Boost")
+		if webVersion = 1
+			SetTextString(instruct, "LEFT/RIGHT - Move" + CHR(10) + "UP - Jump" + CHR(10) + "SPACE - Use Boost")
+		else
+			SetTextString(instruct, "LEFT/RIGHT - Adjust" + CHR(10) + "UP - Jump" + CHR(10) + "SPACE - Use Boost")
+		endif
 	elseif sceneL = AIR
 		if webVersion
 			SetTextString(instruct, "LEFT/RIGHT/UP/DOWN - Move" + CHR(10) + "Hit Tornados?" + CHR(10) + "Get an upgrade!")
@@ -1110,7 +1114,7 @@ function SetInstructionText(sceneL)
 		if curRaceSet = 2
 			SetTextString(instruct, "SPACE - Dive" + CHR(10) + "LEFT/RIGHT - Adjust" + CHR(10) + "Feather - Boost" + CHR(10) + "Collect scrap metal!")
 		else
-			SetTextString(instruct, "SPACE - Dive" + CHR(10) + "LEFT/RIGHT - Move" + CHR(10) + "Feather - Boost")
+			SetTextString(instruct, "SPACE - Dive" + CHR(10) + "LEFT/RIGHT - Adjust" + CHR(10) + "Feather - Boost")
 		endif
 	elseif sceneL = LAND2
 	elseif sceneL = AIR2

@@ -16,6 +16,11 @@ global airVelY# = 0
 global spinType = 0
 global spinLeft# = 0
 
+//Variables for revamped Sky
+global flapTime# = 0
+global flapBoost# = 0
+global airGravity# = 0.15
+
 function InitAir()
 	
 	//if webVersion = 0 then PlayMusicOGG(ambAir1, 1)
@@ -189,13 +194,28 @@ function DoAir()
 	
 	if stateUp then airVelY# = -airSpeedY#*fpsr#
 	if stateDown then airVelY# = airSpeedY#*fpsr#
-	inc heroY#, airVelY#
+	heroY# = heroY# + airVelY#
 	
+	if webVersion = 0
+		//New controls, related to flapping
+		if fpsr# < 10
+			heroY# = heroY# + airGravity#*fpsr#
+		endif
+		
+		//Variables for revamped Sky
+//~global flapTime# = 0
+//~global flapBoost# = 0
+//~global airGravity# = 0.15
+//~Use these new variables!
+		
+	endif
 	//Print(heroX#)
 	
 	heroX# = Min(Max(heroX#, 95), 1050)
 	heroY# = Min(Max(heroY#, 250), 600)
 	SetSpritePosition(hero, heroX#, heroY# + 15*sin(gameTime#/20))
+	
+	Print(heroY#)
 	
 	RenderAir()
 		
