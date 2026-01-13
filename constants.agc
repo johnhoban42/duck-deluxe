@@ -117,7 +117,7 @@ global progFlags as integer[7]
 
 #constant water2S 2007
 #constant water2BG 2008
-#constant water2SOver = 2009
+#constant water2SOver 2009
 
 //#constant land2S 2008
 //#constant air2S 2009
@@ -127,6 +127,10 @@ global progFlags as integer[7]
 #constant upgrage1StartSpr 3001
 #constant upgrage2StartSpr 3201
 #constant upgrage3StartSpr 3401
+
+#constant pauseScreen 2010
+#constant pauseButton 2011
+#constant pauseButtonCol 2012
 
 //The NEW upgrade system - these are IDs for the pod sets
 global upPods as p[0]
@@ -163,6 +167,7 @@ global eggBadI
 global eggGoodI
 global miniBird1I
 global miniBird2I
+global airFinishLine
 
 //Space 2 Sprites
 global pressThis

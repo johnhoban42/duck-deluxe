@@ -16,9 +16,16 @@ global airVelY# = 0
 global spinType = 0
 global spinLeft# = 0
 
+//Variables for revamped Sky
+global flapTime# = 0
+global flapBoost# = 0
+global airGravity# = 0.15
+
 function InitAir()
 	
-	SetMusicVolumeOGG(airM, 100)
+	//if webVersion = 0 then PlayMusicOGG(ambAir1, 1)
+	//SetMusicVolumeOGG(ambAir1, ambVol*volumeS)
+	//SetMusicVolumeOGG(airM, 100)
 	
 	heroX# = w/2
 	heroY# = h*2/3 - 50
@@ -48,7 +55,7 @@ function InitAir()
 	IncSpriteY(airS, 150)
 	SetSpriteOffset(airS, GetSpriteWidth(airS)/2, GetSpriteHeight(airS)/2-120)
 	
-	areaSeen = Max(areaSeen, 3)
+	//areaSeen = Max(areaSeen, 3)
 	
 	//Setting the variables based on upgrades
 	fixedAirSpeed# = (.31)*(1 + 1*upgrades[1, 3] + 1*upgrades[1, 3]/3) //.31
@@ -84,8 +91,17 @@ function InitAir()
 			SetSpriteShape(spawnS, 3)
 			if upgrades[2, 3] < 1 then newS.cat = BAD
 		else
-			//if
-			LoadSpriteExpress(spawnS, "scrap" + Str(4 + Random(1,3)) + ".png", 10, 10, w, h, 8)
+			if webVersion
+				LoadSpriteExpress(spawnS, "scrap" + Str(4 + Random(1,3)) + ".png", 10, 10, w, h, 8)
+			else
+				CreateSpriteExpress(spawnS, 10, 10, w, h, 8)
+				scrapSet = GetScrapRank()
+				rnd = Random(1,8)
+				for j = 1 to 4
+					AddSpriteAnimationFrame(spawnS, scrapImgs[rnd, scrapSet, j])//First index will be a random
+				next j
+				PlaySprite(spawnS, 3+Random(1,3))
+			endif
 			newS.size = 30
 		endif
 		spawnActive.insert(newS)
@@ -105,7 +121,7 @@ function DoAir()
 	SetSpriteFrame(bg3, 1+12.0*(Round(airDistance-heroLocalDistance#)/(1.0*airDistance)))
 	
 	if spinLeft# > 0
-		inc spinLeft#, -fpsr#
+		spinLeft# = spinLeft# - fpsr#
 		
 		if spinType = 1
 			SetSpriteAngle(airS, 15*sin((spinLeft# - Pow(spinLeft#, 2)/6)/200))
@@ -126,20 +142,20 @@ function DoAir()
 	if damageAmt# > 0
 		newC = GetSpriteColorGreen(hero)
 		
-		dec damageAmt#, fpsr#/3
+		damageAmt# = damageAmt# - fpsr#/3
 		
-		inc heroLocalDistance#, fixedAirSpeed#*fpsr#/(255.0/damageAmt#)
+		heroLocalDistance# = heroLocalDistance# + fixedAirSpeed#*fpsr#/(255.0/damageAmt#)
 		
 		SetSpriteColor(hero, 255, 255-damageAmt#, 255-damageAmt#, 255)
 	endif
 	
 	if inputLeft
-		inc heroX#, -airSpeedX#*1.5*fpsr#
+		heroX# = heroX# - airSpeedX#*1.5*fpsr#
 		PlaySprite(hero, 5, 0, 1, 2)
 		SetSpriteFlip(hero, 1, 0)
 	endif
 	if inputRight
-		inc heroX#, airSpeedX#*1.5*fpsr#
+		heroX# = heroX# + airSpeedX#*1.5*fpsr#
 		PlaySprite(hero, 5, 0, 1, 2)
 		SetSpriteFlip(hero, 0, 0)
 	endif
@@ -164,10 +180,10 @@ function DoAir()
 	
 	//Up/down
 	if inputUp
-		inc heroY#, -airSpeedY#*1.5*fpsr#
+		heroY# = heroY# - airSpeedY#*1.5*fpsr#
 	endif
 	if inputDown
-		inc heroY#, airSpeedY#*1.5*fpsr#
+		heroY# = heroY# + airSpeedY#*1.5*fpsr#
 	endif
 	
 	if Abs(airVelY#) < .01
@@ -178,22 +194,37 @@ function DoAir()
 	
 	if stateUp then airVelY# = -airSpeedY#*fpsr#
 	if stateDown then airVelY# = airSpeedY#*fpsr#
-	inc heroY#, airVelY#
+	heroY# = heroY# + airVelY#
 	
+	if webVersion = 0
+		//New controls, related to flapping
+		if fpsr# < 10
+			heroY# = heroY# + airGravity#*fpsr#
+		endif
+		
+		//Variables for revamped Sky
+//~global flapTime# = 0
+//~global flapBoost# = 0
+//~global airGravity# = 0.15
+//~Use these new variables!
+		
+	endif
 	//Print(heroX#)
 	
 	heroX# = Min(Max(heroX#, 95), 1050)
 	heroY# = Min(Max(heroY#, 250), 600)
 	SetSpritePosition(hero, heroX#, heroY# + 15*sin(gameTime#/20))
 	
+	Print(heroY#)
+	
 	RenderAir()
 		
 	
 	if airSpeed# > 0
-		dec heroLocalDistance#, airSpeed#*fpsr#
-		dec airSpeed#, airSpeedLoss#*fpsr#
+		heroLocalDistance# = heroLocalDistance# - airSpeed#*fpsr#
+		airSpeed# = airSpeed# - airSpeedLoss#*fpsr#
 	endif
-	dec heroLocalDistance#, fixedAirSpeed#*fpsr#
+	heroLocalDistance# = heroLocalDistance# - fixedAirSpeed#*fpsr#
 	//IncSpriteAngle(airS, .14*fpsr#)
 	
 	SetSpriteFrame(airS, 1+Mod(Round(airDistance-heroLocalDistance#)/12, 52))
@@ -205,7 +236,7 @@ function DoAir()
 	for i = 1 to spawnActive.length
 		spr = spawnActive[i].spr
 		if GetSpriteVisible(spr)
-			if GetSpriteCollision(spr, hero) and GetSpriteColorAlpha(spr) > 120 and GetSpriteVisible(spr)
+			if GetSpriteCollision(spr, hero) and GetSpriteColorAlpha(spr) > 120 and GetSpriteVisible(spr) and GetSpriteGroup(spr) <> SCRAP
 				
 				if spawnActive[i].cat = GOOD
 					airSpeed# = Max(airSpeed#, spawnActive[i].cat2*sqrt(Min(airSpeedMax#, 20)))
@@ -231,10 +262,19 @@ function DoAir()
 					//PlaySprite(hero, 10, 0, 1, 4)
 				else //SCRAP
 					CollectScrap(AIR)
+					if webVersion = 0
+						SetSpriteGroup(spr, SCRAP)
+						PlaySprite(spr, 30)
+						CreateTweenSprite(spr, .6)
+						SetTweenSpriteY(spr, GetSpriteY(spr), GetSpriteY(spr) - GetSpriteHeight(spr)*1.5, TweenSmooth1())
+						PlayTweenSprite(spr, spr, 0)
+						PlayTweenSprite(tweenSprFadeOut, spr, .1)
+					endif
 				endif
-				deleted = i
-				i = spawnActive.length
-				
+				if GetSpriteGroup(spr) <> SCRAP
+					deleted = i
+					i = spawnActive.length
+				endif				
 			endif
 		endif
 	next i
@@ -280,12 +320,12 @@ function RenderAir()
 		endif
 		SetSpritePosition(spr, w/2 - GetSpriteWidth(spr)/2 - (heroLocalDistance# - spawnActive[i].y)/7*(spawnActive[i].x/100), -GetSpriteHeight(spr)/2 - (heroLocalDistance# - spawnActive[i].y)/5)
 		//Fade in
-		SetSpriteColorAlpha(spr, 0)
-		if (heroLocalDistance#+1100) < spawnActive[i].y
+		if GetSpriteGroup(spr) <> SCRAP then SetSpriteColorAlpha(spr, 0)
+		if (heroLocalDistance#+1100) < spawnActive[i].y and GetSpriteGroup(spr) <> SCRAP
 			SetSpriteColorAlpha(spr, (Min(255, (spawnActive[i].y - (heroLocalDistance#+1100))/1.5)))
 		endif
 		//Fade out
-		if (heroLocalDistance#+2700) < spawnActive[i].y
+		if (heroLocalDistance#+2700) < spawnActive[i].y and GetSpriteGroup(spr) <> SCRAP
 			SetSpriteColorAlpha(spr, (255 + Max(-255, (heroLocalDistance#+2700 - spawnActive[i].y)/1.5)))
 		endif
 	next i

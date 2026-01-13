@@ -28,8 +28,8 @@ global jetSoundInstance = 0
 
 function InitAir2()
 	
-	PlayMusicOGG(ambAir2, 1)
-	SetMusicVolumeOGG(ambAir2, ambVol*volumeS)
+	//PlayMusicOGG(ambAir2, 1)
+	//SetMusicVolumeOGG(ambAir2, ambVol*volumeS)
 	
 	heroLocalDistance# = air2Distance
 	
@@ -45,7 +45,7 @@ function InitAir2()
 	air2TurnTarget = 0
 	air2Dir# = 1
 	
-	LoadSpriteExpress(duck, "upgradeR1.png", 90, 90, 460, 300, 210)
+	LoadSpriteExpress(duck, "upgradeR1.png", 100, 100, 460, 300, 190)
 	FixSpriteToScreen(duck, 1)
 	
 	//LoadAnimatedSprite(air2BG, "mbg\m4", 8)
@@ -100,8 +100,8 @@ function InitAir2()
 	//Default speed
 	air2DefSpeed# = 0.1 * (1 + .75*upgrades[3, 6] + .65*upgrades[3, 6]/3 + .6*upgrades[3, 6]/3)
 	//Movement is also be enhanced by default speed
-	air2Vel# = 2.0 + .25*upgrades[4, 6]
-	air2Accel# = .015 + .005*upgrades[4, 6]
+	air2Vel# = (2.0 + .25*upgrades[4, 6])/4.0
+	air2Accel# = (.015 + .005*upgrades[4, 6])/2.0
 	
 	
 	newS as spawn
@@ -212,6 +212,16 @@ function InitAir2()
 	SetSpriteExpress(eggBird, 129, 129, w/2-129/2, 80, 20)
 	FixSpriteToScreen(eggBird, 1)
 		
+		
+	airFinishLine = LoadSprite("finishRod.png")
+	SetSpriteSize(airFinishLine, 20, 700)
+	SetSpriteDepth(airFinishLine, 10)
+	SetSpriteOffset(airFinishLine, 10, 350)
+	SetSpriteAngle(airFinishLine, 90)
+	SetSpriteMiddleScreenX(airFinishLine)
+	FixSpriteToScreen(airFinishLine, 1)
+	
+	//spawnActive.insert(newS)
 	
 endfunction
 
@@ -230,6 +240,8 @@ function DoAir2()
 	SetSpriteX(duck, w/2 - GetSpriteWidth(duck) + 300*sin(gameTime#/10))
 	SetSpriteY(duck, h*4/5 + (duckDistance# - 20000*(raceSize) - (heroLocalDistance#-air2Distance)))
 	
+	SetSpriteY(airFinishLine, GetSpriteY(hero) - heroLocalDistance#*1.5 + 1310)
+	//Print("Finish Line Y: " + Str(GetSpriteY(airFinishLine)))
 	//dec heroLocalDistance#, 0.1*fpsr#
 	
 	//Turning, but you can't turn if you're hurt
@@ -244,11 +256,10 @@ function DoAir2()
 	air2Dir# = air2Dir# + air2Accel#*air2TurnTarget*fpsr#
 	
 	//Increase the duck X
-	air2X# = air2X# + air2Vel#*air2Dir#/GetViewZoom()
+	air2X# = air2X# + fpsr#*air2Vel#*air2Dir#/GetViewZoom()
 	//Originally thought that getting hit in air should make you go slower, but it feels cooler to go faster (losing control)
 	if airHurtTimer# <> 0 then air2X# = air2X# + air2Vel#*air2Dir#/GetViewZoom() *5/3*(360-airHurtTimer#)/360
 	
-	print(air2X#)
 	
 	//The turn is done
 	if abs(air2Dir#) > abs(air2TurnTarget) and air2TurnTarget <> 0
@@ -285,7 +296,7 @@ function DoAir2()
 	inSlipstream = 0
 	if GetSpriteHitGroup(AIR2, GetSpriteMiddleX(hero), GetSpriteMiddleY(hero)) or GetSpriteHitGroup(AIR2, GetSpriteX(hero), GetSpriteMiddleY(hero)) or GetSpriteHitGroup(AIR2, GetSpriteX(hero)+GetSpriteWidth(hero), GetSpriteMiddleY(hero))
 		if slipStreamUse# < 0.99
-			slipStreamUse# = 1 - GlideNumToZero(1-slipStreamUse#, 100)
+			slipStreamUse# = 1 - GlideNumToZero(1.0-slipStreamUse#, 80)
 		else
 			slipStreamUse# = 1
 		endif
@@ -295,7 +306,7 @@ function DoAir2()
 		if GetSoundInstances(jetstreamS) = 0 then jetSoundInstance = PlaySound(jetstreamS, volumeS, 1)
 	else
 		if slipStreamUse# > 0.01
-			slipStreamUse# = GlideNumToZero(slipStreamUse#, 100)
+			slipStreamUse# = GlideNumToZero(slipStreamUse#, 80)
 		else
 			slipStreamUse# = 0
 		endif
@@ -304,7 +315,6 @@ function DoAir2()
 	endif
 	//Speeding the hero up based on slipstream
 	heroLocalDistance# = heroLocalDistance# + (slipStreamUse# * -air2SlipSpeed#*fpsr#*(GetSpriteColorAlpha(slipS[1])/100.0))
-	Print(slipStreamUse#)
 	
 	if GetSoundInstancePlaying(jetSoundInstance) then	SetSoundInstanceVolume(jetSoundInstance, slipStreamUse#*volumeS)
 	
@@ -313,6 +323,7 @@ function DoAir2()
 	//Egg bird moving back and forth
 	SetSpriteX(eggBird, w/2 - GetSpriteWidth(eggBird)/2 + 100*sin(gameTime#/20))
 	SetSpriteY(eggBird, 70 + 10*slipStreamUse#*slipStreamUse#)
+	if heroLocalDistance# > air2Distance*39/40 then IncSpriteYFloat(eggBird, -(heroLocalDistance# - air2Distance*39/40))
 	
 	//if heroLocalDistance# < air2Distance*3/5 and GetSpriteCurrentFrame(air2BG) <= 16 then PlaySprite(air2BG, 5+10, 1, 17, 24)
 	//if heroLocalDistance# < air2Distance*2/5 and GetSpriteCurrentFrame(air2BG) <= 24 then PlaySprite(air2BG, 5+10, 1, 25, 28)
@@ -342,47 +353,76 @@ function DoAir2()
 	next i
 	
 	
-	if scrapErupted = 0 and Mod(gameTime#, 1600) < 10
+	if scrapErupted = 0 and Mod(Round(gameTime#), 1600) < 30
 		scrapErupted = 1
 		MakeBullets()
-	elseif Mod(gameTime#, 1600) > 200
+	elseif Mod(Round(gameTime#), 1600) > 200
 		scrapErupted = 0
 	endif
 
 	for i = 1 to bulletActive.length
-		inc bulletActive[i].time, GetFrameTime()
-		if inSlipstream then inc bulletActive[i].time, GetFrameTime()/4
+		bulletActive[i].time = bulletActive[i].time + GetFrameTime()
+		if inSlipstream then bulletActive[i].time = bulletActive[i].time + GetFrameTime()/3
 		if bulletActive[i].time > 0 and bulletActive[i].time < 9999
 			//Decrease the bullet's timer until it is below 0...
 			//Then let the bullet ride!
-			if GetSpriteVisible(bulletActive[i].spr) = 0 then SetSpriteVisible(bulletActive[i].spr, 1)
+			if GetSpriteVisible(bulletActive[i].spr) = 0
+				SetSpriteVisible(bulletActive[i].spr, 1)
+				SetSpritePosition(bulletActive[i].spr, GetSpriteMiddleX(eggBird)-15, GetSpriteMiddleY(eggBird)+20)
+			endif
+			//Make eggs go slower somehow?
+			//Adjust the FORMULAS!
+			//Also, adjust the Y on the last formula to go a lot faster
+			//Spit rate seems on the lower numbers, but it's probably from the (currently) faster eggs
 			
 			destX = 0
 			destY = 0
+			time# = bulletActive[i].time
 			
 			if bulletActive[i].formula = 1 and GetSpriteGroup(bulletActive[i].spr) <> SCRAP
-				destX = w/2 + bulletActive[i].batchOffset + bulletActive[i].num*110
-				destY = GetSpriteMiddleY(eggBird) + 90 + bulletActive[i].time*150
+				if time# < 2
+					destX = GetSpriteMiddleX(eggBird) + time#/2*(bulletActive[i].batchOffset + bulletActive[i].num*120)
+				else
+					destX = GetSpriteMiddleX(eggBird) + bulletActive[i].batchOffset + bulletActive[i].num*120
+				endif
+				//destY = GetSpriteMiddleY(eggBird) + 90 + bulletActive[i].time*150
+				destY = GetSpriteMiddleY(eggBird) + time#*80
 			endif
 			if bulletActive[i].formula = 2 and GetSpriteGroup(bulletActive[i].spr) <> SCRAP
-				destX = w/2 + bulletActive[i].batchOffset + 200*sin(40.0*bulletActive[i].time)*bulletActive[i].flip
-				destY = GetSpriteMiddleY(eggBird) + 90 + bulletActive[i].time*150
+				if time# < .5
+					destX = GetSpriteMiddleX(eggBird) + time#/0.5*(bulletActive[i].batchOffset + 200*sin(50.0*time#)*bulletActive[i].flip)
+				else
+					destX = GetSpriteMiddleX(eggBird) + bulletActive[i].batchOffset + 200*sin(30.0*time#)*bulletActive[i].flip
+				endif
+				//destY = GetSpriteMiddleY(eggBird) + 90 + time#*150
+				destY = GetSpriteMiddleY(eggBird) + time#*85
 			endif
 			if bulletActive[i].formula = 3 and GetSpriteGroup(bulletActive[i].spr) <> SCRAP
-				destX = w/2 + bulletActive[i].batchOffset + bulletActive[i].num*55
-				destY = GetSpriteMiddleY(eggBird) + 90 + 10*bulletActive[i].time^4
+				if time# < 1.2
+					destX = w/2 + time#/1.2*(bulletActive[i].batchOffset + bulletActive[i].num*55)
+				else
+					destX = w/2 + bulletActive[i].batchOffset + bulletActive[i].num*55
+				endif
+				
+				destY = GetSpriteMiddleY(eggBird) + 5*time#^4
 			endif
 			if bulletActive[i].formula = 4 and GetSpriteGroup(bulletActive[i].spr) <> SCRAP
-				waveTime# = bulletActive[i].batchOffset + bulletActive[i].time*60
-				destX = w/2 + 200*(1*sin(1*waveTime#) + 2*sin(0.5*waveTime#) + 0.25*sin(4*waveTime#))
+				waveTime# = bulletActive[i].batchOffset + time#*60
+				if time# < 2
+					destX = w/2 + time#/2*(200*(1*sin(1*waveTime#) + 2*sin(0.5*waveTime#) + 0.25*sin(4*waveTime#)))
+				else
+					destX = w/2 + 200*(1*sin(1*waveTime#) + 2*sin(0.5*waveTime#) + 0.25*sin(4*waveTime#))
+				endif
 				
 				//bulletActive[i].batchOffset + bulletActive[i].num*55
-				destY = GetSpriteMiddleY(eggBird) + 90 + 30*bulletActive[i].time + 310*sin(5.0*waveTime#)*bulletActive[i].flip
+				destY = GetSpriteMiddleY(eggBird) + 30*bulletActive[i].time + 120*sin(5.0*waveTime#)*bulletActive[i].flip
 			endif
 			
 			
-			GlideToX(bulletActive[i].spr, destX, 100)
-			GlideToY(bulletActive[i].spr, destY, 1000)
+			GlideToX(bulletActive[i].spr, destX, 10)
+			GlideToY(bulletActive[i].spr, destY, 20)
+			
+			//Print(GetSpriteY(bulletActive[i].spr))
 			
 			if bulletActive[i].time < 2.5 then SetSpriteAngle(bulletActive[i].spr, 90*Round(bulletActive[i].time*500/90))
 			//Print(bulletActive[i].time)
@@ -500,13 +540,21 @@ function MakeBullets()
 	//Balances the bullet patterns, the more upgrades you get, the more varied the patterns
 	formulaEnd = 2
 	if upgrades[1, 6] + upgrades[2, 6] + upgrades[3, 6] >= 3 then formulaEnd = 3
-	if upgrades[1, 6] + upgrades[2, 6] + upgrades[3, 6] >= 4 then formulaEnd = 4
+	if upgrades[1, 6] + upgrades[2, 6] + upgrades[3, 6] >= 6 then formulaEnd = 4
 	//if heroLocalDistance# < air2Distance*3/4 then formulaEnd = 3
 	//if heroLocalDistance# < air2Distance/2 then formulaEnd = 4
 	//if heroLocalDistance# < air2Distance/4 then formulaEnd = 5
-	
+	//formulaEnd = 4
 	newB.formula = Random(1, formulaEnd)
-	//newB.formula = 4
+	//A bit of fun logic below - if a rare rouge scrap egg was laid, then the function is called again to get another egg group to spawn
+	if scrapErupted = 1 and newB.formula = 4
+		scrapErupted = 2
+		MakeBullets()
+	elseif scrapErupted = 2 
+		scrapErupted = 1
+		if newB.formula = 4 then newB.formula = Random(1, 3)
+	endif
+	//newB.formula = Random(3, 4)
 	
 	newB.flip = Random (0, 1)
 	if newB.flip = 0 then newB.flip = -1
@@ -528,7 +576,7 @@ function MakeBullets()
 		
 		
 		
-		if (random(1, 7) = 5 and scrapAmt < (formulaEnd)) or nextScrap or newB.formula = 4
+		if (random(1, 5) = 5 and scrapAmt < (formulaEnd)) or nextScrap or newB.formula = 4
 			if nextScrap
 				dec nextScrap, 1
 				scrapAmt = formulaEnd
@@ -546,7 +594,7 @@ function MakeBullets()
 		newB.batchOffset = batchOffset
 		
 		if newB.formula = 1 then newB.time = -i*0.3
-		if newB.formula = 2 then newB.time = -i*0.5
+		if newB.formula = 2 then newB.time = -i*0.75
 		if newB.formula = 3 then newB.time = 0
 		if newB.formula = 4 then newB.time = 0
 		newB.num = -bulletAmt/2 + i*newB.flip + 0.5

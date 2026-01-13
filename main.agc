@@ -23,9 +23,11 @@ SetWindowSize( 1280, 720, 0 )
 SetWindowAllowResize( 1 ) // allow the user to resize the window
 
 global debug = 0
-global release = 1
+global release = 0	//This makes the game go to the title screen, instead of loading right into a race
+global isDuckDeluxe = 0	//This version makes the game the full release, instead of the standalone version of RAaD 2
+global webVersion = 0	//This variable sets the duck 1 game back to it's original version, instead of the ReDucks version
 if debug = 0 then SetErrorMode(1)
-global nextScreen = LAND2
+global nextScreen = WATER
 //SetPhysicsDebugOn()
 
 
@@ -43,7 +45,10 @@ SetOrientationAllowed(1, 1, 1, 1) // allow both portrait and landscape on mobile
 SetSyncRate(30, 0) // 30fps instead of 60 to save battery
 SetScissor(0,0,0,0 ) // use the maximum available screen space, no black borders
 UseNewDefaultFonts( 1 ) // since version 2.0.22 we can use nicer default fonts
+SetDefaultMagFilter(0)
+SetDefaultMinFilter(0)
 
+//SetPhysicsDebugOn()
 SetVSync(1)
 
 #constant hitS 1
@@ -139,15 +144,34 @@ LoadMusicOGG(titleM, "music/title.ogg")
 SetMusicLoopTimesOGG(titleM, 4.941, 33.030)
 #constant upgrade2M 8
 
+#constant swampM 11
+LoadMusicOGG(swampM, "music/race2-1.ogg")
+#constant cityM 12
+LoadMusicOGG(cityM, "music/race2-2.ogg")
+#constant mesaM 13
+LoadMusicOGG(mesaM, "music/race2-3.ogg")
+#constant spaceM 14
+LoadMusicOGG(spaceM, "music/race2-4.ogg")
+
 
 #constant ambWater2 21
 LoadMusicOGG(ambWater2, "sounds/ambWater2.ogg")
+#constant ambLand2 22
+LoadMusicOGG(ambLand2, "sounds/ambLand2.ogg")
 #constant ambAir2 23
 LoadMusicOGG(ambAir2, "sounds/ambAir2.ogg")
 #constant ambSpace2 24
 LoadMusicOGG(ambSpace2, "sounds/ambSpace2.ogg")
 #constant ambUpgrade2 25
 LoadMusicOGG(ambUpgrade2, "sounds/ambUpgrade2.ogg")
+#constant ambWater1 26
+LoadMusicOGG(ambWater1, "sounds/ambWater1.ogg")
+#constant ambLand1 27
+LoadMusicOGG(ambLand1, "sounds/ambLand1.ogg")
+#constant ambAir1 28
+LoadMusicOGG(ambAir1, "sounds/ambAir2.ogg")
+#constant ambUpgrade1 29
+LoadMusicOGG(ambUpgrade1, "sounds/ambUpgrade1.ogg")
 
 #constant font1I 40001
 #constant font2I 40002
@@ -199,6 +223,7 @@ SetPowers()
 //Overhead variables
 global fpsr# = 100
 global screen = 0
+global paused = 0
 
 //Gameplay variables
 global heroX# = 0
@@ -215,6 +240,7 @@ global areaSeen = 1
 global curAreaSeen = 1
 global gameTime# = 0
 if debug = 0 then nextScreen = TITLE
+if isDuckDeluxe = 1 then nextScreen = MENU
 
 CreateSpriteExpress(coverS, w, h, 0, 0, 1)
 FixSpriteToScreen(coverS, 1)
@@ -264,11 +290,18 @@ chainI = LoadImage("upgrade/chain.png")
 //This is the array (technically not a queue) of races to be gone through in a gameplay order
 global raceQueue as integer[0]
 global raceQueueRef as integer[0]
-global curRaceSet = 2
+global curRaceSet = 1
 global raceSize = 0
 //if debug = 0 then SetRaceQueue(curRaceSet)
 if release = 0 then SetRaceQueue(curRaceSet)
 //SetRaceQueue(curRaceSet)
+global curRaceMusic
+global oldRaceMusic
+global curAmbience
+global oldAmbience
+global musicFadeTween
+musicFadeTween = CreateTweenCustom(.6)
+SetTweenCustomInteger1(musicFadeTween, 0, 100, TweenEaseIn1())
 
 function SetRaceQueue(raceSet)
 	
@@ -278,14 +311,14 @@ function SetRaceQueue(raceSet)
 	raceQueueRef.length = -1
 	
 	if raceSet = 1 //Race Against a Duck order
+		raceQueue.insert(AIR)
 		raceQueue.insert(WATER)
 		raceQueue.insert(LAND)
-		raceQueue.insert(AIR)
 	elseif raceSet = 2 //Race Against a Duck 2 order
 		raceQueue.insert(WATER2)
+		raceQueue.insert(LAND2)
 		raceQueue.insert(AIR2)
 		raceQueue.insert(SPACE2)
-		raceQueue.insert(LAND2)
 	endif
 	raceQueueRef = raceQueue
 	
@@ -295,6 +328,7 @@ function SetRaceQueue(raceSet)
 	nextScreen = raceQueue[0]
 	raceQueue.remove(0)
 	
+	oldRaceMusic = 0
 	curAreaSeen = 1
 	
 endfunction
@@ -341,11 +375,42 @@ do
 		endif
 	endif
 
+	//Pausing/Unpausing game
+	if ((paused = 0 and (GetRawKeyPressed(27) or Button(pauseButtonCol))) or (paused = 1 and (GetPointerPressed() or inputSelect or GetRawKeyPressed(27)))) and screen < UPGRADE 
+		paused = Mod(paused+1, 2)
+		if GetSpriteCurrentFrame(cutsceneSpr) < 4 and paused = 1 then paused = 0 //Can't pause during the intro cutscene!
+		if paused = 0
+			DeleteSprite(pauseScreen)
+			//Get rid of the pause screen artifacts
+			ResumeMusicOGG(curRaceMusic)
+			ResumeMusicOGG(oldRaceMusic)
+		else
+			PauseMusicOGG(curRaceMusic)
+			PauseMusicOGG(oldRaceMusic)
+		endif
+	endif
 
-	if screen < UPGRADE
+	if paused
+		if GetSpriteExists(pauseScreen) = 0
+			LoadSpriteExpress(pauseScreen, "pauseScreen.png", w, h, 0, 0, 1)
+			FixSpriteToScreen(pauseScreen, 1)
+		endif
+	endif
+
+	if screen < UPGRADE and paused = 0
 		
+		if curAreaSeen > 1 and GetTweenCustomPlaying(musicFadeTween) //and GetTweenCustomInteger1(musicFadeTween) <> 0
+			SetMusicVolumeOGG(curRaceMusic, volumeM*GetTweenCustomInteger1(musicFadeTween))
+			if curRaceSet > 1 or webVersion = 0 then SetMusicVolumeOGG(curAmbience, ambVol*volumeS*GetTweenCustomInteger1(musicFadeTween))
+			SetMusicVolumeOGG(oldRaceMusic, volumeM*(100-GetTweenCustomInteger1(musicFadeTween)))
+			if curRaceSet > 1 or webVersion = 0 then SetMusicVolumeOGG(oldAmbience, ambVol*volumeS*(100-GetTweenCustomInteger1(musicFadeTween)))
+			if GetTweenCustomPlaying(musicFadeTween) = 0
+				StopMusicOGG(oldRaceMusic)
+				StopMusicOGG(oldAmbience)
+			endif
+		endif
 		
-		if GetRawKeyState(81) then heroLocalDistance# = heroLocalDistance# - 100
+		if GetRawKeyState(81) then heroLocalDistance# = heroLocalDistance# - 20*fpsr#
 		
 		if screen = WATER
 			DoWater()
@@ -363,8 +428,6 @@ do
 			DoSpace2()
 		endif
 		
-		Print(areaSeen)
-		Print(curAreaSeen)
 		//for i = 0 to raceQueue.length
 			//Print(GetSpriteX(progFlags[i]))
 		//next i
@@ -387,13 +450,13 @@ do
 				nextScreen = raceQueue[0]
 				raceQueue.remove(0)
 				inc curAreaSeen, 1
+				//Making the duck start with you if you discover a new area, and duck is in rapid finish mode
+				if areaSeen < curAreaSeen then duckDistance# = Max(20000*(raceSize-areaSeen), duckDistance#)
 				areaSeen = Max(areaSeen, curAreaSeen)
 			else
 				//Last race just ended, finishing this 'session'
 				//This was currently copied from the 'AIR' finishing code, should be updated
-				StopMusicOGG(waterM)
-				StopMusicOGG(landM)
-				StopMusicOGG(airM)
+				StopRaceMusic()
 				SaveGame()
 				
 				HideUIText()
@@ -423,14 +486,14 @@ do
 				
 		endif
 				
-		dec duckDistance#, duckSpeed#*fpsr#
-		if duckDistance# < 20000*(raceSize-areaSeen) then duckSpeed# = 100
+		duckDistance# = duckDistance# - duckSpeed#*fpsr#
+		if duckDistance# < 20000*(raceSize-areaSeen) then duckSpeed# = 10*fpsr#
 		//Below is the old, hardcoded values for speeding the duck up when he reaches an undiscovered section - the above line is the updated one, though it may not work (needs testing)
 		//if duckDistance# < 40000 and areaSeen = 1 then duckSpeed# = 100
 		//if duckDistance# < 20000 and areaSeen = 2 then duckSpeed# = 100
-		if GetRawKeyPressed(82) then duckSpeed# = 100
+		if GetRawKeyPressed(82) then duckSpeed# = 12*fpsr#
 		if GetSpriteExists(cutsceneSpr)
-			if GetSpriteCurrentFrame(cutsceneSpr) <> 4 then inc duckDistance#, duckSpeed#*fpsr#
+			if GetSpriteCurrentFrame(cutsceneSpr) <> 4 then duckDistance# = duckDistance# + duckSpeed#*fpsr#
 		endif
 		
 		if GetSpriteExists(hero2)
@@ -440,9 +503,7 @@ do
 		
 		if duckDistance# <= 0
 			
-			StopMusicOGG(waterM)
-			StopMusicOGG(landM)
-			StopMusicOGG(airM)
+			StopRaceMusic()
 			StopAmbientMusic()
 			SaveGame()
 			FreezeGameplay()
@@ -474,7 +535,7 @@ do
 	endif
 	
 	if screen = UPGRADE
-		if curRaceSet = 1
+		if webVersion = 1
 			DoUpgrade()
 		else
 			DoUpgrade2()
@@ -557,16 +618,21 @@ do
     
     if debug = 1
     		//Print( ScreenFPS() )
-	    Print(GetRawLastKey())
+	    //Print(GetRawLastKey())
 	    //Print(HeroX#)
 	    //if GetSpriteExists(hero)
 	    //		Print(GetSpriteX(Hero))
 	    //		Print(GetSpriteY(Hero))
 		//endif
-		Print(duckSpeed#)
+		//Print(duckSpeed#)
 		
 	endif
-	Print(fpsr#)
+	Print("fpsr: " + Str(fpsr#))
+	Print("Cur FPS: " + Str(ScreenFPS()))
+	Print(GetRawLastKey())
+	Print(curAreaSeen)
+	//Print(ScreenFPS()*fpsr#)
+	//Print("Game Timer: " + str(gameTime#))
     Sync()
 loop
 
@@ -637,12 +703,12 @@ function SetupScene(scene)
 
 		
 
-		if GetMusicPlayingOGG(waterM) = 0 then PlayMusicOGG(waterM, 0)
-		if GetMusicPlayingOGG(landM) = 0 then PlayMusicOGG(landM, 0)
-		if GetMusicPlayingOGG(airM) = 0 then PlayMusicOGG(airM, 0)
-		SetMusicVolumeOGG(waterM, 0)
-		SetMusicVolumeOGG(landM, 0)
-		SetMusicVolumeOGG(airM, 0)
+//~		if GetMusicPlayingOGG(waterM) = 0 then PlayMusicOGG(waterM, 0)
+//~		if GetMusicPlayingOGG(landM) = 0 then PlayMusicOGG(landM, 0)
+//~		if GetMusicPlayingOGG(airM) = 0 then PlayMusicOGG(airM, 0)
+//~		SetMusicVolumeOGG(waterM, 0)
+//~		SetMusicVolumeOGG(landM, 0)
+//~		SetMusicVolumeOGG(airM, 0)
 		
 		CreateTextExpress(instruct, "", 44, fontGI, 2, w-20, 580, -13, 2)
 		FixTextToScreen(instruct, 1)
@@ -685,26 +751,75 @@ function SetupScene(scene)
 		
 		SetInstructionText(scene)
 		
+		LoadSpriteExpress(pauseButton, "pauseButton.png", 75, 75, w - 100, 100, 5)
+		FixSpriteToScreen(pauseButton, 1)
+		CreateSpriteExpress(pauseButtonCol, GetSpriteWidth(pauseButton), GetSpriteHeight(pauseButton), GetSpriteX(pauseButton), GetSpriteY(pauseButton), 5)
+		SetSpriteVisible(pauseButtonCol, 0)
+		
 		//Duck will be the first spawnable object
+		
+//~		if GetMusicPlayingOgg(oldRaceMusic)
+//~			SetMusicVolumeOGG(oldRaceMusic,0)
+//~			SetMusicVolumeOGG(oldAmbience,0)
+//~		endif
+		if curRaceSet <= 2 then oldRaceMusic = curRaceMusic
+		oldAmbience = curAmbience
 		
 		if scene = WATER
 			InitWater()
+			if curRaceSet = 1 then curRaceMusic = waterM
+			curAmbience = ambWater1
 		elseif scene = LAND
 			InitLand()
+			if curRaceSet = 1 then curRaceMusic = landM
+			curAmbience = ambLand1
 		elseif scene = AIR
 			InitAir()
+			if curRaceSet = 1 then curRaceMusic = airM
+			curAmbience = ambAir1
 		elseif scene = WATER2
 			InitWater2()
+			if curRaceSet = 2 then curRaceMusic = swampM
+			curAmbience = ambWater2
 		elseif scene = LAND2
 			InitLand2()
+			if curRaceSet = 2 then curRaceMusic = cityM
+			curAmbience = ambLand2
 		elseif scene = AIR2
 			InitAir2()
+			if curRaceSet = 2 then curRaceMusic = mesaM
+			curAmbience = ambAir2
 		elseif scene = SPACE2
 			InitSpace2()
+			if curRaceSet = 2 then curRaceMusic = spaceM
+			curAmbience = ambSpace2
 		endif
 		
-		//Below line might be problematic, it's intention is to make sure the duck starts with you if you discover a new area, and duck is in rapid finish mode
-		if duckSpeed# = 100 then duckDistance# = 20000*(raceSize-areaSeen)
+		if curRaceSet <= 2
+			PlayMusicOgg(curRaceMusic, 0)
+			PlayMusicOgg(curAmbience, 1)
+			
+			if curAreaSeen <> 1	//Using the same (opposite) if statement that triggers the start race cutscene
+				SeekMusicOgg(curRaceMusic, GetMusicPositionOGG(oldRaceMusic), 0)
+//~				SetPrintColor(100, 100, 100, 255)
+//~				Print((oldRaceMusic))
+//~				Print(GetMusicPositionOGG(oldRaceMusic))
+//~				Print(GetMusicPositionOGG(curRaceMusic))
+//~				Sync()
+//~				Sleep(2000)
+				SetMusicVolumeOGG(curRaceMusic, 0)
+				SetMusicVolumeOGG(curAmbience, 0)
+				
+				PlayTweenCustom(musicFadeTween, 0)
+			endif
+			//StopMusicOGG(oldRaceMusic)
+			
+			if webVersion = 1 then SetMusicVolumeOGG(curAmbience, 0)
+			
+		endif
+		
+		//Below line might be problematic, it's intention is to make sure the duck starts with you if you discover a new area, and duck is in rapid finish mode	//Moved to when the duck finishes a race
+		//if duckSpeed# = 100 then duckDistance# = 20000*(raceSize-areaSeen)
 		
 		
 		if GetSpriteExists(progBack) = 0
@@ -789,7 +904,7 @@ function SetupScene(scene)
 		//PlayRaceCutScene(scene)
 		
 	elseif scene = UPGRADE
-		if curRaceSet = 1
+		if webVersion = 1
 			CreateUpgrade()
 		else
 			CreateUpgrade2()
@@ -898,7 +1013,7 @@ endfunction
 function CollectScrap(area)
 	PlaySound(scrapS, volumeS)
 	
-	if curRaceSet = 1
+	if curRaceSet = 1 and webVersion
 		//RAAD1 numbers
 		if area = WATER or area = WATER2
 			num = Random(3, 5)
@@ -972,21 +1087,44 @@ endfunction
 
 
 function SetInstructionText(sceneL)
+	
 	if sceneL = WATER
-		SetTextString(instruct, "LEFT/RIGHT - Move" + CHR(10) + "SPACE with Full Bar - Row" + CHR(10) + "Collect scrap metal!")
+		//webVersion
+		if curRaceSet = 1
+			SetTextString(instruct, "LEFT/RIGHT - Move" + CHR(10) + "SPACE with Full Bar - Row" + CHR(10) + "Collect scrap metal!")
+		else
+			SetTextString(instruct, "LEFT/RIGHT - Move" + CHR(10) + "SPACE with Full Bar - Row")
+		endif
 	elseif sceneL = LAND
+		if webVersion = 1
 			SetTextString(instruct, "LEFT/RIGHT - Move" + CHR(10) + "UP - Jump" + CHR(10) + "SPACE - Use Boost")
+		else
+			SetTextString(instruct, "LEFT/RIGHT - Adjust" + CHR(10) + "UP - Jump" + CHR(10) + "SPACE - Use Boost")
+		endif
 	elseif sceneL = AIR
-		SetTextString(instruct, "LEFT/RIGHT/UP/DOWN - Move" + CHR(10) + "Hit Tornados?" + CHR(10) + "Get an upgrade!")
-		if upgrades[2, 3] > 0 then SetTextString(instruct, "LEFT/RIGHT/UP/DOWN - Move" + CHR(10) + "Hit Tornados - Boost" + CHR(10) + "Win the race!")
+		if webVersion
+			SetTextString(instruct, "LEFT/RIGHT/UP/DOWN - Move" + CHR(10) + "Hit Tornados?" + CHR(10) + "Get an upgrade!")
+			if upgrades[2, 3] > 0 then SetTextString(instruct, "LEFT/RIGHT/UP/DOWN - Move" + CHR(10) + "Hit Tornados - Boost" + CHR(10) + "Win the race!")
+		else
+			SetTextString(instruct, "UP with full fall - FLAP FORWARD" + CHR(10) + "LEFT/RIGHT/DOWN - Move" + CHR(10) + "Tornados - OUCH" + CHR(10) + "Upgrade to turn the tables!")
+			if upgrades[2, 3] > 0 then SetTextString(instruct, "UP with full fall - FLAP FORWARD" + CHR(10) + "LEFT/RIGHT/DOWN - Move" + CHR(10) + "Hit Tornados - Boost" + CHR(10) + "Win the race!")
+		endif
+		
 	elseif sceneL = WATER2
-		SetTextString(instruct, "SPACE - Dive" + CHR(10) + "LEFT/RIGHT - Move" + CHR(10) + "Feather - Boost")
+		if curRaceSet = 2
+			SetTextString(instruct, "SPACE - Dive" + CHR(10) + "LEFT/RIGHT - Adjust" + CHR(10) + "Feather - Boost" + CHR(10) + "Collect scrap metal!")
+		else
+			SetTextString(instruct, "SPACE - Dive" + CHR(10) + "LEFT/RIGHT - Adjust" + CHR(10) + "Feather - Boost")
+		endif
 	elseif sceneL = LAND2
 	elseif sceneL = AIR2
-		SetTextString(instruct, "SPACE - Turn" + CHR(10) + "Touch Slipstream - Speed Up" + CHR(10) + "")
+		SetTextString(instruct, "SPACE - Turn" + CHR(10) + "Touch Slipstream - Speed Up")
 	elseif sceneL = SPACE2
 		SetTextString(instruct, "MASH the sequence!" + CHR(10) + "BOOST your speed!" + CHR(10) + "WIN the race!!")
 	endif
+	
+	//Corrects the spacing based on how many lines there are
+	SetTextY(instruct, 580 - 44*(FindStringCount(GetTextString(instruct), chr(10)) - 2))
 endfunction
 
 function DeleteScene(scene)
@@ -997,6 +1135,8 @@ function DeleteScene(scene)
 		if GetSpriteExists(hero2) then DeleteSprite(hero2)		
 		DeleteAnimatedSprite(duck)
 		if GetParticlesExists(enemyP) then DeleteParticles(enemyP)
+		DeleteSprite(pauseButton)
+		DeleteSprite(pauseButtonCol)
 		
 		if scene = WATER
 			SetSpriteVisible(waterS, 0)
@@ -1031,6 +1171,7 @@ function DeleteScene(scene)
 			DeleteSprite(featherBoostTop)
 			DeleteSprite(water2BG)
 			
+			if curRaceSet = 2 then oldRaceMusic = 0
 		endif
 		
 		if scene = LAND2
@@ -1046,6 +1187,7 @@ function DeleteScene(scene)
 			DeleteSprite(air2BG)
 			DeleteSprite(air2BBG)
 			DeleteSprite(eggBird)
+			DeleteSprite(airFinishLine)
 			DeleteSprite(air2WindBG)
 			
 			iMax = bulletActive.length
@@ -1159,28 +1301,38 @@ function PlayRaceCutScene(scene)
 	SetSpriteDepth(cutsceneSpr, 2)
 	FixSpriteToScreen(cutsceneSpr, 1)
 	
-	if firstDuck2Race = 0
+	if firstDuck2Race = 0 and curRaceSet = 2
 		duckDistance# = 80000
 		StopMusicOGG(waterM)
 	endif
-	
+	if webVersion = 0 then SetMusicVolumeOGG(curAmbience, 100)
+	PauseMusicOGG(curRaceMusic)
 	
 	//Doing the scene twice to get the sprites in place
 	//for i = 1 to 2
 		if scene = WATER
 			DoWater()
+			StopSprite(duck)
+			SetSpriteFrame(duck, 1)
+			//curRaceMusic = waterM
 		elseif scene = LAND
 			DoLand()
+			//curRaceMusic = landM
 		elseif scene = AIR
 			DoAir()
+			//curRaceMusic = airM
 		elseif scene = WATER2
 			DoWater2()
+			//curRaceMusic = swampM
 		elseif scene = LAND2
 			DoLand2()
+			//curRaceMusic = cityM
 		elseif scene = AIR2
 			DoAir2()
+			//curRaceMusic = mesaM
 		elseif scene = SPACE2
 			DoSpace2()
+			//curRaceMusic = spaceM
 		endif
 	//next i
 	
@@ -1191,7 +1343,6 @@ function PlayRaceCutScene(scene)
 	if release = 1
 	
 		while GetSpriteCurrentFrame(cutsceneSpr) < 4
-			Print(GetMusicPlayingOGG(waterM))	
 			gameTime# = 0
 			
 			if scene = WATER
@@ -1216,19 +1367,30 @@ function PlayRaceCutScene(scene)
 	PlaySound(beepGoS, volumeS)
 	PlaySound(windSS, volumeS)
 	
-	if curRaceSet = 1
-		StopMusicOGG(waterM)
-		StopMusicOGG(landM)
-		StopMusicOGG(airM)
-		PlayMusicOGG(waterM, 0)
-		PlayMusicOGG(landM, 0)
-		PlayMusicOGG(airM, 0)
-		SetMusicVolumeOGG(waterM, 100)
-		SetMusicVolumeOGG(landM, 0)
-		SetMusicVolumeOGG(airM, 0)
-	else
-		//This is where the other race music will be triggered
-	endif	
+	//StopRaceMusic()
+	if curRaceSet <> 2 or firstDuck2Race = 1
+		ResumeMusicOGG(curRaceMusic)
+		SetMusicVolumeOGG(curRaceMusic, 100)
+	endif
+//~	if curRaceSet = 1
+//~		//StopMusicOGG(waterM)
+//~		//StopMusicOGG(landM)
+//~		//StopMusicOGG(airM)
+//~		//PlayMusicOGG(waterM, 0)
+//~		////PlayMusicOGG(landM, 0)
+//~		//PlayMusicOGG(airM, 0)
+//~		//SetMusicVolumeOGG(waterM, 100)
+//~		//SetMusicVolumeOGG(landM, 0)
+//~		//SetMusicVolumeOGG(airM, 0)
+//~		PlayMusicOGG(curRaceMusic, 0)
+//~	elseif curRaceSet = 2
+//~		if firstDuck2Race = 1
+//~			PlayMusicOGG(curRaceMusic, 0)
+//~			SetMusicVolumeOGG(curRaceMusic, 100)
+//~		endif
+//~		//if firstDuck2Race = 1 then SetMusicVolumeOGG(curRaceMusic, 100)
+//~		//This is where the other race music will be triggered
+//~	endif	
 		
 	
 	
@@ -1237,10 +1399,30 @@ endfunction
 function StopAmbientMusic()
 	StopMusicOgg(ambWater2)
 	StopSound(swimmingS)
+	StopMusicOGG(ambLand2)
 	StopMusicOGG(ambAir2)
 	StopSound(jetstreamS)
 	StopMusicOGG(ambSpace2)
 	StopMusicOGG(ambUpgrade2)
+	StopMusicOGG(ambWater1)
+	StopMusicOGG(ambLand1)
+	StopMusicOGG(ambAir1)
+	StopMusicOGG(ambUpgrade1)
+	StopMusicOGG(oldAmbience)
+	StopMusicOGG(curAmbience)
+endfunction
+
+function StopRaceMusic()
+	StopMusicOgg(waterM)
+	StopMusicOGG(oldRaceMusic)
+	StopMusicOGG(curRaceMusic)
+	StopMusicOGG(waterM)
+	StopMusicOGG(landM)
+	StopMusicOGG(airM)
+	StopMusicOGG(swampM)
+	StopMusicOGG(cityM)
+	StopMusicOGG(mesaM)
+	StopMusicOGG(spaceM)
 endfunction
 
 function FreezeGameplay()

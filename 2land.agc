@@ -18,14 +18,18 @@ global landSlowDown# = 1
 global boostTotal = 3
 global boostAmt# = 0
 global activeBoost# = 0
-global boostSpeed# =  8.4
-global boostRecharge# = .0024
-global boostDrain# = .02
+//global boostSpeed# =  8.4 The old amount, before FPSR
+global boostSpeed# =  0.933
+//global boostRecharge# = .0024 The old amount, before FPSR
+global boostRecharge# = .0002667
+//global boostDrain# = .02	The old amount, before FPSR
+global boostDrain# = .0022
 
 function InitLand()
 	
-	
-	SetMusicVolumeOGG(landM, 100)
+	//if webVersion = 0 then PlayMusicOGG(ambLand1, 1)
+	//SetMusicVolumeOGG(ambLand1, ambVol*volumeS)
+	//SetMusicVolumeOGG(landM, 100)
 	
 	CreateSpriteExpress(hero, 128, 128, w, h, 10)
 	heroX# = w/2
@@ -63,7 +67,8 @@ function InitLand()
 	fixedLandSpeed# = 0.6 * (1 + .5*upgrades[1, 2])
 	boostTotal = 3 + 1*upgrades[2, 2] + 1*upgrades[2, 2]/3
 	landSlowDown# = 1 * (1 - .25*upgrades[3, 2] + .15*upgrades[3, 2]/3)
-	boostSpeed# = 4.4 * (1 + 0.6*upgrades[4, 2] + 0.6*upgrades[4, 2]/2 + 2.6*upgrades[4, 2]/3)
+	//boostSpeed# = 4.4 * (1 + 0.6*upgrades[4, 2] + 0.6*upgrades[4, 2]/2 + 2.6*upgrades[4, 2]/3) The old amount, before FPSR
+	boostSpeed# = 0.4889 * (1 + 0.6*upgrades[4, 2] + 0.6*upgrades[4, 2]/2 + 2.6*upgrades[4, 2]/3)
 	
 	LoadAnimatedSprite(landBoost1, "bolt", 10)
 	SetSpriteExpress(landBoost1, 50, 50, 300, 630, 5)
@@ -76,7 +81,7 @@ function InitLand()
 	
 	
 	
-	areaSeen = Max(areaSeen, 2)
+	//areaSeen = Max(areaSeen, 2)
 	
 	LoadAnimatedSprite(duck, "duckl", 2)
 	PlaySprite(duck, 30, 1, 1, 2)
@@ -120,9 +125,19 @@ function InitLand()
 			SetSpriteDepth(spawnS, 20)
 			SetSpriteShape(spawnS, 3)
 		else
-			LoadSpriteExpress(spawnS, "scrap" + Str(1 + Random(1,3)) + ".png", 10, 10, w, h, 8)
-			SetSpriteY(spawnS, Random(250, 480))
-			SetSpriteSizeSquare(spawnS, 50)
+			if webVersion
+				LoadSpriteExpress(spawnS, "scrap/scrap" + Str(1 + Random(1,3)) + ".png", 10, 10, w, Random(250, 480), 8)
+			else
+				CreateSpriteExpress(spawnS, 10, 10, w, Random(250, 480), 8)
+				scrapSet = GetScrapRank()
+				rnd = Random(1,8)
+				for j = 1 to 4
+					AddSpriteAnimationFrame(spawnS, scrapImgs[rnd, scrapSet, j])//First index will be a random
+				next j
+				PlaySprite(spawnS, 3+Random(1,3))
+			endif
+			SetSpriteSizeSquare(spawnS, 60)
+			
 		endif
 		spawnActive.insert(newS)
 		inc spawnS, 1
@@ -150,25 +165,32 @@ function DoLand()
 		PlaySound(boostS, volumeS)
 	endif
 	
-	if boostAmt# < boostTotal then inc boostAmt#, boostRecharge#
+	oldBoostAmt# = boostAmt#
+	if boostAmt# < boostTotal then boostAmt# = boostAmt# + boostRecharge#*fpsr#
+	if Floor(boostAmt#) - Floor(oldBoostAmt#) > 0 and webVersion = 0 then PlaySound(boostChargeS, volumeS*0.6)
 	
 	if activeBoost# > 0
-		dec heroLocalDistance#, boostSpeed#
-		dec activeBoost#, boostDrain#
-		inc heroX#, .4*fpsr#
+		heroLocalDistance# = heroLocalDistance# - boostSpeed#*fpsr#
+		activeBoost# = activeBoost# - boostDrain#*fpsr#
+		//dec activeBoost#, boostDrain#
+		//Print(activeBoost#)
+		//Sleep(1000)
+		heroX# = heroX# + .4*fpsr#
 	endif
+	
+	
 	
 	if inputUp and heroY# = heroYLow#
 		//Jump
 		heroVelY# = -80*9
-		dec heroY#, 3
+		heroY# = heroY# - 3
 		SetSpriteFrame(hero, 3)
 		PlaySprite(hero2, 15, 1, 5, 6)
 		PlaySound(jumpS, volumeS)
 	endif
 	if heroY# <> heroYLow#
-		inc heroY#, heroVelY#*fpsr#/400
-		inc heroVelY#, gravity#*fpsr#
+		heroY# = heroY# + heroVelY#*fpsr#/400
+		heroVelY# = heroVelY# + gravity#*fpsr#
 		if heroVelY# > -60 and GetSpriteCurrentFrame(hero) = 3
 			SetSpriteFrame(hero, 2)
 			PlaySprite(hero2, 15, 1, 3, 4)
@@ -182,10 +204,10 @@ function DoLand()
 		
 	endif
 	
-	if inputLeft then inc heroX#, -landSpeedX#*1.5*fpsr#
-	if inputRight then inc heroX#, landSpeedX#*1.5*fpsr#
-	if stateLeft then inc heroX#, -landSpeedX#*fpsr#
-	if stateRight then inc heroX#, landSpeedX#*fpsr#
+	if inputLeft then heroX# = heroX# - landSpeedX#*1.5*fpsr#
+	if inputRight then heroX# = heroX# + landSpeedX#*1.5*fpsr#
+	if stateLeft then heroX# = heroX# - landSpeedX#*fpsr#
+	if stateRight then heroX# = heroX#+ landSpeedX#*fpsr#
 	
 	for i = landBoost1 to landBoost1 - 1 + boostTotal
 		//Cut the sprite to make it recharge
@@ -202,14 +224,14 @@ function DoLand()
 	//SetSpriteX(heroIcon, GetSpriteX(progBack)-GetSpriteWidth(heroIcon)/2 + (GetSpriteWidth(progBack)*(landDistance - heroLocalDistance#)/landDistance)/areaSeen + (GetSpriteWidth(progBack)/areaSeen))
 	SetSpriteFrame(landS, 1+Mod(Round(landDistance-heroLocalDistance#)/6, 60))
 	//SetSpriteX(duckIcon, Min(GetSpriteX(progBack)-GetSpriteWidth(duckIcon)/2 + (GetSpriteWidth(progBack)*(40000 - (duckDistance#-20000))/20000)/areaSeen, GetSpriteX(progBack)+GetSpriteWidth(progBack)-GetSpriteWidth(duckIcon)))
-	SetSpriteX(duck, (heroLocalDistance#-(duckDistance#-20000)))
+	SetSpriteX(duck, (heroLocalDistance#-(duckDistance#-20000*(raceSize - curAreaSeen))))
 	
 	SetSpriteX(rail1, -GetSpriteWidth(rail1)/4+Mod(20000+heroLocalDistance#/2.5, GetSpriteWidth(rail1)/4))
 	
 	if damageAmt# > 0
 		newC = GetSpriteColorGreen(hero)
-		dec damageAmt#, fpsr#/3
-		inc heroLocalDistance#, fixedLandSpeed#*fpsr#/(255.0/damageAmt#)*landSlowDown#
+		damageAmt# = damageAmt# - fpsr#/3
+		heroLocalDistance# = heroLocalDistance# + fixedLandSpeed#*fpsr#/(255.0/damageAmt#)*landSlowDown#
 		SetSpriteColor(hero, 255, 255-damageAmt#, 255-damageAmt#, 255)
 	endif
 	
@@ -231,10 +253,20 @@ function DoLand()
 						activeBoost# = 0
 						PlaySound(hitS, volumeS)
 					endif
-				else //SCRAP
+				elseif GetSpriteGroup(spr) <> SCRAP //SCRAP
 					CollectScrap(LAND)
+					if webVersion = 0
+						SetSpriteGroup(spr, SCRAP)
+						PlaySprite(spr, 30)
+						CreateTweenSprite(spr, .6)
+						SetTweenSpriteY(spr, GetSpriteY(spr), GetSpriteY(spr) - GetSpriteHeight(spr)*1.5, TweenSmooth1())
+						PlayTweenSprite(spr, spr, 0)
+						PlayTweenSprite(tweenSprFadeOut, spr, .1)
+					endif
 				endif
-				if spawnActive[i].cat <> BAD then deleted = i
+				if spawnActive[i].cat <> BAD and GetSpriteGroup(spr) <> SCRAP
+					deleted = i
+				endif
 				//i = spawnActive.length
 				
 			endif

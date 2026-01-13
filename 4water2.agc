@@ -28,7 +28,7 @@ global featherBoostTop
 
 //This is only used for the funny zoom for the very first race
 global focalPoint#
-global firstDuck2Race = 0
+global firstDuck2Race = 1
 //Water tile visibility could be an upgrade variable?
 //waterTileAlpha
 
@@ -40,8 +40,8 @@ function InitWater2()
 	
 	if debug then firstDuck2Race = 1
 	
-	PlayMusicOGG(ambWater2, 1)
-	SetMusicVolumeOGG(ambWater2, ambVol*volumeS)
+	//PlayMusicOGG(ambWater2, 1)
+	//SetMusicVolumeOGG(ambWater2, ambVol*volumeS)
 	
 	heroX# = 120
 	heroY# = 0
@@ -344,7 +344,7 @@ function DoWater2()
 	heroX# = Min(Max(heroX#, 70), 420)
 	SetSpritePosition(hero, heroX#, heroY# + 26 + (GetSpriteMiddleY(water2S)) - GetSpriteHeight(hero) + 30 + 4*Abs(sin(gameTime#/8)) + 2*Abs(cos(gameTime#/3)))
 	if diveBoost# > 0 and heroY# <= 0
-		IncSpriteY(hero, (1-diveHop#)*(-diveBoost#*36 - 10))
+		SetSpriteY(hero, GetSpriteY(hero) + (1-diveHop#)*(-diveBoost#*36 - 10))
 		SetSpriteAngle(hero, Max(-5, -diveBoost#*15 + 20))
 		//Print(GetSpriteAngle(hero))
 	else
@@ -354,10 +354,10 @@ function DoWater2()
 	//inc diveHop#, diveHopRise*fpsr#
 	//Print(diveHop#)
 	if inputLeft
-		inc heroX#, -waterSpeedX#*1.5*fpsr#
+		heroX# = heroX# - waterSpeedX#*1.5*fpsr#
 	endif
 	if inputRight
-		inc heroX#, waterSpeedX#*1.5*fpsr#
+		heroX# = heroX# + waterSpeedX#*1.5*fpsr#
 	endif
 	
 	if stateRight
@@ -378,12 +378,12 @@ function DoWater2()
 	if stateLeft then waterVelX# = -waterSpeedX#
 	if stateRight then waterVelX# = waterSpeedX#
 
-	inc heroX#, waterVelX#*fpsr#
+	heroX# = heroX# + waterVelX#*fpsr#
 	
 	if diveDamage
 		SetSpriteAngle(hero, Mod(heroY#*7, 360))
 		diveVelY# = -0.4
-		inc heroLocalDistance#, fixedWater2Speed#*fpsr#*2/3
+		heroLocalDistance# = heroLocalDistance# + fixedWater2Speed#*fpsr#*2/3
 		SetSpriteColor(hero, 255, 100, 100, 255)
 		if heroY# < 0
 			diveDamage = 0
@@ -414,7 +414,7 @@ function DoWater2()
 			endif
 			
 			diveHop# = 1
-			inc diveDeepTimer#, GetFrameTime()
+			diveDeepTimer# = diveDeepTimer# + GetFrameTime()
 			
 		endif
 		if heroY# > 0
@@ -454,7 +454,7 @@ function DoWater2()
 		endif
 	endif
 	
-	inc heroY#, diveVelY#*fpsr#
+	heroY# = heroY# + diveVelY#*fpsr#
 	
 	//Print(heroY#)
 	//Print(diveBoost#)
@@ -498,7 +498,6 @@ function DoWater2()
 	
 	SetSpritePosition(duck, -1*(duckDistance# - 20000*(raceSize - (curAreaSeen-1))) - (water2Distance-heroLocalDistance#)+80 + 60*diveLevel, 70+4*cos(gameTime#*2))
 	//SetSpritePosition(duck, -1*(duckDistance# - 20000*(raceSize-1)) - (water2Distance-heroLocalDistance#)+80 + 60*diveLevel, 70+4*cos(gameTime#*2))
-	Print(GetSpriteX(duck))
 	
 	if firstDuck2Race = 0
 		if duckDistance# < 79990 and GetMusicPlayingOGG(waterM) = 0
@@ -514,13 +513,11 @@ function DoWater2()
 		else
 			focalPoint# = GlideNumToZero(focalPoint#, 40)
 			usePoint# = focalPoint# + landDistance-heroLocalDistance#
-			SetMusicVolumeOGG(waterM, 100 - 50 - Min(100*(76000.0 - (duckDistance#))/20000, 50))
+			SetMusicVolumeOGG(waterM, 100 - 45 - Min(100*(76000.0 - (duckDistance#))/20000, 50))
 		endif
 		
 			//Print(raceSize)
 			//Print(areaSeen)
-			Print(duckDistance#)
-			Print(GetMusicPlayingOGG(waterM))	
 			//Print(raceQueue.length)	
 			
 			
@@ -586,7 +583,7 @@ function DoWater2()
 					PlayTweenSprite(spr, spr, 0)
 					PlayTweenSprite(tweenSprFadeOut, spr, .1)
 				endif
-				if spawnActive[i].cat <> RAMP and GetSpriteWidth(spr) = GetSpriteHeight(spr) and GetSpriteGroup(spr) <> SCRAP
+				if GetSpriteWidth(spr) = GetSpriteHeight(spr) and GetSpriteGroup(spr) <> SCRAP
 					deleted = i
 					i = spawnActive.length
 				endif
@@ -624,8 +621,8 @@ function DoWater2()
 	endif
 	SetSpriteY(featherBoostTop, GetSpriteY(featherBoostFrameS)-10-GetSpriteHeight(featherBoostS))
 	
-	Print(GetSpriteWidth(featherBoostS))
-	Print(GetSpriteHeight(featherBoostS))
+	//Print(GetSpriteWidth(featherBoostS))
+	//Print(GetSpriteHeight(featherBoostS))
 	
 
 	
