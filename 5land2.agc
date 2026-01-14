@@ -39,8 +39,12 @@ global land2buildingXOffset = 0  // set in the init script
 
 function InitUpgradeValues()
     // assign values to upgradeable attributes based on purchased levels 
+    for i = 0 to 3
+        upgrades[i, LAND2] = 0
+    next i
+
     land2nLanes = 2 + upgrades[attrnLanes, LAND2]
-    land2heroSpeedMax# = 1.25 + 0.25 * upgrades[attrnLanes, LAND2]
+    land2heroSpeedMax# = 1.25 + 0.25 * upgrades[attrBaseSpeed, LAND2]
     land2heroBoostFramesMax = 60 + 30 * upgrades[attrBoostFrames, LAND2]
     land2boostGroupLength = 5 + upgrades[attrBoostGroupLength, LAND2] + 2 * (upgrades[attrBoostGroupLength, LAND2] / 2)
 
@@ -174,11 +178,11 @@ function InitLand2()
     SetSpriteColor(land2sprBoostMeter, 255, 0, 0, 255)
 
     // load hero sprite
-    LoadAnimatedSprite(hero, "duckc", 3)
+    LoadAnimatedSprite(hero, "duckc", 4)
     SetSpriteSize(hero, 40, 40)
     SetSpritePosition(hero, 500, land2heroY)
     SetSpriteDepth(hero, 1)
-    PlaySprite(hero, 10)
+    PlaySprite(hero, 15)
     heroLocalDistance# = land2Distance
 
     // create "spawnables" (boosts/obstacles)
