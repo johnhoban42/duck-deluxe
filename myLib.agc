@@ -1286,10 +1286,10 @@ function SetPowers()
 	powers[3, 3, 5] = "x2 Boost Time"
 	powers[3, 4, 5] = "x2.5 Boost Time"
 
-	powers[4, 1, 5] = "x1 Boost Spawn Rate"
-	powers[4, 2, 5] = "x1.2 Boost Spawn Rate"
-	powers[4, 3, 5] = "x1.6 Boost Spawn Rate"
-	powers[4, 4, 5] = "x2 Boost Spawn Rate"
+	powers[4, 1, 5] = "x1 Boost Chain Length"
+	powers[4, 2, 5] = "x1.2 Boost Chain Length"
+	powers[4, 3, 5] = "x1.6 Boost Chain Length"
+	powers[4, 4, 5] = "x2 Boost Chain Length"
 	
 	//Mountains/Air 2
 	powers[1, 1, 6] = "One Slipstream"
