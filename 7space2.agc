@@ -37,8 +37,20 @@ global oopsUsed = 0
 function CreateMashInputSprite(spr, dir)
 	if GetSpriteExists(spr) = 0 then CreateSprite(spr, 0)
 	SetSpriteExpress(spr, 40, 40, 0, 0, 20)
-	SetSpriteImage(spr, arrowI)
-	SetSpriteColor(spr, 0, 255, 255, 255)	//Teal
+	//SetSpriteImage(spr, arrowI)
+	AddSpriteAnimationFrame(spr, spaceArrowI1)
+	AddSpriteAnimationFrame(spr, spaceArrowI1)
+	AddSpriteAnimationFrame(spr, spaceArrowI1)
+	AddSpriteAnimationFrame(spr, spaceArrowI2)
+	AddSpriteAnimationFrame(spr, spaceArrowI2)
+	AddSpriteAnimationFrame(spr, spaceArrowI2)
+	AddSpriteAnimationFrame(spr, spaceArrowI3)
+	AddSpriteAnimationFrame(spr, spaceArrowI3)
+	AddSpriteAnimationFrame(spr, spaceArrowI4)
+	PlaySprite(spr, 20, 1)
+	
+	//SetSpriteColor(spr, 0, 255, 255, 255)	//Teal
+	SetSpriteColor(spr,200, 255, 255, 255)	//Teal
 	
 	if dir = 2
 		SetSpriteAngle(spr, 180)
@@ -343,7 +355,7 @@ function DoSpace2()
 				if mashPos = MashList.length + 1
 					//Boost
 					PlaySound(boostS, volumeS/3)
-					PlaySoundR(spaceCSE[mashPos+1], volumeS/1.5)
+					PlaySoundR(spaceGSE[mashPos+1], volumeS/1.5)
 					spaceSpeedMult# = Pow(1 + 0.1*(MashList.length), 1.15)
 					spaceSpeed# = spaceSpeed#*spaceSpeedMult#
 					spaceBoost# = 1
@@ -364,7 +376,7 @@ function DoSpace2()
 					//Making a new mash sequence
 					CreateMashSequence()
 				else
-					PlaySoundR(spaceCSE[mashPos], volumeS/2)
+					PlaySoundR(spaceGSE[mashPos], volumeS/2)
 				endif
 			else
 				//WRONG INPUT!
@@ -386,7 +398,7 @@ function DoSpace2()
 				inc mashPos, 1
 				
 				if mashPos = MashSecond.length + 1
-					PlaySoundR(spaceCSE[splitPos+mashPos+1], volumeS/1.5)
+					PlaySoundR(spaceGSE[splitPos+mashPos+1], volumeS/1.5)
 					CollectScrap(SPACE2)
 					//Making the icons at the end of each line invisible
 					spr = spaceScrapS
@@ -400,7 +412,7 @@ function DoSpace2()
 					//Making a new mash sequence
 					CreateMashSequence()
 				else
-					PlaySoundR(spaceCSE[splitPos+mashPos], volumeS/2)
+					PlaySoundR(spaceGSE[splitPos+mashPos], volumeS/2)
 				endif
 			else
 				//WRONG INPUT!

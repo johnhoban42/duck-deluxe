@@ -18,6 +18,7 @@ global AREA_CHARS as string[7] = ["W", "L", "S", "W", "L", "S", "Z"]
 #constant TITLE 9
 #constant FINISH 10
 #constant MENU 11
+#constant RADIO 12
 
 global heroImg1
 global heroImg2
@@ -49,6 +50,17 @@ endfunction
 global fish1I
 global fish2I
 global fish3I
+
+#constant spaceArrowI1 7001
+#constant spaceArrowI2 7002
+#constant spaceArrowI3 7003
+#constant spaceArrowI4 7004
+function LoadGameImages()
+	LoadImage(spaceArrowI1, "space/tearrow1.png")
+	LoadImage(spaceArrowI2, "space/tearrow2.png")
+	LoadImage(spaceArrowI3, "space/tearrow3.png")
+	LoadImage(spaceArrowI4, "space/tearrow4.png")
+endfunction
 
 //Sprite/Image/Audio constants
 #constant hero 1001
@@ -147,6 +159,8 @@ global tileEH	//Tile extra height, expanded to make them look connected together
 #constant diveVisAngle 80//160//110
 #constant waterTileAlpha 200
 #constant water2Trees 4051
+#constant water2Trees2 4052
+#constant water2Trees3 4053
 
 
 #constant land2sprStreet 5000  // 5000 - 5004 for 5 lanes
@@ -176,6 +190,8 @@ global pressThisBeam2
 
 global spaceBoostS
 global spaceScrapS
+
+
 
 #constant spawnStartS 10001
 global spawnS = spawnStartS

@@ -20,6 +20,7 @@ global spinLeft# = 0
 global flapTime# = 0
 global flapBoost# = 0
 global airGravity# = 0.15
+global flapBoostSpeed# = 20
 
 function InitAir()
 	
@@ -62,6 +63,10 @@ function InitAir()
 	airSpeedMax# = (2)*(1 + 0.5*upgrades[2, 3]/2 + 0.2*upgrades[2, 3]/3)		//TODO: give a level 1 upgrade boost
 	airSpeedX# = (0.39)*(1 + 0.3*upgrades[3, 3] + 0.1*upgrades[3, 3] + 0.2*upgrades[3, 3]/3)
 	airSpeedY# = (0.28)*(1 + 0.2*upgrades[4, 3] + 0.1*upgrades[4, 3] + 0.2*upgrades[4, 3]/3)
+	
+	if webVersion = 0
+		airSpeedY# = (0.28)*(1 + 0.2*upgrades[3, 3] + 0.1*upgrades[3, 3] + 0.2*upgrades[3, 3]/3)
+	endif
 	
 	newS as spawn
 	for i = 4 to 27
@@ -179,11 +184,11 @@ function DoAir()
 	inc heroX#, airVelX#
 	
 	//Up/down
-	if inputUp
-		heroY# = heroY# - airSpeedY#*1.5*fpsr#
+	if stateUp
+		if webVersion = 1 then heroY# = heroY# - airSpeedY#*1.5*fpsr#
 	endif
-	if inputDown
-		heroY# = heroY# + airSpeedY#*1.5*fpsr#
+	if stateDown
+		if webVersion = 1 then heroY# = heroY# + airSpeedY#*1.5*fpsr#
 	endif
 	
 	if Abs(airVelY#) < .01
@@ -192,27 +197,43 @@ function DoAir()
 		airVelY# =  (((airVelY#)*((54.0)^fpsr#))/(55.0)^fpsr#)
 	endif
 	
-	if stateUp then airVelY# = -airSpeedY#*fpsr#
-	if stateDown then airVelY# = airSpeedY#*fpsr#
+	if stateUp and webVersion = 1 then airVelY# = -airSpeedY#*fpsr#
+	if stateDown and webVersion = 1 then airVelY# = airSpeedY#*fpsr#
 	heroY# = heroY# + airVelY#
 	
 	if webVersion = 0
 		//New controls, related to flapping
 		if fpsr# < 10
 			heroY# = heroY# + airGravity#*fpsr#
+		endif                                                                                                                                                                                                                                                                                                                                                    
+		
+		if inputUp and (flapTime# < 0.5 or heroY# > 550)
+			flapBoost# = 2 * (0.5 - flapTime#)
+			flapTime# = 1.0 - Pow(flapTime#, 1.5)
 		endif
 		
+		flapBoostSpeed# = 1
+		
+		heroLocalDistance# = heroLocalDistance# - flapBoostSpeed#*flapBoost#
+		heroY# = heroY# - 1.2*(flapTime#-0.4)*fpsr#
+		
+		if flapBoost# > 0 then flapBoost# = flapBoost# - 0.0004*fpsr#
+		if flapTime# > 0 then flapTime# = flapTime# - 0.0009*fpsr#
+		if flapTime# < 0 then flapTime# = 0
+		
+		Print("Timer: " + Str(flapTime#))                                             
+		Print("Boost: " + Str(flapBoost#))
 		//Variables for revamped Sky
 //~global flapTime# = 0
 //~global flapBoost# = 0
-//~global airGravity# = 0.15
 //~Use these new variables!
 		
 	endif
 	//Print(heroX#)
 	
 	heroX# = Min(Max(heroX#, 95), 1050)
-	heroY# = Min(Max(heroY#, 250), 600)
+	if webVersion = 1 then heroY# = Min(Max(heroY#, 250), 600)
+	if webVersion = 0 then heroY# = Min(Max(heroY#, 150), 600)
 	SetSpritePosition(hero, heroX#, heroY# + 15*sin(gameTime#/20))
 	
 	Print(heroY#)

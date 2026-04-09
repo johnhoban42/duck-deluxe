@@ -9,6 +9,8 @@
 #include "7space2.agc"
 #include "constants.agc"
 #include "menu.agc"
+#include "upgrade.agc"
+#include "radio.agc"
 
 // Project: EvilDuck 
 // Created: 2023-11-27
@@ -24,10 +26,10 @@ SetWindowAllowResize( 1 ) // allow the user to resize the window
 
 global debug = 0
 global release = 0	//This makes the game go to the title screen, instead of loading right into a race
-global isDuckDeluxe = 0	//This version makes the game the full release, instead of the standalone version of RAaD 2
+global isDuckDeluxe = 1	//This version makes the game the full release, instead of the standalone version of RAaD 2
 global webVersion = 0	//This variable sets the duck 1 game back to it's original version, instead of the ReDucks version
 if debug = 0 then SetErrorMode(1)
-global nextScreen = WATER
+global nextScreen = AIR
 //SetPhysicsDebugOn()
 
 
@@ -123,8 +125,10 @@ LoadSoundOGG(clickUpS, "sounds/clickUp.ogg")
 LoadSoundOGG(clickDownS, "sounds/clickDown.ogg")
 
 global spaceCSE as integer[13]
+global spaceGSE as integer[13]
 for i = 1 to 13
 	spaceCSE[i] = LoadSoundOgg("sounds/spaceC" + str(i) + ".ogg")
+	spaceGSE[i] = LoadSoundOgg("sounds/spaceG" + str(i) + ".ogg")
 next i
 
 #constant introM 1
@@ -273,6 +277,7 @@ LoadAnimatedSprite(water2TileS, "w2BG/2sw", 60)
 SetSpriteVisible(water2TileS, 0)
 
 LoadScrapImages()
+LoadGameImages()
 
 tileI1 = LoadImage("waterTile1.png")
 tileI2 = LoadImage("waterTile2.png")
@@ -290,7 +295,7 @@ chainI = LoadImage("upgrade/chain.png")
 //This is the array (technically not a queue) of races to be gone through in a gameplay order
 global raceQueue as integer[0]
 global raceQueueRef as integer[0]
-global curRaceSet = 1
+global curRaceSet = 2
 global raceSize = 0
 //if debug = 0 then SetRaceQueue(curRaceSet)
 if release = 0 then SetRaceQueue(curRaceSet)
@@ -315,10 +320,10 @@ function SetRaceQueue(raceSet)
 		raceQueue.insert(WATER)
 		raceQueue.insert(LAND)
 	elseif raceSet = 2 //Race Against a Duck 2 order
+		raceQueue.insert(SPACE2)
 		raceQueue.insert(WATER2)
 		raceQueue.insert(LAND2)
 		raceQueue.insert(AIR2)
-		raceQueue.insert(SPACE2)
 	endif
 	raceQueueRef = raceQueue
 	
@@ -399,16 +404,16 @@ do
 
 	if screen < UPGRADE and paused = 0
 		
-		if curAreaSeen > 1 and GetTweenCustomPlaying(musicFadeTween) //and GetTweenCustomInteger1(musicFadeTween) <> 0
-			SetMusicVolumeOGG(curRaceMusic, volumeM*GetTweenCustomInteger1(musicFadeTween))
-			if curRaceSet > 1 or webVersion = 0 then SetMusicVolumeOGG(curAmbience, ambVol*volumeS*GetTweenCustomInteger1(musicFadeTween))
-			SetMusicVolumeOGG(oldRaceMusic, volumeM*(100-GetTweenCustomInteger1(musicFadeTween)))
-			if curRaceSet > 1 or webVersion = 0 then SetMusicVolumeOGG(oldAmbience, ambVol*volumeS*(100-GetTweenCustomInteger1(musicFadeTween)))
-			if GetTweenCustomPlaying(musicFadeTween) = 0
-				StopMusicOGG(oldRaceMusic)
-				StopMusicOGG(oldAmbience)
-			endif
-		endif
+//~		if curAreaSeen > 1 and GetTweenCustomPlaying(musicFadeTween) //and GetTweenCustomInteger1(musicFadeTween) <> 0
+//~			SetMusicVolumeOGG(curRaceMusic, volumeM*GetTweenCustomInteger1(musicFadeTween))
+//~			if curRaceSet > 1 or webVersion = 0 then SetMusicVolumeOGG(curAmbience, ambVol*volumeS*GetTweenCustomInteger1(musicFadeTween))
+//~			SetMusicVolumeOGG(oldRaceMusic, volumeM*(100-GetTweenCustomInteger1(musicFadeTween)))
+//~			if curRaceSet > 1 or webVersion = 0 then SetMusicVolumeOGG(oldAmbience, ambVol*volumeS*(100-GetTweenCustomInteger1(musicFadeTween)))
+//~			if GetTweenCustomPlaying(musicFadeTween) = 0
+//~				StopMusicOGG(oldRaceMusic)
+//~				StopMusicOGG(oldAmbience)
+//~			endif
+//~		endif
 		
 		if GetRawKeyState(81) then heroLocalDistance# = heroLocalDistance# - 20*fpsr#
 		
@@ -614,6 +619,10 @@ do
 		DoMenu()
 	endif
     
+    if screen = RADIO
+		DoRadio()
+	endif
+    
     UpdateAllTweens(GetFrameTime())
     
     if debug = 1
@@ -630,7 +639,6 @@ do
 	Print("fpsr: " + Str(fpsr#))
 	Print("Cur FPS: " + Str(ScreenFPS()))
 	Print(GetRawLastKey())
-	Print(curAreaSeen)
 	//Print(ScreenFPS()*fpsr#)
 	//Print("Game Timer: " + str(gameTime#))
     Sync()
@@ -747,6 +755,12 @@ function SetupScene(scene)
 			CreateTextExpress(vehicle1+i, Mid(words[i+1, upgrades[i+1,scene]+1, scene], 2, -1), 48, fontGI, 0, 63+i*3, 35 + i*65, -11, 2)
 			FixSpriteToScreen(vehicle1+i, 1)
 			FixTextToScreen(vehicle1+i, 1)
+			
+			if firstDuck2Race = 0 and curRaceSet = 2
+				SetSpriteVisible(vehicle1+i, 0)
+				SetTextVisible(vehicle1+i, 0)
+			endif
+			
 		next i
 		
 		SetInstructionText(scene)
@@ -798,21 +812,23 @@ function SetupScene(scene)
 		if curRaceSet <= 2
 			PlayMusicOgg(curRaceMusic, 0)
 			PlayMusicOgg(curAmbience, 1)
+			if GetMusicExistsOGG(oldRaceMusic) then SeekMusicOgg(curRaceMusic, GetMusicPositionOGG(oldRaceMusic), 0)
 			
-			if curAreaSeen <> 1	//Using the same (opposite) if statement that triggers the start race cutscene
-				SeekMusicOgg(curRaceMusic, GetMusicPositionOGG(oldRaceMusic), 0)
+//~			if curAreaSeen <> 1	//Using the same (opposite) if statement that triggers the start race cutscene
+//~				
 //~				SetPrintColor(100, 100, 100, 255)
 //~				Print((oldRaceMusic))
 //~				Print(GetMusicPositionOGG(oldRaceMusic))
 //~				Print(GetMusicPositionOGG(curRaceMusic))
 //~				Sync()
 //~				Sleep(2000)
-				SetMusicVolumeOGG(curRaceMusic, 0)
-				SetMusicVolumeOGG(curAmbience, 0)
-				
-				PlayTweenCustom(musicFadeTween, 0)
-			endif
-			//StopMusicOGG(oldRaceMusic)
+//~				SetMusicVolumeOGG(curRaceMusic, 0)
+//~				SetMusicVolumeOGG(curAmbience, 0)
+//~				
+//~				PlayTweenCustom(musicFadeTween, 0)
+//~			endif
+			StopMusicOGG(oldRaceMusic)
+			StopMusicOGG(oldAmbience)
 			
 			if webVersion = 1 then SetMusicVolumeOGG(curAmbience, 0)
 			
@@ -1166,6 +1182,8 @@ function DeleteScene(scene)
 				if GetSpriteExists(i) then DeleteSprite(i)
 			next i
 			DeleteSprite(water2Trees)
+			DeleteSprite(water2Trees2)
+			DeleteSprite(water2Trees3)
 			DeleteSprite(featherBoostFrameS)
 			DeleteSprite(featherBoostS)
 			DeleteSprite(featherBoostTop)
@@ -1369,7 +1387,7 @@ function PlayRaceCutScene(scene)
 	
 	//StopRaceMusic()
 	if curRaceSet <> 2 or firstDuck2Race = 1
-		ResumeMusicOGG(curRaceMusic)
+		PlayMusicOGG(curRaceMusic)
 		SetMusicVolumeOGG(curRaceMusic, 100)
 	endif
 //~	if curRaceSet = 1

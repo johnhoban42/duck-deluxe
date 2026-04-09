@@ -111,6 +111,11 @@ function InitWater2()
 	
 	
 	LoadSpriteExpress(water2Trees, "w2BG/mangroves2.png", w*2, w/1000*370, 0, GetSpriteY(water2S)-(w/1000*370)+40, 85)
+	SetSpriteColor(water2Trees, 110, 120, 180, 255)
+	LoadSpriteExpress(water2Trees2, "w2BG/mangroves3.png", w*2*0.7, w/1000*370*0.7, 0, GetSpriteY(water2S)-(w/1000*370)+140, 285)
+	SetSpriteColor(water2Trees2, 80, 90, 150, 255)
+	LoadSpriteExpress(water2Trees3, "w2BG/mangroves3.png", w*2*0.5, w/1000*370*0.5, 0, GetSpriteY(water2S)-(w/1000*370)+240, 385)
+	SetSpriteColor(water2Trees3, 40, 50, 110, 255)
 	
 	//CreateSprite(water2TileS, 0)
 	SetSpriteVisible(water2TileS, 1)
@@ -209,9 +214,9 @@ function InitWater2()
 	areaSeen = Max(areaSeen, 1)
 	
 	//SetSpriteVisible(bg3, 0)
-	CreateSpriteExpress(water2BG, w, h, 0, 0, 2000)
-	SetSpriteColor(water2BG, 10, 20, 80, 255)
-	SetSpriteColor(water2Trees, 110, 120, 180, 255)
+	LoadSpriteExpress(water2BG, "w2BG/swampBG.png", w, h, 0, 0, 2000)
+	//SetSpriteColor(water2BG, 10, 20, 80, 255)
+	
 	
 	fish1I = LoadImage("robofish1.png")
 	fish2I = LoadImage("robofish2.png")
@@ -471,6 +476,8 @@ function DoWater2()
 		SetSpriteFrame(i, 1+Mod(GetSpriteCurrentFrame(water2TileS)-1 + Mod(i-1,2)*30, 60))
 	next i
 	SetSpriteX(water2Trees, (-w) + Mod(heroLocalDistance#*0.8, w))
+	SetSpriteX(water2Trees2, (-w*0.7*2/3) + Mod(heroLocalDistance#*0.6, w*0.7*2/3))
+	SetSpriteX(water2Trees3, (-w*0.5*2/3) + Mod(heroLocalDistance#*0.3, w*0.5*2/3))
 	
 	//if boatSpeed# > 0
 	//	dec heroLocalDistance#, boatSpeed#*fpsr#
@@ -514,6 +521,15 @@ function DoWater2()
 			focalPoint# = GlideNumToZero(focalPoint#, 40)
 			usePoint# = focalPoint# + landDistance-heroLocalDistance#
 			SetMusicVolumeOGG(waterM, 100 - 45 - Min(100*(76000.0 - (duckDistance#))/20000, 50))
+			
+			//Making the DUCK corner text visible after the fakeout
+			if GetTextVisible(vehicle1) = 0
+				for i = 0 to 3
+					SetSpriteVisible(vehicle1+i, 1)
+					SetTextVisible(vehicle1+i, 1)
+				next i
+			endif
+			
 		endif
 		
 			//Print(raceSize)

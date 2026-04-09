@@ -114,6 +114,11 @@ function DoMenu()
 			curRaceSet = 2
 			leaveMenu = 1
 			webVersion = 0
+		elseif menuLineSelected = 5 //Duck Radio
+			nextScreen = RADIO
+			screen = 0
+			leaveMenu = 1
+			curRaceSet = 0
 		elseif menuLineSelected = 6	//RAaD Original
 			curRaceSet = 1
 			leaveMenu = 1
