@@ -1277,9 +1277,9 @@ function SetPowers()
 	powers[1, 4, 5] = "5 Available Lanes"
 
 	powers[2, 1, 5] = "x1 Base Speed"
-	powers[2, 2, 5] = "x1.2 Base Speed"
-	powers[2, 3, 5] = "x1.4 Base Speed"
-	powers[2, 4, 5] = "x1.6 Base Speed"
+	powers[2, 2, 5] = "x1.66 Base Speed"
+	powers[2, 3, 5] = "x2.33 Base Speed"
+	powers[2, 4, 5] = "x3 Base Speed"
 
 	powers[3, 1, 5] = "x1 Boost Time"
 	powers[3, 2, 5] = "x1.5 Boost Time"

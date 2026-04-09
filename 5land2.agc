@@ -42,8 +42,7 @@ global land2scrollScalar# = 0.1  // background scroll speed, relative to hero sp
 function InitUpgradeValues()
     // assign values to upgradeable attributes based on purchased levels 
     land2nLanes = 2 + upgrades[attrnLanes, LAND2]
-    // land2heroSpeedMax# = 6 + 1.2 * upgrades[attrBaseSpeed, LAND2]
-    land2heroSpeedMax# = 9.6
+    land2heroSpeedMax# = 6 + 4 * upgrades[attrBaseSpeed, LAND2]
     land2heroBoostFramesMax = 60 + 30 * upgrades[attrBoostFrames, LAND2]
     land2boostGroupLength = 5 + upgrades[attrBoostGroupLength, LAND2] + 2 * (upgrades[attrBoostGroupLength, LAND2] / 2)
 
@@ -159,10 +158,10 @@ function InitScrap()
     // more lanes unlocked = more scrap spawns
     sprScrapID = land2sprScrap
     scrapRank = GetScrapRank()
-    for i = 0 to 6 * land2nLanes
+    for i = 0 to 10 * land2nLanes
         sprScrapID = land2sprScrap + i
         scrapX = Random2(1, land2nLanes)
-        scrapY = Random2(500, land2Distance)
+        scrapY = 1000 + i * land2Distance / (10 * land2nLanes) + Random2(-100, 100)
         // set scrap properties
         sprScrap as spawn
         sprScrap.spr = sprScrapID
@@ -178,7 +177,7 @@ function InitScrap()
         SetSpriteSize(sprScrap.spr, sprScrap.size, sprScrap.size)
         SetSpritePosition(sprScrap.spr, sprScrap.x, sprScrap.y)
         SetSpriteDepth(sprScrap.spr, 10)
-        PlaySprite(sprScrap.spr, 10)
+        PlaySprite(sprScrap.spr, 5)
         spawnActive.insert(sprScrap)
     next i
 endfunction
