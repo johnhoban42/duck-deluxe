@@ -41,12 +41,9 @@ global land2scrollScalar# = 0.1  // background scroll speed, relative to hero sp
 
 function InitUpgradeValues()
     // assign values to upgradeable attributes based on purchased levels 
-    for i = 0 to 4
-        upgrades[i, LAND2] = 0
-    next i
-
     land2nLanes = 2 + upgrades[attrnLanes, LAND2]
-    land2heroSpeedMax# = 6 + 3 * upgrades[attrBaseSpeed, LAND2]
+    // land2heroSpeedMax# = 6 + 1.2 * upgrades[attrBaseSpeed, LAND2]
+    land2heroSpeedMax# = 9.6
     land2heroBoostFramesMax = 60 + 30 * upgrades[attrBoostFrames, LAND2]
     land2boostGroupLength = 5 + upgrades[attrBoostGroupLength, LAND2] + 2 * (upgrades[attrBoostGroupLength, LAND2] / 2)
 
@@ -156,6 +153,36 @@ function InitBoostPanels()
     next i
 endfunction
 
+function InitScrap()
+    // init scrap spawnables
+    // scrap is distributed uniformly across all lanes
+    // more lanes unlocked = more scrap spawns
+    sprScrapID = land2sprScrap
+    scrapRank = GetScrapRank()
+    for i = 0 to 6 * land2nLanes
+        sprScrapID = land2sprScrap + i
+        scrapX = Random2(1, land2nLanes)
+        scrapY = Random2(500, land2Distance)
+        // set scrap properties
+        sprScrap as spawn
+        sprScrap.spr = sprScrapID
+        sprScrap.cat = SCRAP
+        sprScrap.x = scrapX
+        sprScrap.y = scrapY
+        sprScrap.size = 60
+        // randomize scrap sprite
+        scrapType = Random2(1, 8)
+        scrapImgPath$ = "scrap/scrap" + str(scrapType) + "_" + str(scrapRank) + "_"
+        // final load
+        LoadAnimatedSprite(sprScrap.spr, scrapImgPath$, 4)
+        SetSpriteSize(sprScrap.spr, sprScrap.size, sprScrap.size)
+        SetSpritePosition(sprScrap.spr, sprScrap.x, sprScrap.y)
+        SetSpriteDepth(sprScrap.spr, 10)
+        PlaySprite(sprScrap.spr, 10)
+        spawnActive.insert(sprScrap)
+    next i
+endfunction
+
 function InitLand2()
 
     // apply upgrade values
@@ -176,6 +203,7 @@ function InitLand2()
 
     // load boost meter
     // for now, just a basic rectangle that stretches with additional boosts
+    land2heroBoostCharges# = 0  // reset boost count
     CreateSpriteExpress(land2sprBoostMeter, 0, 30, 100, 600, 10)
     SetSpriteColor(land2sprBoostMeter, 255, 0, 0, 255)
 
@@ -187,10 +215,11 @@ function InitLand2()
     PlaySprite(hero, 15)
     heroLocalDistance# = land2Distance
 
-    // create "spawnables" (boosts/obstacles)
+    // create "spawnables" (boosts/obstacles/scrap)
     spawnActive.length = -1
     InitBoostPanels()
     InitObstacles()
+    InitScrap()
 
 endfunction
 
@@ -223,6 +252,13 @@ function DoSpawnables()
             if spawnActive[i].y < -100
                 inc spawnActive[i].y, 3600
                 spawnActive[i].x = SetObstacleLane(spawnActive[i])
+            endif
+            SetSpritePosition(spawnActive[i].spr, LaneToXWithOffset(spawnActive[i].x, spawnActive[i].y), spawnActive[i].y)
+        elseif spawnActive[i].cat = SCRAP
+            // check for collecting scrap
+            if GetSpriteCollision(spawnActive[i].spr, hero) and spawnActive[i].x = land2currentLane
+                CollectScrap(LAND2)
+                idx_to_delete = i
             endif
             SetSpritePosition(spawnActive[i].spr, LaneToXWithOffset(spawnActive[i].x, spawnActive[i].y), spawnActive[i].y)
         endif
