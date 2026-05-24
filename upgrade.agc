@@ -198,11 +198,20 @@ function CreateUpgrade2()
 		
 		if areaSeen = 1
 			LoadMusicOGG(upgrade2M, "music/upgrade2-1.ogg")
-			SetMusicLoopTimesOGG(upgrade2M, 3.692, -1)
+			SetMusicLoopTimesOGG(upgrade2M, 6.667, -1)
 		endif
-		if areaSeen = 2 then LoadMusicOGG(upgrade2M, "music/upgrade2-2.ogg")
-		if areaSeen = 3 then LoadMusicOGG(upgrade2M, "music/upgrade2-3.ogg")
-		if areaSeen >= 4 then LoadMusicOGG(upgrade2M, "music/upgrade2-4.ogg")
+		if areaSeen = 2
+			LoadMusicOGG(upgrade2M, "music/upgrade2-2.ogg")
+			SetMusicLoopTimesOGG(upgrade2M, 6.0, -1)
+		endif
+		if areaSeen = 3
+			LoadMusicOGG(upgrade2M, "music/upgrade2-3.ogg")
+			SetMusicLoopTimesOGG(upgrade2M, 7.385, -1)
+		endif
+		if areaSeen >= 4
+			LoadMusicOGG(upgrade2M, "music/upgrade2-4.ogg")
+			SetMusicLoopTimesOGG(upgrade2M, 7.5, -1)
+		endif
 		
 		PlayMusicOGG(ambUpgrade2, 1)
 		SetMusicVolumeOGG(ambUpgrade2, ambVol*.2)

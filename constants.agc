@@ -20,6 +20,8 @@ global AREA_CHARS as string[7] = ["W", "L", "S", "W", "L", "S", "Z"]
 #constant MENU 11
 #constant RADIO 12
 
+global pauseLine as String[0]
+
 global heroImg1
 global heroImg2
 global heroImg3
@@ -177,7 +179,8 @@ global tileI1
 global tileI2
 
 global eggBird
-global eggBadI
+global eggBirdHead
+global eggBadI as integer[3]
 global eggGoodI
 global miniBird1I
 global miniBird2I

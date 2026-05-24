@@ -1034,6 +1034,29 @@ function MatchSpriteColor(spr, sprOrigin)
 	SetSpriteColor(spr, GetSpriteColorRed(sprOrigin), GetSpriteColorGreen(sprOrigin), GetSpriteColorBlue(sprOrigin), GetSpriteColorAlpha(sprOrigin))
 endfunction
 
+function TintImage(img, r, g, b)
+	mem = CreateMemblockFromImage(img)
+	
+
+	size = GetMemblockSize(mem)
+	for i = 12 to size step 4
+		if GetMemblockByte(mem, i) = 0 and GetMemblockByte(mem, i+1) = 0 and GetMemblockByte(mem, i+2) = 0 then continue
+		mr = GetMemblockByte(mem, i)
+		mr = mr + (r*(1.0-(mr/255.0)))
+		SetMemblockByte(mem, i, mr)
+		
+		mg = GetMemblockByte(mem, i+1)
+		mg = mg + (g*(1.0-(mg/255.0)))
+		SetMemblockByte(mem, i+1, mg)
+		
+		mb = GetMemblockByte(mem, i+2)
+		mb = mb + (b*(1.0-(mb/255.0)))
+		SetMemblockByte(mem, i+2, mb)
+	next i
+	
+	imgNew = CreateImageFromMemblock(mem)
+endfunction imgNew
+
 function SetWords()
 	//Water 1
 	words[1, 1, 1] = "Mopey"
@@ -1307,10 +1330,10 @@ powers[4, 4, 5] = "x2 Boost Spawn Rate"
 	powers[3, 3, 6] = "x4.4 Wind Speed"
 	powers[3, 4, 6] = "x8.9 Wind Speed"
 	
-	powers[4, 1, 6] = "x1 Duck Speed"
-	powers[4, 2, 6] = "x1.75 Duck Speed"
-	powers[4, 3, 6] = "x3.15 Duck Speed"
-	powers[4, 4, 6] = "x4.5 Duck Speed"
+	powers[4, 1, 6] = "x1 Duck Mobility"
+	powers[4, 2, 6] = "x1.75 Duck Mobility"
+	powers[4, 3, 6] = "x3.15 Duck Mobility"
+	powers[4, 4, 6] = "x4.5 Duck Mobility"
 	
 	//Space 2
 	powers[1, 1, 7] = "x1 Base Speed"

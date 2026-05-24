@@ -123,6 +123,8 @@ LoadSoundOGG(oopsS, "sounds/oops.ogg")
 LoadSoundOGG(clickUpS, "sounds/clickUp.ogg")
 #constant clickDownS 35
 LoadSoundOGG(clickDownS, "sounds/clickDown.ogg")
+#constant birdCoughS 36
+LoadSoundOGG(birdCoughS, "sounds/birdCough.ogg")
 
 global spaceCSE as integer[13]
 global spaceGSE as integer[13]
@@ -320,10 +322,10 @@ function SetRaceQueue(raceSet)
 		raceQueue.insert(WATER)
 		raceQueue.insert(LAND)
 	elseif raceSet = 2 //Race Against a Duck 2 order
-		raceQueue.insert(SPACE2)
-		raceQueue.insert(WATER2)
-		raceQueue.insert(LAND2)
 		raceQueue.insert(AIR2)
+		raceQueue.insert(SPACE2)
+		raceQueue.insert(LAND2)
+		raceQueue.insert(WATER2)
 	endif
 	raceQueueRef = raceQueue
 	
@@ -399,6 +401,16 @@ do
 		if GetSpriteExists(pauseScreen) = 0
 			LoadSpriteExpress(pauseScreen, "pauseScreen.png", w, h, 0, 0, 1)
 			FixSpriteToScreen(pauseScreen, 1)
+			
+			//Creating Pause Screen
+			for i = 1 to 4
+			//pauseLine[i] = CreateText("")
+			next i 
+			//For leaving the stage, make a popup which can be reused
+			//It comes from the bottom of the screen, and I can put custom text there
+			//When leaving a race, you should only be able to leave once the popup is up (and the warning has been given)
+			//Can use the same popup for warning the player before leaving upgrade screen while still having scrap
+			
 		endif
 	endif
 
@@ -1205,6 +1217,7 @@ function DeleteScene(scene)
 			DeleteSprite(air2BG)
 			DeleteSprite(air2BBG)
 			DeleteSprite(eggBird)
+			DeleteSprite(eggBirdHead)
 			DeleteSprite(airFinishLine)
 			DeleteSprite(air2WindBG)
 			
@@ -1460,7 +1473,8 @@ function FreezeGameplay()
 		for i = 1 to bulletActive.length
 			StopSprite(bulletActive[i].spr)
 		next i
-		
+		StopSprite(eggBird)
+		StopSprite(eggBirdHead)
 	endif
 	
 endfunction
