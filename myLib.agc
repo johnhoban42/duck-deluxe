@@ -16,6 +16,7 @@ global stateSpace = 0
 
 global releaseLeft = 0
 global releaseRight = 0
+global holdTimer# = 0
 
 function DoInputs()
 	inputSelect = 0
@@ -70,6 +71,7 @@ endfunction
 //Volume for music and sound effects
 global volumeM = 100
 global volumeS = 100
+global volumeG = 80
 #constant ambVol 20
 
 //Core functions that are used in the app, and possible future apps
@@ -988,7 +990,55 @@ function SetTweenPulse(twn, spr, impact#)
 endfunction
 
 
+global popupSpr = 0
+global popupTxt = 0
 
+function ShowPopup(str$, playSE)
+	if GetSpriteExists(popupSpr) = 0
+		popupSpr = CreateSprite(0)
+		
+		AddSpriteAnimationFrame(popupSpr, warningI)
+		AddSpriteAnimationFrame(popupSpr, blankI)
+		AddSpriteAnimationFrame(popupSpr, warningI)
+		AddSpriteAnimationFrame(popupSpr, blankI)
+		AddSpriteAnimationFrame(popupSpr, warningI)
+		AddSpriteAnimationFrame(popupSpr, blankI)
+		AddSpriteAnimationFrame(popupSpr, warningI)
+		
+		SetSpriteExpress(popupSpr, 600, 150, 0, h - 170, 1)
+		SetSpriteMiddleScreenX(popupSpr)
+		
+		
+		popupTxt = CreateText("")
+		
+		SetTextExpress(popupTxt, str$, 40, fontMI, 0, GetSpriteX(popupSpr) + 60, GetSpriteY(popupSpr) + 30, -10, 1)
+		SetTextColor(popupTxt, 0, 0, 0, 255)
+		
+		FixSpriteToScreen(popupSpr, 1)
+		FixTextToScreen(popupTxt, 1)
+		
+	else
+		SetSpriteVisible(popupSpr, 1)
+		SetTextVisible(popupTxt, 1)
+	endif
+	
+	if playSE then PlaySound(haltS, volumeS*0.5)
+	SetTextString(popupTxt, str$)
+	PlaySprite(popupSpr, 10, 0) 
+	
+endfunction
+
+function GetPopupActive()
+	result = 0
+	if GetSpriteExists(popupSpr)
+		result = GetSpriteVisible(popupSpr)
+	endif
+endfunction result
+
+function ClearPopup()
+	SetSpriteVisible(popupSpr, 0)
+	SetTextVisible(popupTxt, 0)
+endfunction
 
 global selectTarget = 0
 global selectActive = 0
@@ -1039,7 +1089,7 @@ function TintImage(img, r, g, b)
 	
 
 	size = GetMemblockSize(mem)
-	for i = 12 to size step 4
+	for i = 12 to size-1 step 4
 		if GetMemblockByte(mem, i) = 0 and GetMemblockByte(mem, i+1) = 0 and GetMemblockByte(mem, i+2) = 0 then continue
 		mr = GetMemblockByte(mem, i)
 		mr = mr + (r*(1.0-(mr/255.0)))

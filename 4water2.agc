@@ -325,7 +325,7 @@ function InitWater2()
 	inc spawnS, 1
 	
 	//The feather boost meter
-	featherBoostFrameS = LoadSprite("featherBar.png")
+	featherBoostFrameS = LoadSprite("w2BG/nest.png")
 	SetSpriteExpress(featherBoostFrameS, 70, 70, 70, 590, 5) 
 	FixSpriteToScreen(featherBoostFrameS, 1)
 	
@@ -337,6 +337,11 @@ function InitWater2()
 	featherBoostTop = CreateSprite(featherImg1)
 	SetSpriteExpress(featherBoostTop, 50, 50, GetSpriteMiddleX(featherBoostFrameS)-50/2, GetSpriteY(featherBoostFrameS)-10, 4) 
 	FixSpriteToScreen(featherBoostTop, 1)
+			
+	if firstDuck2Race = 0 and curRaceSet = 2
+		SetSpriteVisible(featherBoostTop, 0)
+		SetSpriteVisible(featherBoostFrameS, 0)
+	endif
 	
 	//SetSpriteColor(BG, 255, 255, 0, 255)
 	
@@ -509,18 +514,18 @@ function DoWater2()
 	if firstDuck2Race = 0
 		if duckDistance# < 79990 and GetMusicPlayingOGG(waterM) = 0
 			PlayMusicOGG(waterM, 1)
-			SetMusicVolumeOGG(waterM, 100)
-			SetMusicSystemVolumeOGG(100)
+			SetMusicVolumeOGG(waterM, 100*volumeG/100.0)
+			//SetMusicSystemVolumeOGG(100)
 		endif
 		
 		if duckDistance# > 76000
 			focalPoint# = (raceSize)*20000 - duckDistance#
 			usePoint# = focalPoint#
-			SetMusicVolumeOGG(waterM, 100)
+			SetMusicVolumeOGG(waterM, 100*volumeG/100.0)
 		else
 			focalPoint# = GlideNumToZero(focalPoint#, 40)
 			usePoint# = focalPoint# + landDistance-heroLocalDistance#
-			SetMusicVolumeOGG(waterM, 100 - 45 - Min(100*(76000.0 - (duckDistance#))/20000, 50))
+			SetMusicVolumeOGG(waterM, 100 - 45 - Min(100*(76000.0 - (duckDistance#))/20000, 50)*volumeG/100.0)
 			
 			//Making the DUCK corner text visible after the fakeout
 			if GetTextVisible(vehicle1) = 0
@@ -528,6 +533,8 @@ function DoWater2()
 					SetSpriteVisible(vehicle1+i, 1)
 					SetTextVisible(vehicle1+i, 1)
 				next i
+				SetSpriteVisible(featherBoostTop, 1)
+				SetSpriteVisible(featherBoostFrameS, 1)
 			endif
 			
 		endif
@@ -548,6 +555,9 @@ function DoWater2()
 		SetSpritePosition(duck, -1*(duckDistance# - 20000*(raceSize)) - (focalPoint#)+80 + 60*diveLevel, 70+4*cos(gameTime#*2))
 		SetSpriteX(hero, heroX#-focalPoint#)
 		SetSpriteX(water2Trees, (-w) + Mod(heroLocalDistance#-focalPoint#, w))
+		
+		SetSpriteX(water2Trees2, (-w*0.7*2/3) + Mod((heroLocalDistance#-focalPoint#)*0.6, w*0.7*2/3))
+		SetSpriteX(water2Trees3, (-w*0.5*2/3) + Mod((heroLocalDistance#-focalPoint#)*0.3, w*0.5*2/3))
 	endif
 	
 	

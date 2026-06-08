@@ -25,7 +25,7 @@ SetWindowSize( 1280, 720, 0 )
 SetWindowAllowResize( 1 ) // allow the user to resize the window
 
 global debug = 0
-global release = 0	//This makes the game go to the title screen, instead of loading right into a race
+global release = 1	//This makes the game go to the title screen, instead of loading right into a race
 global isDuckDeluxe = 1	//This version makes the game the full release, instead of the standalone version of RAaD 2
 global webVersion = 0	//This variable sets the duck 1 game back to it's original version, instead of the ReDucks version
 if debug = 0 then SetErrorMode(1)
@@ -200,6 +200,9 @@ SetTweenSpriteAlpha(tweenSprFadeIn, 0, 255, TweenEaseIn1())
 CreateTweenSprite(tweenSprFadeOut, tweenFadeLen#)
 SetTweenSpriteAlpha(tweenSprFadeOut, 255, 0, TweenEaseIn1())
 
+blankI = LoadImage("blank.png")
+warningI = LoadImage("warning.png")
+
 type spawn
 	
 	spr as integer
@@ -322,10 +325,10 @@ function SetRaceQueue(raceSet)
 		raceQueue.insert(WATER)
 		raceQueue.insert(LAND)
 	elseif raceSet = 2 //Race Against a Duck 2 order
-		raceQueue.insert(AIR2)
+		raceQueue.insert(WATER2)
 		raceQueue.insert(SPACE2)
 		raceQueue.insert(LAND2)
-		raceQueue.insert(WATER2)
+		raceQueue.insert(AIR2)
 	endif
 	raceQueueRef = raceQueue
 	
@@ -382,36 +385,47 @@ do
 		endif
 	endif
 
-	//Pausing/Unpausing game
-	if ((paused = 0 and (GetRawKeyPressed(27) or Button(pauseButtonCol))) or (paused = 1 and (GetPointerPressed() or inputSelect or GetRawKeyPressed(27)))) and screen < UPGRADE 
-		paused = Mod(paused+1, 2)
-		if GetSpriteCurrentFrame(cutsceneSpr) < 4 and paused = 1 then paused = 0 //Can't pause during the intro cutscene!
-		if paused = 0
-			DeleteSprite(pauseScreen)
-			//Get rid of the pause screen artifacts
-			ResumeMusicOGG(curRaceMusic)
-			ResumeMusicOGG(oldRaceMusic)
-		else
+	//Pausing game
+	if (paused = 0 and GetSpriteVisible(pauseButton) and (GetRawKeyPressed(27) or Button(pauseButtonCol))) // or (paused = 1 and (GetPointerPressed() or inputSelect or GetRawKeyPressed(27)))) and screen < UPGRADE 
+		paused = 1
+		//paused = Mod(paused+1, 2)
+		//SaveGame()
+		pauseLineSelected = 1
+		if GetSpriteExists(cutsceneSpr)
+			if GetSpriteCurrentFrame(cutsceneSpr) < 4 then paused = 0 //Can't pause during the intro cutscene!
+		endif
+		if paused = 1
 			PauseMusicOGG(curRaceMusic)
 			PauseMusicOGG(oldRaceMusic)
+			
+			if GetSpriteExists(pauseScreen) = 0
+				LoadSpriteExpress(pauseScreen, "pauseScreen.png", w, h, 0, 0, 1)
+				SetSpriteColorAlpha(pauseScreen, 150)
+				if screen < UPGRADE then SetSpriteColorAlpha(pauseScreen, 255)
+				FixSpriteToScreen(pauseScreen, 1)
+				
+				iEnd = 4
+				if screen < UPGRADE then iEnd = 5
+				pauseLine.length = iEnd
+				
+				//Creating Pause Screen
+				for i = 1 to iEnd
+					pauseLine[i] = CreateText("")
+					SetTextExpress(pauseLine[i], pauseOptions[i], 60, fontGI, 0, 140 + i*15, 110+70*i, -11, 1)
+					FixTextToScreen(pauseLine[i], 1)
+				next i 
+				SetTextString(pauseLine[2], pauseOptions[2] + ": " + str(volumeG))
+				SetTextString(pauseLine[3], pauseOptions[3] + ": " + str(volumeM))
+				SetTextString(pauseLine[4], pauseOptions[4] + ": " + str(volumeS))
+				if screen >= UPGRADE then SetTextString(pauseLine[1], "Save Settings")
+				
+			endif
 		endif
 	endif
 
 	if paused
-		if GetSpriteExists(pauseScreen) = 0
-			LoadSpriteExpress(pauseScreen, "pauseScreen.png", w, h, 0, 0, 1)
-			FixSpriteToScreen(pauseScreen, 1)
-			
-			//Creating Pause Screen
-			for i = 1 to 4
-			//pauseLine[i] = CreateText("")
-			next i 
-			//For leaving the stage, make a popup which can be reused
-			//It comes from the bottom of the screen, and I can put custom text there
-			//When leaving a race, you should only be able to leave once the popup is up (and the warning has been given)
-			//Can use the same popup for warning the player before leaving upgrade screen while still having scrap
-			
-		endif
+		
+		DoPauseMenu()
 	endif
 
 	if screen < UPGRADE and paused = 0
@@ -474,7 +488,6 @@ do
 				//Last race just ended, finishing this 'session'
 				//This was currently copied from the 'AIR' finishing code, should be updated
 				StopRaceMusic()
-				SaveGame()
 				
 				HideUIText()
 				finStr$ = "finishHero.png"
@@ -486,10 +499,12 @@ do
 				PlayTweenSprite(tweenSprFadeOut, coverS, 0)
 				PlaySound(clapS, volumeS)
 				
-				for i = 1 to 120
-					UpdateAllTweens(GetFrameTime())
-					Sync()
-				next i
+				WaitFadeTween()
+				WaitFadeTween()
+				//for i = 1 to 120/fpsr#
+				//	UpdateAllTweens(GetFrameTime())
+				//	Sync()
+				//next i
 				
 				PlayTweenSprite(tweenSprFadeIn, coverS, 0)
 				PlaySound(windMS, volumeS)
@@ -522,7 +537,7 @@ do
 			
 			StopRaceMusic()
 			StopAmbientMusic()
-			SaveGame()
+			//SaveGame()
 			FreezeGameplay()
 			firstDuck2Race = 1
 			
@@ -551,7 +566,7 @@ do
 		
 	endif
 	
-	if screen = UPGRADE
+	if screen = UPGRADE and paused = 0
 		if webVersion = 1
 			DoUpgrade()
 		else
@@ -559,7 +574,7 @@ do
 		endif
 	endif
 	
-	if screen = TITLE
+	if screen = TITLE and paused = 0
 		if curRaceSet = 1 then DoTitle1()
 		if curRaceSet = 2 then DoTitle2()
 		
@@ -635,6 +650,9 @@ do
 		DoRadio()
 	endif
     
+    if GetPopupActive()
+    		SetTextVisible(popupTxt, Mod(GetSpriteCurrentFrame(popupSpr), 2))
+    endif
     UpdateAllTweens(GetFrameTime())
     
     if debug = 1
@@ -648,7 +666,7 @@ do
 		//Print(duckSpeed#)
 		
 	endif
-	Print("fpsr: " + Str(fpsr#))
+	//Print("fpsr: " + Str(fpsr#))
 	Print("Cur FPS: " + Str(ScreenFPS()))
 	Print(GetRawLastKey())
 	//Print(ScreenFPS()*fpsr#)
@@ -774,13 +792,17 @@ function SetupScene(scene)
 			endif
 			
 		next i
-		
+
 		SetInstructionText(scene)
 		
 		LoadSpriteExpress(pauseButton, "pauseButton.png", 75, 75, w - 100, 100, 5)
 		FixSpriteToScreen(pauseButton, 1)
 		CreateSpriteExpress(pauseButtonCol, GetSpriteWidth(pauseButton), GetSpriteHeight(pauseButton), GetSpriteX(pauseButton), GetSpriteY(pauseButton), 5)
 		SetSpriteVisible(pauseButtonCol, 0)
+		
+		if firstDuck2Race = 0
+			SetSpriteVisible(pauseButton, 0)
+		endif
 		
 		//Duck will be the first spawnable object
 		
@@ -936,8 +958,13 @@ function SetupScene(scene)
 			CreateUpgrade()
 		else
 			CreateUpgrade2()
+			LoadSpriteExpress(pauseButton, "settingsButton.png", 75, 75, w - 100, 100, 5)
+			FixSpriteToScreen(pauseButton, 1)
+			CreateSpriteExpress(pauseButtonCol, GetSpriteWidth(pauseButton), GetSpriteHeight(pauseButton), GetSpriteX(pauseButton), GetSpriteY(pauseButton), 5)
+			SetSpriteVisible(pauseButtonCol, 0)
+			FixSpriteToScreen(pauseButtonCol, 1)
 		endif
-		
+		SaveGame()
 		
 	
 	elseif scene = TITLE
@@ -949,6 +976,11 @@ function SetupScene(scene)
 			CreateTitle2()
 		endif
 		
+		LoadSpriteExpress(pauseButton, "settingsButton.png", 75, 75, w - 100, 25, 5)
+		FixSpriteToScreen(pauseButton, 1)
+		CreateSpriteExpress(pauseButtonCol, GetSpriteWidth(pauseButton), GetSpriteHeight(pauseButton), GetSpriteX(pauseButton), GetSpriteY(pauseButton), 5)
+		SetSpriteVisible(pauseButtonCol, 0)
+		FixSpriteToScreen(pauseButtonCol, 1)
 		
 	
 	elseif scene = FINISH
@@ -1270,6 +1302,9 @@ function DeleteScene(scene)
 		next j
 		DeleteSprite(startRace)
 	
+		DeleteSprite(pauseButton)
+		DeleteSprite(pauseButtonCol)
+		
 	elseif scene = TITLE
 		
 		//SetSpriteVisible(cutsceneSpr, 0)
@@ -1279,6 +1314,9 @@ function DeleteScene(scene)
 		DeleteSprite(startRace)
 		if GetSpriteExists(contRace) then DeleteSprite(contRace)
 		if GetTextExists(contRace) then GetTextExists(contRace)
+	
+		DeleteSprite(pauseButton)
+		DeleteSprite(pauseButtonCol)
 	
 	elseif scene = FINISH
 		
@@ -1307,15 +1345,6 @@ function DeleteScene(scene)
 		SetSpriteVisible(heroIcon, 0)
 		SetSpriteVisible(duckIcon, 0)
 		
-		//DeleteSprite(progBack)
-		//DeleteSprite(progFront)
-		//DeleteSprite(heroIcon)
-		//DeleteSprite(duckIcon)
-		
-		//DeleteAnimatedSprite(flag1)
-		//DeleteAnimatedSprite(flag2)
-		//DeleteAnimatedSprite(flag3)
-		
 	endif
 	
 	if GetTextExists(scrapText) then DeleteText(scrapText)		
@@ -1336,7 +1365,7 @@ function PlayRaceCutScene(scene)
 		duckDistance# = 80000
 		StopMusicOGG(waterM)
 	endif
-	if webVersion = 0 then SetMusicVolumeOGG(curAmbience, 100)
+	if webVersion = 0 then SetMusicVolumeOGG(curAmbience, 100*volumeG/100.0)
 	PauseMusicOGG(curRaceMusic)
 	
 	//Doing the scene twice to get the sprites in place
@@ -1401,7 +1430,7 @@ function PlayRaceCutScene(scene)
 	//StopRaceMusic()
 	if curRaceSet <> 2 or firstDuck2Race = 1
 		PlayMusicOGG(curRaceMusic)
-		SetMusicVolumeOGG(curRaceMusic, 100)
+		SetMusicVolumeOGG(curRaceMusic, 100*volumeG/100.0)
 	endif
 //~	if curRaceSet = 1
 //~		//StopMusicOGG(waterM)
@@ -1475,6 +1504,15 @@ function FreezeGameplay()
 		next i
 		StopSprite(eggBird)
 		StopSprite(eggBirdHead)
+	endif
+	if screen = SPACE2
+		for i = 0 to MashList.length
+			if GetSpriteExists(MashList[i].spr) then StopSprite(MashList[i].spr)
+		next i
+		for i = 0 to MashSecond.length
+			if GetSpriteExists(MashSecond[i].spr) then StopSprite(MashSecond[i].spr)
+		next i
+		if GetSpriteExists(spaceScrapS) then StopSprite(spaceScrapS)
 	endif
 	
 endfunction

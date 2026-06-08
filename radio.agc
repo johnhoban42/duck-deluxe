@@ -232,7 +232,7 @@ function DoRadio()
 		
 	if GetTweenCustomPlaying(soundTweenFI) then stVol = GetTweenCustomInteger1(soundTweenFI)
 	if GetTweenCustomPlaying(soundTweenFO) then stVol = GetTweenCustomInteger1(soundTweenFO)
-	if GetTweenCustomPlaying(soundTweenFI) or GetTweenCustomPlaying(soundTweenFO) then SetMusicVolumeOGG(soundIndex, volumeM*(stVol/100.0))
+	if GetTweenCustomPlaying(soundTweenFI) or GetTweenCustomPlaying(soundTweenFO) then SetMusicVolumeOGG(soundIndex, volumeM*(stVol/100.0)*volumeG/100.0)
 	if stVol = 1
 		if GetMusicPlayingOGGSP(soundIndex) then PauseMusicOGG(soundIndex)
 	endif

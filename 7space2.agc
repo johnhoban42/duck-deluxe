@@ -34,48 +34,27 @@ global oops as integer[5]
 global oopsMax = 0
 global oopsUsed = 0
 
+//global spaceArrowColorSet = 0
+
+
 function CreateMashInputSprite(spr, dir)
 	if GetSpriteExists(spr) = 0 then CreateSprite(spr, 0)
 	SetSpriteExpress(spr, 40, 40, 0, 0, 20)
-	//SetSpriteImage(spr, arrowI)
-//~	AddSpriteAnimationFrame(spr, spaceArrowI1)
-//~	AddSpriteAnimationFrame(spr, spaceArrowI1)
-//~	AddSpriteAnimationFrame(spr, spaceArrowI1)
-//~	AddSpriteAnimationFrame(spr, spaceArrowI2)
-//~	AddSpriteAnimationFrame(spr, spaceArrowI2)
-//~	AddSpriteAnimationFrame(spr, spaceArrowI2)
-//~	AddSpriteAnimationFrame(spr, spaceArrowI3)
-//~	AddSpriteAnimationFrame(spr, spaceArrowI3)
-//~	AddSpriteAnimationFrame(spr, spaceArrowI4)
-	PlaySprite(spr, 20, 1)
+
+	for i = 1 to 4
+		AddSpriteAnimationFrame(spr, spaceArrowColorI[dir, i])
+	next i
 	
-	//SetSpriteColor(spr, 0, 255, 255, 255)	//Teal
-	newI1 = TintImage(spaceArrowI1, 0, 100, 100)
-	newI2 = TintImage(spaceArrowI2, 0, 100, 100)
-	newI3 = TintImage(spaceArrowI3, 0, 100, 100)
-	newI4 = TintImage(spaceArrowI4, 0, 100, 100)
-	
-	AddSpriteAnimationFrame(spr, newI1)
-	AddSpriteAnimationFrame(spr, newI2)
-	AddSpriteAnimationFrame(spr, newI3)
-	AddSpriteAnimationFrame(spr, newI4)
-	trashBag.insert(newI1)
-	trashBag.insert(newI2)
-	trashBag.insert(newI3)
-	trashBag.insert(newI4)
 	PlaySprite(spr, 20, 1)
-	//SetSpriteColor(spr,200, 255, 255, 255)	//Teal
 	
 	if dir = 2
 		SetSpriteAngle(spr, 180)
-		//SetSpriteColor(spr, 255, 184, 255, 255)	//Pink
 	elseif dir = 3
 		SetSpriteAngle(spr, 270)
-		//SetSpriteColor(spr, 255, 0, 0, 255)	//Red
 	elseif dir = 4
 		SetSpriteAngle(spr, 90)
-		//SetSpriteColor(spr, 255, 184, 82, 255)	//Orange
 	endif
+	
 	
 endfunction
 
@@ -296,10 +275,10 @@ function DoSpace2()
 	
 	SetSpriteAngle(hero, -6 + 12*cos(gameTime#))
 	
-	if inputSelect
-		CreateMashSequence()
-		
-	endif
+	//if inputSelect
+	//	CreateMashSequence()
+	//	
+	//endif
 	
 	//Print(mashPos)
 	//Print(onSplit)

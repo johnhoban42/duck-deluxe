@@ -171,6 +171,8 @@ endfunction
 function CreateUpgrade2()
 	SetViewOffset(0, 0)
 	
+	
+	
 	//areaSeen = 4
 	if curRaceSet = 1
 		
@@ -178,7 +180,7 @@ function CreateUpgrade2()
 		
 		LoadMusicOGG(upgrade2M, "music/upgrade.ogg")
 		PlayMusicOGG(ambUpgrade1, 1)
-		SetMusicVolumeOGG(ambUpgrade1, ambVol)
+		SetMusicVolumeOGG(ambUpgrade1, ambVol*volumeG/100.0)
 		
 		CreateSpriteExpress(instruct, 320, 320, w/2+180 + (areaSeen-1)*56, h/2 - 30, 60)
 		img1 = LoadImage("upgradeR1.png")
@@ -196,25 +198,33 @@ function CreateUpgrade2()
 		
 		LoadSpriteExpress(upgradeBG, "upgrade2-" + str(areaSeen) + ".png", w, h, 0, 0, 900)
 		
-		if areaSeen = 1
+		if areaSeen = 1 //Fall
 			LoadMusicOGG(upgrade2M, "music/upgrade2-1.ogg")
 			SetMusicLoopTimesOGG(upgrade2M, 6.667, -1)
+			PlayMusicOGG(ambUpgrade2, 1)
+			SetMusicVolumeOGG(ambUpgrade2, volumeG/100*ambVol*.2)
+			LoadSpriteExpress(upgradeBGTop, "fallfilter.png", w, h, 0, 0, 800)
 		endif
-		if areaSeen = 2
+		if areaSeen = 2	//Winter
 			LoadMusicOGG(upgrade2M, "music/upgrade2-2.ogg")
 			SetMusicLoopTimesOGG(upgrade2M, 6.0, -1)
+			PlayMusicOGG(ambAir1, 1)
+			SetMusicVolumeOGG(ambAir1, volumeG/100*ambVol*.2)
 		endif
-		if areaSeen = 3
+		if areaSeen = 3	//Spring
 			LoadMusicOGG(upgrade2M, "music/upgrade2-3.ogg")
 			SetMusicLoopTimesOGG(upgrade2M, 7.385, -1)
+			PlayMusicOGG(ambUpgrade2, 1)
+			SetMusicVolumeOGG(ambUpgrade2, volumeG/100*ambVol*.2)
 		endif
-		if areaSeen >= 4
+		if areaSeen >= 4	//Summer Night
 			LoadMusicOGG(upgrade2M, "music/upgrade2-4.ogg")
 			SetMusicLoopTimesOGG(upgrade2M, 7.5, -1)
+			PlayMusicOGG(ambLand1, 1)
+			SetMusicVolumeOGG(ambLand1, volumeG/100*ambVol*.2)
 		endif
 		
-		PlayMusicOGG(ambUpgrade2, 1)
-		SetMusicVolumeOGG(ambUpgrade2, ambVol*.2)
+		
 		
 	else
 		//General upgrade music, for duck 3/DX/challenge mode
@@ -223,11 +233,12 @@ function CreateUpgrade2()
 	
 	
 	PlayMusicOGG(upgrade2M, 1)
-	
+	SetMusicVolumeOGG(upgrade2M, volumeM*volumeG/100.0)
 	
 	
 	
 	FixSpriteToScreen(upgradeBG, 1)
+	FixSpriteToScreen(upgradeBGTop, 1)
 	selectedPod = -1
 	
 	SetRaceQueue(curRaceSet)
@@ -300,8 +311,6 @@ function DoUpgrade2()
 		if triggerMove = 0 then selectedPod = startRace
 	endif
 	
-	
-	
 	//This craziness is for moving on and moving off of the start race button
 	if (inputLeft and selectedPod/4 = 0) or (inputRight and selectedPod/4 = areaSeen-1 and selectedPod > -1)
 		if selectedPod <> -1
@@ -332,6 +341,7 @@ function DoUpgrade2()
 		curP = upPods[i]
 		
 		if ((Button(curP.sprUpBG) or Button(curP.sprBG)) and i <> selectedPod) or (triggerMove <> 0 and i = selectedPod+triggerMove)
+			ClearPopup()
 			oldSel = selectedPod
 			selectedPod = i
 			upPods[i].isSelected = 1
@@ -458,14 +468,31 @@ function DoUpgrade2()
 	
 	//Adjusting the start race button, pulses if it's highlighted
 	SetSpriteSize(startRace, 420/2.5, 165/2.5)
+	wantToStart = 0
 	//if GetTweenSpritePlaying(
 	if selectedPod = startRace
 		SetSpritePosition(startRace, GetSpriteX(upPods[areaSeen*4-1].sprBG)+500, 350)
 		SetSpriteSize(startRace, GetSpriteWidth(startRace) + sin(gameTime#)*14, GetSpriteHeight(startRace) + sin(gameTime#)*14)
 		SetSpritePosition(startRace, GetSpriteX(startRace) - sin(gameTime#)*7, GetSpriteY(startRace) - sin(gameTime#)*7)
-		if inputSelect then StartRace2()
+		if inputSelect
+			wantToStart = 1
+		endif
 	endif
-	if Button(startRace) then StartRace2()
+		
+	if Button(startRace) or wantToStart
+		canStillSpend = 0
+		for i = 1 to upPods.length-1
+			if scrapTotal >= GetCost2(upPods[i].row, upPods[i].column, upPods[i].rID) then canStillSpend = 1
+		next i
+			
+		if canStillSpend and GetPopupActive() = 0
+			ShowPopup("You can still upgrade! Leave" + chr(10) + "without spending your scrap?", 1)
+		else
+			StartRace2()
+		endif
+	endif
+	
+	if inputLeft or inputRight then ClearPopup()
 	
 	//Print(Hover(upPods[14].sprUpBG))
 endfunction
@@ -502,6 +529,7 @@ function AlignPod(curP as p)
 endfunction
 function StartRace2()
 	SaveGame()
+	ClearPopup()
 	duckSpeed# = duckSpeedDefault#
 	StopMusicOGG(upgrade2M)
 	PlaySound(selectS, volumeS)
@@ -549,6 +577,7 @@ function DeleteUpgrade2()
 	
 	DeleteSprite(startRace)
 	DeleteSprite(upgradeBG)
+	if GetSpriteExists(upgradeBGTop) then DeleteSprite(upgradeBGTop)
 	DeleteSprite(scrapBG)
 	if GetTextExists(scrapText) then DeleteText(scrapText)		
 	DeleteMusicOGG(upgrade2M)

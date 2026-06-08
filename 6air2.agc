@@ -449,6 +449,13 @@ function DoAir2()
 				destY = GetSpriteMiddleY(eggBird) + 50*bulletActive[i].time + 120*sin(5.0*waveTime#)*bulletActive[i].flip
 			endif
 			
+			if bulletActive[i].isScrap = 0
+				if destX < GetSpriteX(bulletActive[i].spr)
+					SetSpriteFlip(bulletActive[i].spr, 1, 0)
+				else
+					SetSpriteFlip(bulletActive[i].spr, 0, 0)
+				endif 
+			endif
 			
 			GlideToX(bulletActive[i].spr, destX, 10)
 			GlideToY(bulletActive[i].spr, destY, 20)
@@ -562,8 +569,8 @@ function MakeBullets()
 		eggBadI[2] = LoadImage("mesaBG/egg2.png")
 		eggBadI[3] = LoadImage("mesaBG/egg3.png")
 		eggGoodI = LoadImage("mesaBG/eggScrap.png")
-		miniBird1I = LoadImage("mesaBG/minibird1.png")
-		miniBird2I = LoadImage("mesaBG/minibird2.png")
+		miniBird1I = LoadImage("mesaBG/smallbird1.png")
+		miniBird2I = LoadImage("mesaBG/smallbird2.png")
 	endif
 	
 	
