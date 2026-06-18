@@ -25,7 +25,7 @@ SetWindowSize( 1280, 720, 0 )
 SetWindowAllowResize( 1 ) // allow the user to resize the window
 
 global debug = 0
-global release = 1	//This makes the game go to the title screen, instead of loading right into a race
+global release = 0	//This makes the game go to the title screen, instead of loading right into a race
 global isDuckDeluxe = 1	//This version makes the game the full release, instead of the standalone version of RAaD 2
 global webVersion = 0	//This variable sets the duck 1 game back to it's original version, instead of the ReDucks version
 if debug = 0 then SetErrorMode(1)
@@ -325,8 +325,8 @@ function SetRaceQueue(raceSet)
 		raceQueue.insert(WATER)
 		raceQueue.insert(LAND)
 	elseif raceSet = 2 //Race Against a Duck 2 order
-		raceQueue.insert(WATER2)
 		raceQueue.insert(LAND2)
+		raceQueue.insert(WATER2)
 		raceQueue.insert(AIR2)
 		raceQueue.insert(SPACE2)
 	endif

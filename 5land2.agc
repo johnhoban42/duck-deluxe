@@ -32,15 +32,17 @@ global land2heroBoostFramesMax = 60
 global land2currentLane = 2  // current lane, 1 = leftmost lane
 global land2laneChangeFrame = 0  // frames remaining in lane change, max 5
 global land2laneChangeDirection = 0  // -1 -> left, 1 -> right
+global land2boostScalar# = 7.5
 
 // background movement
 global land2baseLaneSpeed = 52
 global land2buildingXOffset = 0  // set in the init script
+global land2scrollScalar# = 0.1  // background scroll speed, relative to hero speed
 
 function InitUpgradeValues()
     // assign values to upgradeable attributes based on purchased levels 
     land2nLanes = 2 + upgrades[attrnLanes, LAND2]
-    land2heroSpeedMax# = 1.25 + 0.25 * upgrades[attrnLanes, LAND2]
+    land2heroSpeedMax# = 6 + 4 * upgrades[attrBaseSpeed, LAND2]
     land2heroBoostFramesMax = 60 + 30 * upgrades[attrBoostFrames, LAND2]
     land2boostGroupLength = 5 + upgrades[attrBoostGroupLength, LAND2] + 2 * (upgrades[attrBoostGroupLength, LAND2] / 2)
 
@@ -150,6 +152,36 @@ function InitBoostPanels()
     next i
 endfunction
 
+function InitScrap()
+    // init scrap spawnables
+    // scrap is distributed uniformly across all lanes
+    // more lanes unlocked = more scrap spawns
+    sprScrapID = land2sprScrap
+    scrapRank = GetScrapRank()
+    for i = 0 to 10 * land2nLanes
+        sprScrapID = land2sprScrap + i
+        scrapX = Random2(1, land2nLanes)
+        scrapY = 1000 + i * land2Distance / (10 * land2nLanes) + Random2(-100, 100)
+        // set scrap properties
+        sprScrap as spawn
+        sprScrap.spr = sprScrapID
+        sprScrap.cat = SCRAP
+        sprScrap.x = scrapX
+        sprScrap.y = scrapY
+        sprScrap.size = 60
+        // randomize scrap sprite
+        scrapType = Random2(1, 8)
+        scrapImgPath$ = "scrap/scrap" + str(scrapType) + "_" + str(scrapRank) + "_"
+        // final load
+        LoadAnimatedSprite(sprScrap.spr, scrapImgPath$, 4)
+        SetSpriteSize(sprScrap.spr, sprScrap.size, sprScrap.size)
+        SetSpritePosition(sprScrap.spr, sprScrap.x, sprScrap.y)
+        SetSpriteDepth(sprScrap.spr, 10)
+        PlaySprite(sprScrap.spr, 5)
+        spawnActive.insert(sprScrap)
+    next i
+endfunction
+
 function InitLand2()
 
     // apply upgrade values
@@ -166,25 +198,27 @@ function InitLand2()
     LoadAnimatedSprite(land2sprStreet, streetDir$, 40)
     SetSpriteSize(land2sprStreet, 1435, 820)
     SetSpritePosition(land2sprStreet, 0, 0)
-    PlaySprite(land2sprStreet, land2baseLaneSpeed * land2heroSpeed#)
+    PlaySprite(land2sprStreet, land2baseLaneSpeed * land2heroSpeed# * land2scrollScalar#)
 
     // load boost meter
     // for now, just a basic rectangle that stretches with additional boosts
+    land2heroBoostCharges# = 0  // reset boost count
     CreateSpriteExpress(land2sprBoostMeter, 0, 30, 100, 600, 10)
     SetSpriteColor(land2sprBoostMeter, 255, 0, 0, 255)
 
     // load hero sprite
-    LoadAnimatedSprite(hero, "duckc", 3)
+    LoadAnimatedSprite(hero, "duckc", 4)
     SetSpriteSize(hero, 40, 40)
     SetSpritePosition(hero, 500, land2heroY)
     SetSpriteDepth(hero, 1)
-    PlaySprite(hero, 10)
+    PlaySprite(hero, 15)
     heroLocalDistance# = land2Distance
 
-    // create "spawnables" (boosts/obstacles)
+    // create "spawnables" (boosts/obstacles/scrap)
     spawnActive.length = -1
     InitBoostPanels()
     InitObstacles()
+    InitScrap()
 
 endfunction
 
@@ -192,7 +226,7 @@ function DoSpawnables()
     // process movement for all spawnables (boosts, obstacles)
     idx_to_delete = -1
     for i = 0 to spawnActive.length - 1
-        inc spawnActive[i].y, -3.5 * land2heroSpeed#
+        inc spawnActive[i].y, -3.5 * land2heroSpeed# * land2scrollScalar#
         if spawnActive[i].cat = GOOD
             // check for collecting a boost
             if GetSpriteCollision(spawnActive[i].spr, hero) and spawnActive[i].x = land2currentLane
@@ -219,6 +253,13 @@ function DoSpawnables()
                 spawnActive[i].x = SetObstacleLane(spawnActive[i])
             endif
             SetSpritePosition(spawnActive[i].spr, LaneToXWithOffset(spawnActive[i].x, spawnActive[i].y), spawnActive[i].y)
+        elseif spawnActive[i].cat = SCRAP
+            // check for collecting scrap
+            if GetSpriteCollision(spawnActive[i].spr, hero) and spawnActive[i].x = land2currentLane
+                CollectScrap(LAND2)
+                idx_to_delete = i
+            endif
+            SetSpritePosition(spawnActive[i].spr, LaneToXWithOffset(spawnActive[i].x, spawnActive[i].y), spawnActive[i].y)
         endif
     next i
     // delete any collected boosts
@@ -233,7 +274,7 @@ function DoLand2()
     // scroll buildings
     // once a building passes the top of the screen, reset its position to below the screen
     for i = 0 to 2
-        IncSpritePosition(land2sprBuildings + i, -4.75 * land2heroSpeed#, -4.75 * 0.75 * land2heroSpeed#)
+        IncSpritePosition(land2sprBuildings + i, -4.75 * land2heroSpeed# * land2scrollScalar#, -4.75 * 0.75 * land2heroSpeed# * land2scrollScalar#)
         if GetSpriteY(land2sprBuildings + i) < -3 * h
             SetSpritePosition(land2sprBuildings + i, land2buildingXOffset + 2*w, 2.0 / 3 * h)
         endif
@@ -273,9 +314,9 @@ function DoLand2()
     if land2heroIFrames# > 0 or land2heroBoostFrames# > 0
         land2heroIFrames# = max(0, land2heroIFrames# - 1)
         land2heroBoostFrames# = max(0, land2heroBoostFrames# - 1)
-        land2heroSpeed# = land2heroSpeedMax# - 0.5 * (land2heroIFrames# / land2heroIFramesMax) + 1.5 * (land2heroBoostFrames# / land2heroBoostFramesMax)
+        land2heroSpeed# = land2heroSpeedMax# * (1 - 0.5 * (land2heroIFrames# / land2heroIFramesMax) + 1.5 * (land2heroBoostFrames# / land2heroBoostFramesMax))
         // slow down lanes to match hero slowdown
-        SetSpriteSpeed(land2sprStreet, land2baseLaneSpeed * land2heroSpeed#)
+        SetSpriteSpeed(land2sprStreet, land2baseLaneSpeed * land2heroSpeed# * land2scrollScalar#)
     endif
     SetSpriteColor(hero, 255, 255 - 2*land2heroIFrames#, 255 - 2*land2heroIFrames#, 255)
     SetSpritePosition(hero, LaneToX(land2currentLane) - 9 * land2laneChangeDirection * land2laneChangeFrame, 300)
