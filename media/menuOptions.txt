@@ -9,3 +9,5 @@ Duck Radio
 ~Win Previous Races to Unlock!=
 Race Against a Duck (Original)
 ~Win Previous Races to Unlock!=
+Exit Game
+~See you soon!~

@@ -184,10 +184,10 @@ function DoAir()
 	inc heroX#, airVelX#
 	
 	//Up/down
-	if stateUp
+	if inputUp
 		if webVersion = 1 then heroY# = heroY# - airSpeedY#*1.5*fpsr#
 	endif
-	if stateDown
+	if inputDown
 		if webVersion = 1 then heroY# = heroY# + airSpeedY#*1.5*fpsr#
 	endif
 	

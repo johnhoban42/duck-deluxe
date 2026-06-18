@@ -24,7 +24,7 @@ global slipStreamOffset = 0
 global airHurtTimer# = 0
 global slipStreamUse# = 0
 global jetSoundInstance = 0
-
+global duck2MesaFrameSpeed = 10
 
 function InitAir2()
 	
@@ -36,7 +36,8 @@ function InitAir2()
 	
 	SetViewZoomMode(1)
 	
-	LoadSpriteExpress(hero, "duckA2.png", 100, 100, w/2, h/2 + heroAir2Y, 7)
+	LoadAnimatedSprite(hero, "mesaBG/duck", 5)
+	SetSpriteExpress(hero, 100, 100, w/2, h/2 + heroAir2Y, 7)
 	FixSpriteToScreen(hero, 0)
 	SetSpriteShape(hero, 1)
 	
@@ -44,7 +45,7 @@ function InitAir2()
 	air2X# = 400
 	airHurtTimer# = 0
 	air2TurnTarget = 0
-	air2Dir# = 1
+	air2Dir# = -1
 	
 	LoadSpriteExpress(duck, "upgradeR1.png", 100, 100, 460, 300, 190)
 	FixSpriteToScreen(duck, 1)
@@ -95,15 +96,17 @@ function InitAir2()
 	
 	slipStreamOffset = Random(0, 36000)
 	if debug then slipStreamOffset = 0
-	
+	//upgrades[4, 6] = 3
 	//Speed when in a slipstream
 	air2SlipSpeed# = 0.4 * (1 + 1.5*upgrades[3, 6] + 1.4*upgrades[3, 6]/3 + 2*upgrades[3, 6]/3)
 	//Default speed
 	air2DefSpeed# = 0.1 * (1 + .75*upgrades[3, 6] + .65*upgrades[3, 6]/3 + .6*upgrades[3, 6]/3)
+	duck2MesaFrameSpeed = 10 + 5*0
 	//Movement is also be enhanced by default speed
 	air2Vel# = (2.0 + .25*upgrades[4, 6])/4.0
 	air2Accel# = (.015 + .005*upgrades[4, 6])/2.0
 	
+	PlaySprite(hero, duck2MesaFrameSpeed, 1, 1, 3)
 	
 	newS as spawn
 	iEnd = 0
@@ -274,11 +277,33 @@ function DoAir2()
 	
 	//Turning, but you can't turn if you're hurt
 	if (airHurtTimer# = 0 or airHurtTimer# > 350)
-		if GetSpriteMiddleX(hero) > w/2 + 600/GetViewZoom() or (inputSelect and air2Dir# > 0) then air2TurnTarget = -1
-		if GetSpriteMiddleX(hero) < w/2 - 600/GetViewZoom() or (inputSelect and air2Dir# < 0)  then air2TurnTarget = 1
-		if (inputSelect) then PlaySound(collectS, volumeS/4)
+		turnThisTime = 0
+		if GetSpriteMiddleX(hero) > w/2 + 600/GetViewZoom() or (inputSelect and air2Dir# > 0)
+			air2TurnTarget = -1
+			turnThisTime = 1
+		endif
+		if GetSpriteMiddleX(hero) < w/2 - 600/GetViewZoom() or (inputSelect and air2Dir# < 0)
+			air2TurnTarget = 1
+			turnThisTime = 1
+		endif
+		if (inputSelect) or turnThisTime = 1
+			PlaySound(collectS, volumeS/4)
+			PlaySprite(hero, duck2MesaFrameSpeed*1.5, 0, 4, 5)
+			if air2TurnTarget < 0
+				SetSpriteFlip(hero, 0, 0)
+			else
+				SetSpriteFlip(hero, 1, 0)
+			endif
+		endif
 	endif
-	
+	// if air2Dir# < 0
+		// SetSpriteFlip(hero, 0, 0)
+	// else
+		// SetSpriteFlip(hero, 1, 0)
+	// endif
+	if GetSpritePlaying(hero) = 0
+		PlaySprite(hero, duck2MesaFrameSpeed, 1, 1, 3)
+	endif
 	
 	//Change the ducks acceleration
 	air2Dir# = air2Dir# + air2Accel#*air2TurnTarget*fpsr#
@@ -289,6 +314,7 @@ function DoAir2()
 	if airHurtTimer# <> 0 then air2X# = air2X# + air2Vel#*air2Dir#/GetViewZoom() *5/3*(360-airHurtTimer#)/360
 	
 	
+	
 	//The turn is done
 	if abs(air2Dir#) > abs(air2TurnTarget) and air2TurnTarget <> 0
 		air2Dir# = air2TurnTarget
@@ -296,6 +322,7 @@ function DoAir2()
 		//Put animation change here
 		
 	endif
+	
 	
 	SetSpriteColor(hero, 255, 255, 255, 255)
 	
@@ -329,9 +356,10 @@ function DoAir2()
 			slipStreamUse# = 1
 		endif
 		SetSpriteY(air2WindBG, GetSpriteY(air2WindBG) + air2SlipSpeed#*fpsr#*1.4*(GetSpriteColorAlpha(slipS[1])/100.0))
-		SetSpriteColor(hero, 0, 255, 0, 255)
+		//SetSpriteColor(hero, 220, 255, 225, 255)
 		inSlipstream = 1
 		if GetSoundInstances(jetstreamS) = 0 then jetSoundInstance = PlaySound(jetstreamS, volumeS, 1)
+		SetSpriteSpeed(hero, duck2MesaFrameSpeed*1.8)
 	else
 		if slipStreamUse# > 0.01
 			slipStreamUse# = GlideNumToZero(slipStreamUse#, 80)
@@ -340,6 +368,7 @@ function DoAir2()
 		endif
 		if GetSoundInstances(jetstreamS) > 0 then StopSound(jetstreamS)
 		jetSoundInstance = 0
+		if air2TurnTarget = 0 then SetSpriteSpeed(hero, duck2MesaFrameSpeed)
 	endif
 	//Speeding the hero up based on slipstream
 	heroLocalDistance# = heroLocalDistance# + (slipStreamUse# * -air2SlipSpeed#*fpsr#*(GetSpriteColorAlpha(slipS[1])/100.0))
@@ -399,7 +428,7 @@ function DoAir2()
 				SetSpriteVisible(bulletActive[i].spr, 1)
 				SetSpritePosition(bulletActive[i].spr, GetSpriteMiddleX(eggBird)-15, GetSpriteMiddleY(eggBird)+20)
 				PlaySprite(eggBirdHead, 20, 0)
-				if GetSoundInstances(birdCoughS) = 0 then PlaySound(birdCoughS, volumeS/2)
+				if GetSoundInstances(birdCoughS) = 0 then PlaySound(birdCoughS, volumeS/4)
 			endif
 			//Make eggs go slower somehow?
 			//Adjust the FORMULAS!

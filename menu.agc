@@ -74,6 +74,8 @@ function DoMenu()
 	if menuInitialized = 0
 		InitMenu()
 		menuInitialized = 1
+		
+		if GetSpriteExists(coverS) then PlayTweenSprite(tweenSprFadeOut, coverS, 0)
 	endif
 	
 	//Changing the selected menu line item
@@ -152,10 +154,12 @@ function DoMenu()
 	
 endfunction
 
+global settingsChanged = 0
 function DoPauseMenu()
 	leavePause = 0
+	returnDeluxeMenu = 0
 	
-	if InputUp or InputDown or GetRawKeyPressed(27)
+	if InputUp or InputDown or inputEsc
 		ClearPopup()
 		PlaySound(collectS, volumeS)
 		
@@ -165,7 +169,10 @@ function DoPauseMenu()
 		elseif InputUp
 			dec pauseLineSelected, 1
 		endif
-		if GetRawKeyPressed(27) then pauseLineSelected = 1
+		if pauseLineSelected <> 1 and inputEsc
+			pauseLineSelected = 1
+			inputEsc = 0
+		endif
 		if pauseLineSelected = 0 then pauseLineSelected = pauseLine.length
 		if pauseLineSelected > pauseLine.length then pauseLineSelected = 1
 		SetTextX(pauseLine[pauseLineSelected], 165 + pauseLineSelected*15)
@@ -195,6 +202,13 @@ function DoPauseMenu()
 		//TODO: check that the existing option can be selected
 		if pauseLineSelected = 1 //Resume Race
 			leavePause = 1
+		elseif pauseLineSelected = pauseLine.length and isDuckDeluxe //Return to triathlon menu
+			if GetPopupActive()
+				returnDeluxeMenu = 1
+				leavePause = 1
+			else
+				ShowPopup("Return to main menu?" + chr(10) + "(Progress will be saved.)", 1)
+			endif
 		elseif pauseLineSelected = 5 //Forfeit Race
 			if GetPopupActive()
 				duckSpeed# = 12*fpsr#
@@ -203,6 +217,7 @@ function DoPauseMenu()
 				ShowPopup("You sure? You will keep your" + chr(10) + "scrap. (You can also press 'R'.)", 1)
 			endif
 			//If in the upgrade screen, change the text, and go back to the title screen
+		
 		endif
 	endif
 	
@@ -233,6 +248,7 @@ function DoPauseMenu()
 			else	//Right, Higher
 				volumeG = Min(volumeG+20, 100)
 			endif
+			settingsChanged = 1
 		endif
 		
 		if pauseLineSelected = 3 //Music Volume
@@ -242,6 +258,7 @@ function DoPauseMenu()
 			else	//Right, Higher
 				volumeM = Min(volumeM+20, 100)
 			endif
+			settingsChanged = 1
 		endif
 		
 		if pauseLineSelected = 4 //Sound Volume
@@ -251,6 +268,7 @@ function DoPauseMenu()
 			else	//Right, Higher
 				volumeS = Min(volumeS+20, 100)
 			endif
+			settingsChanged = 1
 		endif
 		
 		SetMusicSystemVolumeOGG(volumeG*volumeM/100.0)
@@ -277,6 +295,8 @@ function DoPauseMenu()
 		endif
 	endif
 
+	if inputEsc and pauseLineSelected then leavePause = 1
+
 	if releaseLeft or releaseRight or leavePause
 		if pauseLineSelected = 2 then volumeG = Min(Max(volumeG + holdTimer#, 0), 100)
 		if pauseLineSelected = 3 then volumeM = Min(Max(volumeM + holdTimer#, 0), 100)
@@ -284,27 +304,81 @@ function DoPauseMenu()
 	endif
 	
 
-	
+	TintPauseText()
 	
 	if leavePause
 		DeleteSprite(pauseScreen)
 		iEnd = 4
-		if screen < UPGRADE then iEnd = 5
+		if screen < UPGRADE then inc iEnd, 1
+		if isDuckDeluxe then inc iEnd, 1
 		for i = 1 to iEnd
 			DeleteText(pauseLine[i])
 		next i
 		//Get rid of the pause screen artifacts
 		ResumeMusicOGG(curRaceMusic)
 		ResumeMusicOGG(oldRaceMusic)
-		SaveGame()
+		if settingsChanged <> 0 then SaveGame()
 		ClearPopup()
+		UnfreezeGameplay()
 		paused = 0
 		inputSelect = 0
+		inputEsc = 0
+		
+		if returnDeluxeMenu
+			
+			if GetMusicPlayingOGG(introM) then StopMusicOGG(introM)
+			if GetMusicPlayingOGG(titleM) then StopMusicOGG(titleM)
+			
+			PlayTweenSprite(tweenSprFadeIn, coverS, 0)
+			PlaySound(windMS, volumeS)
+			WaitFadeTween()
+			DeleteScene(screen)
+			SetSpriteVisible(bg, 0)
+			SetTextVisible(scrapText, 0)
+			PlaySprite(cutsceneSpr3, 3, 0, 1, 60)
+			StopSprite(cutsceneSpr3)
+			if screen = UPGRADE
+				StopMusicOGG(upgrade2M)
+				DeleteUpgrade2()
+			endif
+			screen = 0
+			nextScreen = MENU
+			SaveGame()
+				
+			
+		endif
+		
 	endif
 	
 endfunction
 
+function TintPauseText()
+	longLen = 0
+	for i = 1 to pauseLine.length
+		longLen = Max(longLen, Len(GetTextString(pauseLine[i])))
+	next i
+	r1 = 255
+	g1 = 50
+	b1 = 220
+	r2 = 129
+	g2 = 255
+	b2 = 124
+	
+	for i = 1 to pauseLine.length
+		strLen = Len(GetTextString(pauseLine[i]))
+		for j = 1 to strLen
+			SetTextCharColor(pauseLine[i], j, 255, 255, 255, 255)
+			if j < longLen*3/7 then SetTextCharColor(pauseLine[i], j, r1+(255-r1)*(j/longLen*3/7), g1+(255-g1)*j/longLen*3/7, b1+(255-b1)*j/longLen*3/7, 255)
+		next j
+	next i
+		
+endfunction
+
 function CreateTitle1()
+	
+	HideUIText()
+	SetSpriteVisible(pauseButton, 0)
+	
 	SetSpriteVisible(cutsceneSpr3, 1)
 	SetSpriteExpress(cutsceneSpr3, h, h, 0, 0, 10)
 	SetSpriteMiddleScreen(cutsceneSpr3)
@@ -334,6 +408,7 @@ function DoTitle1()
 		SetSpriteVisible(bg, 1)
 		PlayTweenSprite(tweenSprFadeOut, coverS, .3)
 		SetTextVisible(cutsceneSpr, 0)
+		SetSpriteVisible(pauseButton, 1)
 		
 	endif
 	
@@ -355,6 +430,7 @@ function DoTitle1()
 			PlaySound(clapS, volumeS)
 			WaitFadeTween()
 			DeleteScene(screen)
+			//DeleteScene(scene)
 			screen = 0
 			//TODO - change this current race set out to correspond with different menu screen buttons
 			if isDuckDeluxe = 0 then curRaceSet = 2
@@ -372,6 +448,9 @@ function CreateTitle2()
 	//firstDuck2Race = 1
 	//areaSeen = 3
 	//scrapTotal = 10
+	HideUIText()
+	SetSpriteVisible(pauseButton, 0)
+	
 	SetSpriteVisible(cutsceneSpr3, 1)
 	SetSpriteExpress(cutsceneSpr3, h, h, 0, 0, 10)
 	SetSpriteMiddleScreen(cutsceneSpr3)
@@ -435,6 +514,7 @@ function DoTitle2()
 		SetSpriteVisible(bg, 1)
 		PlayTweenSprite(tweenSprFadeOut, coverS, .3)
 		SetTextVisible(cutsceneSpr, 0)
+		SetSpriteVisible(pauseButton, 1)
 		
 	endif
 	
@@ -525,8 +605,6 @@ function SaveGame()
 		SetSpriteExpress(saveSpr, 80, 80, w-120, h-120, 1)
 		FixSpriteToScreen(saveSpr, 1)
 		//AddSpriteAnimationFrame(saveSpr, blankI)
-		AddSpriteAnimationFrame(saveSpr, saveImg)
-		AddSpriteAnimationFrame(saveSpr, blankI)
 		AddSpriteAnimationFrame(saveSpr, saveImg)
 		AddSpriteAnimationFrame(saveSpr, blankI)
 		AddSpriteAnimationFrame(saveSpr, saveImg)

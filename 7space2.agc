@@ -347,7 +347,7 @@ function DoSpace2()
 				
 				if mashPos = MashList.length + 1
 					//Boost
-					PlaySound(boostS, volumeS/3)
+					PlaySound(boostS, volumeS/6)
 					PlaySoundR(spaceGSE[mashPos+1], volumeS/1.5)
 					spaceSpeedMult# = Pow(1 + 0.1*(MashList.length), 1.15)
 					spaceSpeed# = spaceSpeed#*spaceSpeedMult#

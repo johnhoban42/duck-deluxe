@@ -8,6 +8,7 @@ global inputRight = 0
 global inputUp = 0
 global inputDown = 0
 global inputSpace = 0
+global inputEsc = 0
 global stateLeft = 0
 global stateRight = 0
 global stateUp = 0
@@ -26,6 +27,7 @@ function DoInputs()
 	inputRight = 0
 	inputUp = 0
 	inputDown = 0
+	inputEsc = 0
 	stateLeft = 0
 	stateRight = 0
 	stateUp = 0
@@ -42,6 +44,7 @@ function DoInputs()
 	if GetRawKeyPressed(39) or GetRawKeyPressed(68) then inputRight = 1
 	if GetRawKeyPressed(38) or GetRawKeyPressed(87) then inputUp = 1
 	if GetRawKeyPressed(40) or GetRawKeyPressed(83) then inputDown = 1
+	if GetRawKeyPressed(27) then inputEsc = 1
 	
 	if GetRawKeyState(37) or GetRawKeyState(65) then stateLeft = 1
 	if GetRawKeyState(39) or GetRawKeyState(68) then stateRight = 1
@@ -1005,13 +1008,13 @@ function ShowPopup(str$, playSE)
 		AddSpriteAnimationFrame(popupSpr, blankI)
 		AddSpriteAnimationFrame(popupSpr, warningI)
 		
-		SetSpriteExpress(popupSpr, 600, 150, 0, h - 170, 1)
+		SetSpriteExpress(popupSpr, 600, 150, 0, h - 170, 0)
 		SetSpriteMiddleScreenX(popupSpr)
 		
 		
 		popupTxt = CreateText("")
 		
-		SetTextExpress(popupTxt, str$, 40, fontMI, 0, GetSpriteX(popupSpr) + 60, GetSpriteY(popupSpr) + 30, -10, 1)
+		SetTextExpress(popupTxt, str$, 40, fontMI, 0, GetSpriteX(popupSpr) + 60, GetSpriteY(popupSpr) + 30, -10, 0)
 		SetTextColor(popupTxt, 0, 0, 0, 255)
 		
 		FixSpriteToScreen(popupSpr, 1)
@@ -1020,6 +1023,8 @@ function ShowPopup(str$, playSE)
 	else
 		SetSpriteVisible(popupSpr, 1)
 		SetTextVisible(popupTxt, 1)
+		SetSpriteDepth(popupSpr, 0)
+		SetTextDepth(popupTxt, 0)
 	endif
 	
 	if playSE then PlaySound(haltS, volumeS*0.5)

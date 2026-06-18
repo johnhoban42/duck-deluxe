@@ -326,9 +326,9 @@ function SetRaceQueue(raceSet)
 		raceQueue.insert(LAND)
 	elseif raceSet = 2 //Race Against a Duck 2 order
 		raceQueue.insert(WATER2)
-		raceQueue.insert(SPACE2)
 		raceQueue.insert(LAND2)
 		raceQueue.insert(AIR2)
+		raceQueue.insert(SPACE2)
 	endif
 	raceQueueRef = raceQueue
 	
@@ -386,8 +386,9 @@ do
 	endif
 
 	//Pausing game
-	if (paused = 0 and GetSpriteVisible(pauseButton) and (GetRawKeyPressed(27) or Button(pauseButtonCol))) // or (paused = 1 and (GetPointerPressed() or inputSelect or GetRawKeyPressed(27)))) and screen < UPGRADE 
+	if (paused = 0 and GetSpriteVisible(pauseButton) and (inputEsc or Button(pauseButtonCol))) // or (paused = 1 and (GetPointerPressed() or inputSelect or GetRawKeyPressed(27)))) and screen < UPGRADE 
 		paused = 1
+		inputEsc = 0
 		//paused = Mod(paused+1, 2)
 		//SaveGame()
 		pauseLineSelected = 1
@@ -395,17 +396,20 @@ do
 			if GetSpriteCurrentFrame(cutsceneSpr) < 4 then paused = 0 //Can't pause during the intro cutscene!
 		endif
 		if paused = 1
+			settingsChanged = 0
+			FreezeGameplay(0)
 			PauseMusicOGG(curRaceMusic)
 			PauseMusicOGG(oldRaceMusic)
 			
 			if GetSpriteExists(pauseScreen) = 0
 				LoadSpriteExpress(pauseScreen, "pauseScreen.png", w, h, 0, 0, 1)
 				SetSpriteColorAlpha(pauseScreen, 150)
-				if screen < UPGRADE then SetSpriteColorAlpha(pauseScreen, 255)
+				//if screen < UPGRADE then SetSpriteColorAlpha(pauseScreen, 255)
 				FixSpriteToScreen(pauseScreen, 1)
 				
 				iEnd = 4
-				if screen < UPGRADE then iEnd = 5
+				if screen < UPGRADE then inc iEnd, 1
+				if isDuckDeluxe then inc iEnd, 1
 				pauseLine.length = iEnd
 				
 				//Creating Pause Screen
@@ -413,11 +417,13 @@ do
 					pauseLine[i] = CreateText("")
 					SetTextExpress(pauseLine[i], pauseOptions[i], 60, fontGI, 0, 140 + i*15, 110+70*i, -11, 1)
 					FixTextToScreen(pauseLine[i], 1)
+					if iEnd = 6 then IncTextY(pauseLine[i], -70)
 				next i 
 				SetTextString(pauseLine[2], pauseOptions[2] + ": " + str(volumeG))
 				SetTextString(pauseLine[3], pauseOptions[3] + ": " + str(volumeM))
 				SetTextString(pauseLine[4], pauseOptions[4] + ": " + str(volumeS))
 				if screen >= UPGRADE then SetTextString(pauseLine[1], "Save Settings")
+				if isDuckDeluxe then SetTextString(pauseLine[pauseLine.length], pauseOptions[6])
 				
 			endif
 		endif
@@ -428,7 +434,7 @@ do
 		DoPauseMenu()
 	endif
 
-	if screen < UPGRADE and paused = 0
+	if screen < UPGRADE and paused = 0 and screen <> 0
 		
 //~		if curAreaSeen > 1 and GetTweenCustomPlaying(musicFadeTween) //and GetTweenCustomInteger1(musicFadeTween) <> 0
 //~			SetMusicVolumeOGG(curRaceMusic, volumeM*GetTweenCustomInteger1(musicFadeTween))
@@ -538,7 +544,7 @@ do
 			StopRaceMusic()
 			StopAmbientMusic()
 			//SaveGame()
-			FreezeGameplay()
+			FreezeGameplay(1)
 			firstDuck2Race = 1
 			
 			HideUIText()
@@ -970,17 +976,19 @@ function SetupScene(scene)
 	elseif scene = TITLE
 		SetBG(TITLE)
 		
+		LoadSpriteExpress(pauseButton, "settingsButton.png", 75, 75, w - 100, 25, 5)
+		FixSpriteToScreen(pauseButton, 1)
+		CreateSpriteExpress(pauseButtonCol, GetSpriteWidth(pauseButton), GetSpriteHeight(pauseButton), GetSpriteX(pauseButton), GetSpriteY(pauseButton), 5)
+		SetSpriteVisible(pauseButtonCol, 0)
+		FixSpriteToScreen(pauseButtonCol, 1)
+		
 		if curRaceSet = 1
 			CreateTitle1()
 		else
 			CreateTitle2()
 		endif
 		
-		LoadSpriteExpress(pauseButton, "settingsButton.png", 75, 75, w - 100, 25, 5)
-		FixSpriteToScreen(pauseButton, 1)
-		CreateSpriteExpress(pauseButtonCol, GetSpriteWidth(pauseButton), GetSpriteHeight(pauseButton), GetSpriteX(pauseButton), GetSpriteY(pauseButton), 5)
-		SetSpriteVisible(pauseButtonCol, 0)
-		FixSpriteToScreen(pauseButtonCol, 1)
+		
 		
 	
 	elseif scene = FINISH
@@ -1485,18 +1493,17 @@ function StopRaceMusic()
 	StopMusicOGG(spaceM)
 endfunction
 
-function FreezeGameplay()
+function FreezeGameplay(deleteParts)
 	if screen = WATER2
 		StopSprite(hero)
-		DeleteParticles(lightP)
-		DeleteParticles(splashP)
-		DeleteParticles(featherP)
+		if deleteParts then DeleteParticles(lightP)
+		if deleteParts then DeleteParticles(splashP)
+		if deleteParts then DeleteParticles(featherP)
 		for i = 1 to spawnActive.length
 			StopSprite(spawnActive[i].spr)
 		next i
-		
+		StopSound(swimmingS)
 	endif
-	
 	if screen = AIR2
 		StopSprite(hero)
 		for i = 1 to bulletActive.length
@@ -1504,6 +1511,7 @@ function FreezeGameplay()
 		next i
 		StopSprite(eggBird)
 		StopSprite(eggBirdHead)
+		StopSound(jetstreamS)
 	endif
 	if screen = SPACE2
 		for i = 0 to MashList.length
@@ -1517,3 +1525,28 @@ function FreezeGameplay()
 	
 endfunction
 
+function UnfreezeGameplay()
+	if screen = WATER2
+		ResumeSprite(hero)
+		for i = 1 to spawnActive.length
+			ResumeSprite(spawnActive[i].spr)
+		next i
+	endif
+	if screen = AIR2
+		ResumeSprite(hero)
+		for i = 1 to bulletActive.length
+			ResumeSprite(bulletActive[i].spr)
+		next i
+		ResumeSprite(eggBird)
+		ResumeSprite(eggBirdHead)
+	endif
+	if screen = SPACE2
+		for i = 0 to MashList.length
+			if GetSpriteExists(MashList[i].spr) then ResumeSprite(MashList[i].spr)
+		next i
+		for i = 0 to MashSecond.length
+			if GetSpriteExists(MashSecond[i].spr) then ResumeSprite(MashSecond[i].spr)
+		next i
+		if GetSpriteExists(spaceScrapS) then ResumeSprite(spaceScrapS)
+	endif
+endfunction

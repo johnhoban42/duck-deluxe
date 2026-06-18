@@ -21,7 +21,7 @@ global AREA_CHARS as string[7] = ["W", "L", "S", "W", "L", "S", "Z"]
 #constant RADIO 12
 
 global pauseLine as Integer[5]
-global pauseOptions as String[5]
+global pauseOptions as String[6]
 
 
 global heroImg1
@@ -95,6 +95,7 @@ function LoadGameImages()
 	pauseOptions[3] = "Music Volume"
 	pauseOptions[4] = "Sound Volume"
 	pauseOptions[5] = "Forfeit Race"
+	pauseOptions[6] = "Return to Triathlon Launcher"
 endfunction
 
 
