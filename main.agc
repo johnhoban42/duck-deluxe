@@ -9,6 +9,8 @@
 #include "7space2.agc"
 #include "constants.agc"
 #include "menu.agc"
+#include "upgrade.agc"
+#include "radio.agc"
 
 // Project: EvilDuck 
 // Created: 2023-11-27
@@ -27,7 +29,7 @@ global release = 0	//This makes the game go to the title screen, instead of load
 global isDuckDeluxe = 1	//This version makes the game the full release, instead of the standalone version of RAaD 2
 global webVersion = 0	//This variable sets the duck 1 game back to it's original version, instead of the ReDucks version
 if debug = 0 then SetErrorMode(1)
-global nextScreen = WATER
+global nextScreen = AIR
 //SetPhysicsDebugOn()
 
 
@@ -121,10 +123,14 @@ LoadSoundOGG(oopsS, "sounds/oops.ogg")
 LoadSoundOGG(clickUpS, "sounds/clickUp.ogg")
 #constant clickDownS 35
 LoadSoundOGG(clickDownS, "sounds/clickDown.ogg")
+#constant birdCoughS 36
+LoadSoundOGG(birdCoughS, "sounds/birdCough.ogg")
 
 global spaceCSE as integer[13]
+global spaceGSE as integer[13]
 for i = 1 to 13
 	spaceCSE[i] = LoadSoundOgg("sounds/spaceC" + str(i) + ".ogg")
+	spaceGSE[i] = LoadSoundOgg("sounds/spaceG" + str(i) + ".ogg")
 next i
 
 #constant introM 1
@@ -193,6 +199,9 @@ CreateTweenSprite(tweenSprFadeIn, tweenFadeLen#)
 SetTweenSpriteAlpha(tweenSprFadeIn, 0, 255, TweenEaseIn1())
 CreateTweenSprite(tweenSprFadeOut, tweenFadeLen#)
 SetTweenSpriteAlpha(tweenSprFadeOut, 255, 0, TweenEaseIn1())
+
+blankI = LoadImage("blank.png")
+warningI = LoadImage("warning.png")
 
 type spawn
 	
@@ -273,6 +282,7 @@ LoadAnimatedSprite(water2TileS, "w2BG/2sw", 60)
 SetSpriteVisible(water2TileS, 0)
 
 LoadScrapImages()
+LoadGameImages()
 
 tileI1 = LoadImage("waterTile1.png")
 tileI2 = LoadImage("waterTile2.png")
@@ -375,40 +385,67 @@ do
 		endif
 	endif
 
-	//Pausing/Unpausing game
-	if ((paused = 0 and (GetRawKeyPressed(27) or Button(pauseButtonCol))) or (paused = 1 and (GetPointerPressed() or inputSelect or GetRawKeyPressed(27)))) and screen < UPGRADE 
-		paused = Mod(paused+1, 2)
-		if GetSpriteCurrentFrame(cutsceneSpr) < 4 and paused = 1 then paused = 0 //Can't pause during the intro cutscene!
-		if paused = 0
-			DeleteSprite(pauseScreen)
-			//Get rid of the pause screen artifacts
-			ResumeMusicOGG(curRaceMusic)
-			ResumeMusicOGG(oldRaceMusic)
-		else
+	//Pausing game
+	if (paused = 0 and GetSpriteVisible(pauseButton) and (inputEsc or Button(pauseButtonCol))) // or (paused = 1 and (GetPointerPressed() or inputSelect or GetRawKeyPressed(27)))) and screen < UPGRADE 
+		paused = 1
+		inputEsc = 0
+		//paused = Mod(paused+1, 2)
+		//SaveGame()
+		pauseLineSelected = 1
+		if GetSpriteExists(cutsceneSpr)
+			if GetSpriteCurrentFrame(cutsceneSpr) < 4 then paused = 0 //Can't pause during the intro cutscene!
+		endif
+		if paused = 1
+			settingsChanged = 0
+			FreezeGameplay(0)
 			PauseMusicOGG(curRaceMusic)
 			PauseMusicOGG(oldRaceMusic)
+			
+			if GetSpriteExists(pauseScreen) = 0
+				LoadSpriteExpress(pauseScreen, "pauseScreen.png", w, h, 0, 0, 1)
+				SetSpriteColorAlpha(pauseScreen, 150)
+				//if screen < UPGRADE then SetSpriteColorAlpha(pauseScreen, 255)
+				FixSpriteToScreen(pauseScreen, 1)
+				
+				iEnd = 4
+				if screen < UPGRADE then inc iEnd, 1
+				if isDuckDeluxe then inc iEnd, 1
+				pauseLine.length = iEnd
+				
+				//Creating Pause Screen
+				for i = 1 to iEnd
+					pauseLine[i] = CreateText("")
+					SetTextExpress(pauseLine[i], pauseOptions[i], 60, fontGI, 0, 140 + i*15, 110+70*i, -11, 1)
+					FixTextToScreen(pauseLine[i], 1)
+					if iEnd = 6 then IncTextY(pauseLine[i], -70)
+				next i 
+				SetTextString(pauseLine[2], pauseOptions[2] + ": " + str(volumeG))
+				SetTextString(pauseLine[3], pauseOptions[3] + ": " + str(volumeM))
+				SetTextString(pauseLine[4], pauseOptions[4] + ": " + str(volumeS))
+				if screen >= UPGRADE then SetTextString(pauseLine[1], "Save Settings")
+				if isDuckDeluxe then SetTextString(pauseLine[pauseLine.length], pauseOptions[6])
+				
+			endif
 		endif
 	endif
 
 	if paused
-		if GetSpriteExists(pauseScreen) = 0
-			LoadSpriteExpress(pauseScreen, "pauseScreen.png", w, h, 0, 0, 1)
-			FixSpriteToScreen(pauseScreen, 1)
-		endif
+		
+		DoPauseMenu()
 	endif
 
-	if screen < UPGRADE and paused = 0
+	if screen < UPGRADE and paused = 0 and screen <> 0
 		
-		if curAreaSeen > 1 and GetTweenCustomPlaying(musicFadeTween) //and GetTweenCustomInteger1(musicFadeTween) <> 0
-			SetMusicVolumeOGG(curRaceMusic, volumeM*GetTweenCustomInteger1(musicFadeTween))
-			if curRaceSet > 1 or webVersion = 0 then SetMusicVolumeOGG(curAmbience, ambVol*volumeS*GetTweenCustomInteger1(musicFadeTween))
-			SetMusicVolumeOGG(oldRaceMusic, volumeM*(100-GetTweenCustomInteger1(musicFadeTween)))
-			if curRaceSet > 1 or webVersion = 0 then SetMusicVolumeOGG(oldAmbience, ambVol*volumeS*(100-GetTweenCustomInteger1(musicFadeTween)))
-			if GetTweenCustomPlaying(musicFadeTween) = 0
-				StopMusicOGG(oldRaceMusic)
-				StopMusicOGG(oldAmbience)
-			endif
-		endif
+//~		if curAreaSeen > 1 and GetTweenCustomPlaying(musicFadeTween) //and GetTweenCustomInteger1(musicFadeTween) <> 0
+//~			SetMusicVolumeOGG(curRaceMusic, volumeM*GetTweenCustomInteger1(musicFadeTween))
+//~			if curRaceSet > 1 or webVersion = 0 then SetMusicVolumeOGG(curAmbience, ambVol*volumeS*GetTweenCustomInteger1(musicFadeTween))
+//~			SetMusicVolumeOGG(oldRaceMusic, volumeM*(100-GetTweenCustomInteger1(musicFadeTween)))
+//~			if curRaceSet > 1 or webVersion = 0 then SetMusicVolumeOGG(oldAmbience, ambVol*volumeS*(100-GetTweenCustomInteger1(musicFadeTween)))
+//~			if GetTweenCustomPlaying(musicFadeTween) = 0
+//~				StopMusicOGG(oldRaceMusic)
+//~				StopMusicOGG(oldAmbience)
+//~			endif
+//~		endif
 		
 		if GetRawKeyState(81) then heroLocalDistance# = heroLocalDistance# - 20*fpsr#
 		
@@ -457,7 +494,6 @@ do
 				//Last race just ended, finishing this 'session'
 				//This was currently copied from the 'AIR' finishing code, should be updated
 				StopRaceMusic()
-				SaveGame()
 				
 				HideUIText()
 				finStr$ = "finishHero.png"
@@ -469,10 +505,12 @@ do
 				PlayTweenSprite(tweenSprFadeOut, coverS, 0)
 				PlaySound(clapS, volumeS)
 				
-				for i = 1 to 120
-					UpdateAllTweens(GetFrameTime())
-					Sync()
-				next i
+				WaitFadeTween()
+				WaitFadeTween()
+				//for i = 1 to 120/fpsr#
+				//	UpdateAllTweens(GetFrameTime())
+				//	Sync()
+				//next i
 				
 				PlayTweenSprite(tweenSprFadeIn, coverS, 0)
 				PlaySound(windMS, volumeS)
@@ -505,8 +543,8 @@ do
 			
 			StopRaceMusic()
 			StopAmbientMusic()
-			SaveGame()
-			FreezeGameplay()
+			//SaveGame()
+			FreezeGameplay(1)
 			firstDuck2Race = 1
 			
 			HideUIText()
@@ -534,7 +572,7 @@ do
 		
 	endif
 	
-	if screen = UPGRADE
+	if screen = UPGRADE and paused = 0
 		if webVersion = 1
 			DoUpgrade()
 		else
@@ -542,7 +580,7 @@ do
 		endif
 	endif
 	
-	if screen = TITLE
+	if screen = TITLE and paused = 0
 		if curRaceSet = 1 then DoTitle1()
 		if curRaceSet = 2 then DoTitle2()
 		
@@ -614,6 +652,13 @@ do
 		DoMenu()
 	endif
     
+    if screen = RADIO
+		DoRadio()
+	endif
+    
+    if GetPopupActive()
+    		SetTextVisible(popupTxt, Mod(GetSpriteCurrentFrame(popupSpr), 2))
+    endif
     UpdateAllTweens(GetFrameTime())
     
     if debug = 1
@@ -627,10 +672,9 @@ do
 		//Print(duckSpeed#)
 		
 	endif
-	Print("fpsr: " + Str(fpsr#))
+	//Print("fpsr: " + Str(fpsr#))
 	Print("Cur FPS: " + Str(ScreenFPS()))
 	Print(GetRawLastKey())
-	Print(curAreaSeen)
 	//Print(ScreenFPS()*fpsr#)
 	//Print("Game Timer: " + str(gameTime#))
     Sync()
@@ -747,14 +791,24 @@ function SetupScene(scene)
 			CreateTextExpress(vehicle1+i, Mid(words[i+1, upgrades[i+1,scene]+1, scene], 2, -1), 48, fontGI, 0, 63+i*3, 35 + i*65, -11, 2)
 			FixSpriteToScreen(vehicle1+i, 1)
 			FixTextToScreen(vehicle1+i, 1)
+			
+			if firstDuck2Race = 0 and curRaceSet = 2
+				SetSpriteVisible(vehicle1+i, 0)
+				SetTextVisible(vehicle1+i, 0)
+			endif
+			
 		next i
-		
+
 		SetInstructionText(scene)
 		
 		LoadSpriteExpress(pauseButton, "pauseButton.png", 75, 75, w - 100, 100, 5)
 		FixSpriteToScreen(pauseButton, 1)
 		CreateSpriteExpress(pauseButtonCol, GetSpriteWidth(pauseButton), GetSpriteHeight(pauseButton), GetSpriteX(pauseButton), GetSpriteY(pauseButton), 5)
 		SetSpriteVisible(pauseButtonCol, 0)
+		
+		if firstDuck2Race = 0
+			SetSpriteVisible(pauseButton, 0)
+		endif
 		
 		//Duck will be the first spawnable object
 		
@@ -798,21 +852,23 @@ function SetupScene(scene)
 		if curRaceSet <= 2
 			PlayMusicOgg(curRaceMusic, 0)
 			PlayMusicOgg(curAmbience, 1)
+			if GetMusicExistsOGG(oldRaceMusic) then SeekMusicOgg(curRaceMusic, GetMusicPositionOGG(oldRaceMusic), 0)
 			
-			if curAreaSeen <> 1	//Using the same (opposite) if statement that triggers the start race cutscene
-				SeekMusicOgg(curRaceMusic, GetMusicPositionOGG(oldRaceMusic), 0)
+//~			if curAreaSeen <> 1	//Using the same (opposite) if statement that triggers the start race cutscene
+//~				
 //~				SetPrintColor(100, 100, 100, 255)
 //~				Print((oldRaceMusic))
 //~				Print(GetMusicPositionOGG(oldRaceMusic))
 //~				Print(GetMusicPositionOGG(curRaceMusic))
 //~				Sync()
 //~				Sleep(2000)
-				SetMusicVolumeOGG(curRaceMusic, 0)
-				SetMusicVolumeOGG(curAmbience, 0)
-				
-				PlayTweenCustom(musicFadeTween, 0)
-			endif
-			//StopMusicOGG(oldRaceMusic)
+//~				SetMusicVolumeOGG(curRaceMusic, 0)
+//~				SetMusicVolumeOGG(curAmbience, 0)
+//~				
+//~				PlayTweenCustom(musicFadeTween, 0)
+//~			endif
+			StopMusicOGG(oldRaceMusic)
+			StopMusicOGG(oldAmbience)
 			
 			if webVersion = 1 then SetMusicVolumeOGG(curAmbience, 0)
 			
@@ -908,18 +964,30 @@ function SetupScene(scene)
 			CreateUpgrade()
 		else
 			CreateUpgrade2()
+			LoadSpriteExpress(pauseButton, "settingsButton.png", 75, 75, w - 100, 100, 5)
+			FixSpriteToScreen(pauseButton, 1)
+			CreateSpriteExpress(pauseButtonCol, GetSpriteWidth(pauseButton), GetSpriteHeight(pauseButton), GetSpriteX(pauseButton), GetSpriteY(pauseButton), 5)
+			SetSpriteVisible(pauseButtonCol, 0)
+			FixSpriteToScreen(pauseButtonCol, 1)
 		endif
-		
+		SaveGame()
 		
 	
 	elseif scene = TITLE
 		SetBG(TITLE)
+		
+		LoadSpriteExpress(pauseButton, "settingsButton.png", 75, 75, w - 100, 25, 5)
+		FixSpriteToScreen(pauseButton, 1)
+		CreateSpriteExpress(pauseButtonCol, GetSpriteWidth(pauseButton), GetSpriteHeight(pauseButton), GetSpriteX(pauseButton), GetSpriteY(pauseButton), 5)
+		SetSpriteVisible(pauseButtonCol, 0)
+		FixSpriteToScreen(pauseButtonCol, 1)
 		
 		if curRaceSet = 1
 			CreateTitle1()
 		else
 			CreateTitle2()
 		endif
+		
 		
 		
 	
@@ -1166,6 +1234,8 @@ function DeleteScene(scene)
 				if GetSpriteExists(i) then DeleteSprite(i)
 			next i
 			DeleteSprite(water2Trees)
+			DeleteSprite(water2Trees2)
+			DeleteSprite(water2Trees3)
 			DeleteSprite(featherBoostFrameS)
 			DeleteSprite(featherBoostS)
 			DeleteSprite(featherBoostTop)
@@ -1187,6 +1257,7 @@ function DeleteScene(scene)
 			DeleteSprite(air2BG)
 			DeleteSprite(air2BBG)
 			DeleteSprite(eggBird)
+			DeleteSprite(eggBirdHead)
 			DeleteSprite(airFinishLine)
 			DeleteSprite(air2WindBG)
 			
@@ -1239,6 +1310,9 @@ function DeleteScene(scene)
 		next j
 		DeleteSprite(startRace)
 	
+		DeleteSprite(pauseButton)
+		DeleteSprite(pauseButtonCol)
+		
 	elseif scene = TITLE
 		
 		//SetSpriteVisible(cutsceneSpr, 0)
@@ -1248,6 +1322,9 @@ function DeleteScene(scene)
 		DeleteSprite(startRace)
 		if GetSpriteExists(contRace) then DeleteSprite(contRace)
 		if GetTextExists(contRace) then GetTextExists(contRace)
+	
+		DeleteSprite(pauseButton)
+		DeleteSprite(pauseButtonCol)
 	
 	elseif scene = FINISH
 		
@@ -1276,15 +1353,6 @@ function DeleteScene(scene)
 		SetSpriteVisible(heroIcon, 0)
 		SetSpriteVisible(duckIcon, 0)
 		
-		//DeleteSprite(progBack)
-		//DeleteSprite(progFront)
-		//DeleteSprite(heroIcon)
-		//DeleteSprite(duckIcon)
-		
-		//DeleteAnimatedSprite(flag1)
-		//DeleteAnimatedSprite(flag2)
-		//DeleteAnimatedSprite(flag3)
-		
 	endif
 	
 	if GetTextExists(scrapText) then DeleteText(scrapText)		
@@ -1305,7 +1373,7 @@ function PlayRaceCutScene(scene)
 		duckDistance# = 80000
 		StopMusicOGG(waterM)
 	endif
-	if webVersion = 0 then SetMusicVolumeOGG(curAmbience, 100)
+	if webVersion = 0 then SetMusicVolumeOGG(curAmbience, 100*volumeG/100.0)
 	PauseMusicOGG(curRaceMusic)
 	
 	//Doing the scene twice to get the sprites in place
@@ -1369,8 +1437,8 @@ function PlayRaceCutScene(scene)
 	
 	//StopRaceMusic()
 	if curRaceSet <> 2 or firstDuck2Race = 1
-		ResumeMusicOGG(curRaceMusic)
-		SetMusicVolumeOGG(curRaceMusic, 100)
+		PlayMusicOGG(curRaceMusic)
+		SetMusicVolumeOGG(curRaceMusic, 100*volumeG/100.0)
 	endif
 //~	if curRaceSet = 1
 //~		//StopMusicOGG(waterM)
@@ -1425,25 +1493,60 @@ function StopRaceMusic()
 	StopMusicOGG(spaceM)
 endfunction
 
-function FreezeGameplay()
+function FreezeGameplay(deleteParts)
 	if screen = WATER2
 		StopSprite(hero)
-		DeleteParticles(lightP)
-		DeleteParticles(splashP)
-		DeleteParticles(featherP)
+		if deleteParts then DeleteParticles(lightP)
+		if deleteParts then DeleteParticles(splashP)
+		if deleteParts then DeleteParticles(featherP)
 		for i = 1 to spawnActive.length
 			StopSprite(spawnActive[i].spr)
 		next i
-		
+		StopSound(swimmingS)
 	endif
-	
 	if screen = AIR2
 		StopSprite(hero)
 		for i = 1 to bulletActive.length
 			StopSprite(bulletActive[i].spr)
 		next i
-		
+		StopSprite(eggBird)
+		StopSprite(eggBirdHead)
+		StopSound(jetstreamS)
+	endif
+	if screen = SPACE2
+		for i = 0 to MashList.length
+			if GetSpriteExists(MashList[i].spr) then StopSprite(MashList[i].spr)
+		next i
+		for i = 0 to MashSecond.length
+			if GetSpriteExists(MashSecond[i].spr) then StopSprite(MashSecond[i].spr)
+		next i
+		if GetSpriteExists(spaceScrapS) then StopSprite(spaceScrapS)
 	endif
 	
 endfunction
 
+function UnfreezeGameplay()
+	if screen = WATER2
+		ResumeSprite(hero)
+		for i = 1 to spawnActive.length
+			ResumeSprite(spawnActive[i].spr)
+		next i
+	endif
+	if screen = AIR2
+		ResumeSprite(hero)
+		for i = 1 to bulletActive.length
+			ResumeSprite(bulletActive[i].spr)
+		next i
+		ResumeSprite(eggBird)
+		ResumeSprite(eggBirdHead)
+	endif
+	if screen = SPACE2
+		for i = 0 to MashList.length
+			if GetSpriteExists(MashList[i].spr) then ResumeSprite(MashList[i].spr)
+		next i
+		for i = 0 to MashSecond.length
+			if GetSpriteExists(MashSecond[i].spr) then ResumeSprite(MashSecond[i].spr)
+		next i
+		if GetSpriteExists(spaceScrapS) then ResumeSprite(spaceScrapS)
+	endif
+endfunction

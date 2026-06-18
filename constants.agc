@@ -18,6 +18,11 @@ global AREA_CHARS as string[7] = ["W", "L", "S", "W", "L", "S", "Z"]
 #constant TITLE 9
 #constant FINISH 10
 #constant MENU 11
+#constant RADIO 12
+
+global pauseLine as Integer[5]
+global pauseOptions as String[6]
+
 
 global heroImg1
 global heroImg2
@@ -49,6 +54,52 @@ endfunction
 global fish1I
 global fish2I
 global fish3I
+
+#constant spaceArrowI1 7001
+#constant spaceArrowI2 7002
+#constant spaceArrowI3 7003
+#constant spaceArrowI4 7004
+global spaceArrowColorI as integer[4, 4]
+function LoadGameImages()
+	LoadImage(spaceArrowI1, "space/tearrow1.png")
+	LoadImage(spaceArrowI2, "space/tearrow2.png")
+	LoadImage(spaceArrowI3, "space/tearrow3.png")
+	LoadImage(spaceArrowI4, "space/tearrow4.png")
+	
+	//Left arrow
+	for i = 1 to 4
+		if i = 1
+			r = 100
+			g = 0
+			b = 255
+		elseif i = 2
+			r = 0
+			g = 200
+			b = 120
+		elseif i = 3
+			r = 255
+			g = 0
+			b = 0
+		elseif i = 4
+			r = 255
+			g = 255
+			b = 0
+		endif
+		for j = 1 to 4
+			spaceArrowColorI[i, j] = TintImage(spaceArrowI1-1+j, r,g,b)
+		next j
+	next i
+	
+	pauseOptions[1] = "Resume Race"
+	pauseOptions[2] = "All Volume"
+	pauseOptions[3] = "Music Volume"
+	pauseOptions[4] = "Sound Volume"
+	pauseOptions[5] = "Forfeit Race"
+	pauseOptions[6] = "Return to Triathlon Launcher"
+endfunction
+
+
+
 
 //Sprite/Image/Audio constants
 #constant hero 1001
@@ -124,6 +175,7 @@ global progFlags as integer[7]
 //#constant space2S 2009
 
 #constant upgradeBG 3000
+#constant upgradeBGTop 3002
 #constant upgrage1StartSpr 3001
 #constant upgrage2StartSpr 3201
 #constant upgrage3StartSpr 3401
@@ -147,7 +199,9 @@ global tileEH	//Tile extra height, expanded to make them look connected together
 #constant diveVisAngle 80//160//110
 #constant waterTileAlpha 200
 #constant water2Trees 4051
-
+#constant water2Trees2 4052
+#constant water2Trees3 4053
+#constant saveSpr 4054
 
 #constant land2sprStreet 5000  // 5000 - 5004 for 5 lanes
 #constant land2sprBuildings 5010  // reserved 5010 - 5019 for building sprites
@@ -160,11 +214,15 @@ global tileEH	//Tile extra height, expanded to make them look connected together
 #constant air2BBG 6002
 #constant air2WindBG 6003
 
+global blankI
+global warningI
+
 global tileI1
 global tileI2
 
 global eggBird
-global eggBadI
+global eggBirdHead
+global eggBadI as integer[3]
 global eggGoodI
 global miniBird1I
 global miniBird2I
@@ -177,6 +235,8 @@ global pressThisBeam2
 
 global spaceBoostS
 global spaceScrapS
+
+
 
 #constant spawnStartS 10001
 global spawnS = spawnStartS

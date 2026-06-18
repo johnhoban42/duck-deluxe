@@ -6,6 +6,8 @@ global menuLineSelected = 1
 global menuThumbnail
 global menuDescText
 
+global pauseLineSelected = 1
+
 type menuItem
 	id as string
 	name as string
@@ -72,6 +74,8 @@ function DoMenu()
 	if menuInitialized = 0
 		InitMenu()
 		menuInitialized = 1
+		
+		if GetSpriteExists(coverS) then PlayTweenSprite(tweenSprFadeOut, coverS, 0)
 	endif
 	
 	//Changing the selected menu line item
@@ -114,6 +118,13 @@ function DoMenu()
 			curRaceSet = 2
 			leaveMenu = 1
 			webVersion = 0
+		elseif menuLineSelected = 3 //Mystery, for now
+			ShowPopup("You can still upgrade! Leave" + chr(10) + "without spending your scrap?", 1)
+		elseif menuLineSelected = 5 //Duck Radio
+			nextScreen = RADIO
+			screen = 0
+			leaveMenu = 1
+			curRaceSet = 0
 		elseif menuLineSelected = 6	//RAaD Original
 			curRaceSet = 1
 			leaveMenu = 1
@@ -122,7 +133,7 @@ function DoMenu()
 	endif
 	
 	if leaveMenu = 1
-		
+		ClearPopup()
 		if curRaceSet = 1 or curRaceSet = 2
 			SetRaceQueue(curRaceSet)
 			nextScreen = TITLE
@@ -143,7 +154,231 @@ function DoMenu()
 	
 endfunction
 
+global settingsChanged = 0
+function DoPauseMenu()
+	leavePause = 0
+	returnDeluxeMenu = 0
+	
+	if InputUp or InputDown or inputEsc
+		ClearPopup()
+		PlaySound(collectS, volumeS)
+		
+		SetTextX(pauseLine[pauseLineSelected], 140 + pauseLineSelected*15)
+		if InputDown
+			inc pauseLineSelected, 1
+		elseif InputUp
+			dec pauseLineSelected, 1
+		endif
+		if pauseLineSelected <> 1 and inputEsc
+			pauseLineSelected = 1
+			inputEsc = 0
+		endif
+		if pauseLineSelected = 0 then pauseLineSelected = pauseLine.length
+		if pauseLineSelected > pauseLine.length then pauseLineSelected = 1
+		SetTextX(pauseLine[pauseLineSelected], 165 + pauseLineSelected*15)
+		
+		SetTextString(pauseLine[2], pauseOptions[2] + ": " + str(volumeG))
+		SetTextString(pauseLine[3], pauseOptions[3] + ": " + str(volumeM))
+		SetTextString(pauseLine[4], pauseOptions[4] + ": " + str(volumeS))
+		if pauseLineSelected = 2
+			SetTextString(pauseLine[2], pauseOptions[2] + ": <- " + str(volumeG) + " ->")
+			if volumeG = 0 then SetTextString(pauseLine[2], pauseOptions[2] + ":    0 ->")
+			if volumeG = 100 then SetTextString(pauseLine[2], pauseOptions[2] + ": <- 100")
+		endif
+		if pauseLineSelected = 3
+			SetTextString(pauseLine[3], pauseOptions[3] + ": <- " + str(volumeM) + " ->")
+			if volumeM = 0 then SetTextString(pauseLine[3], pauseOptions[3] + ":    0 ->")
+			if volumeM = 100 then SetTextString(pauseLine[3], pauseOptions[3] + ": <- 100")
+		endif
+		if pauseLineSelected = 4
+			SetTextString(pauseLine[4], pauseOptions[4] + ": <- " + str(volumeS) + " ->")
+			if volumeS = 0 then SetTextString(pauseLine[4], pauseOptions[4] + ":    0 ->")
+			if volumeS = 100 then SetTextString(pauseLine[4], pauseOptions[4] + ": <- 100")
+		endif
+
+	endif
+	
+	if inputSelect
+		//TODO: check that the existing option can be selected
+		if pauseLineSelected = 1 //Resume Race
+			leavePause = 1
+		elseif pauseLineSelected = pauseLine.length and isDuckDeluxe //Return to triathlon menu
+			if GetPopupActive()
+				returnDeluxeMenu = 1
+				leavePause = 1
+			else
+				ShowPopup("Return to main menu?" + chr(10) + "(Progress will be saved.)", 1)
+			endif
+		elseif pauseLineSelected = 5 //Forfeit Race
+			if GetPopupActive()
+				duckSpeed# = 12*fpsr#
+				leavePause = 1
+			else
+				ShowPopup("You sure? You will keep your" + chr(10) + "scrap. (You can also press 'R'.)", 1)
+			endif
+			//If in the upgrade screen, change the text, and go back to the title screen
+		
+		endif
+	endif
+	
+	
+	for i = 1 to pauseLine.length		
+		for j = 0 to Len(GetTextString(pauseLine[i]))
+			SetTextCharY(pauseLine[i], j, 1*Sin(gameTime#+j*2+i*20))
+			if i = pauseLineSelected then SetTextCharY(pauseLine[i], j, 5*Sin(gameTime#-j*12+i*20))
+		next j
+	next i
+	
+	Print(pauseLineSelected)
+	
+	if (stateLeft or stateRight) and GetSoundInstances(selectS) = 0
+		if stateLeft then dec holdTimer#, GetFrameTime()*8
+		if stateRight then inc holdTimer#, GetFrameTime()*8
+		//Need to update strings outside of the inputLeft/Right block, should make a new stateLeft/Right block and move the string updates there
+	endif
+	Print(holdTimer#)
+	
+	if inputLeft or inputRight
+		ClearPopup()
+		holdTimer# = 0
+		if pauseLineSelected = 2 //Global Volume
+			PlaySound(selectS, volumeS)
+			if inputLeft	//Lower
+				volumeG = Max(volumeG-20, 0)
+			else	//Right, Higher
+				volumeG = Min(volumeG+20, 100)
+			endif
+			settingsChanged = 1
+		endif
+		
+		if pauseLineSelected = 3 //Music Volume
+			PlaySound(selectS, volumeS)
+			if inputLeft	//Lower
+				volumeM = Max(volumeM-20, 0)
+			else	//Right, Higher
+				volumeM = Min(volumeM+20, 100)
+			endif
+			settingsChanged = 1
+		endif
+		
+		if pauseLineSelected = 4 //Sound Volume
+			PlaySound(selectS, volumeS)
+			if inputLeft	//Lower
+				volumeS = Max(volumeS-20, 0)
+			else	//Right, Higher
+				volumeS = Min(volumeS+20, 100)
+			endif
+			settingsChanged = 1
+		endif
+		
+		SetMusicSystemVolumeOGG(volumeG*volumeM/100.0)
+		SetSoundSystemVolume(volumeG*volumeS/100.0)
+	endif
+
+	if stateLeft or stateRight
+		if pauseLineSelected = 2 //Global Volume
+			SetTextString(pauseLine[2], pauseOptions[2] + ": <- " + str(Trunc(volumeG+holdTimer#)) + " ->")
+			if (volumeG+holdTimer#) <= 0 then SetTextString(pauseLine[2], pauseOptions[2] + ":    0 ->")
+			if (volumeG+holdTimer#) >= 100 then SetTextString(pauseLine[2], pauseOptions[2] + ": <- 100")
+		endif
+		
+		if pauseLineSelected = 3 //Music Volume
+			SetTextString(pauseLine[3], pauseOptions[3] + ": <- " + str(Trunc(volumeM+holdTimer#)) + " ->")
+			if (volumeM+holdTimer#) <= 0 then SetTextString(pauseLine[3], pauseOptions[3] + ":    0 ->")
+			if (volumeM+holdTimer#) >= 100 then SetTextString(pauseLine[3], pauseOptions[3] + ": <- 100")
+		endif
+		
+		if pauseLineSelected = 4 //Sound Volume
+			SetTextString(pauseLine[4], pauseOptions[4] + ": <- " + str(Trunc(volumeS+holdTimer#)) + " ->")
+			if (volumeS+holdTimer#) <= 0 then SetTextString(pauseLine[4], pauseOptions[4] + ":    0 ->")
+			if (volumeS+holdTimer#) >= 100 then SetTextString(pauseLine[4], pauseOptions[4] + ": <- 100")
+		endif
+	endif
+
+	if inputEsc and pauseLineSelected then leavePause = 1
+
+	if releaseLeft or releaseRight or leavePause
+		if pauseLineSelected = 2 then volumeG = Min(Max(volumeG + holdTimer#, 0), 100)
+		if pauseLineSelected = 3 then volumeM = Min(Max(volumeM + holdTimer#, 0), 100)
+		if pauseLineSelected = 4 then volumeS = Min(Max(volumeS + holdTimer#, 0), 100)
+	endif
+	
+
+	TintPauseText()
+	
+	if leavePause
+		DeleteSprite(pauseScreen)
+		iEnd = 4
+		if screen < UPGRADE then inc iEnd, 1
+		if isDuckDeluxe then inc iEnd, 1
+		for i = 1 to iEnd
+			DeleteText(pauseLine[i])
+		next i
+		//Get rid of the pause screen artifacts
+		ResumeMusicOGG(curRaceMusic)
+		ResumeMusicOGG(oldRaceMusic)
+		if settingsChanged <> 0 then SaveGame()
+		ClearPopup()
+		UnfreezeGameplay()
+		paused = 0
+		inputSelect = 0
+		inputEsc = 0
+		
+		if returnDeluxeMenu
+			
+			if GetMusicPlayingOGG(introM) then StopMusicOGG(introM)
+			if GetMusicPlayingOGG(titleM) then StopMusicOGG(titleM)
+			
+			PlayTweenSprite(tweenSprFadeIn, coverS, 0)
+			PlaySound(windMS, volumeS)
+			WaitFadeTween()
+			DeleteScene(screen)
+			SetSpriteVisible(bg, 0)
+			SetTextVisible(scrapText, 0)
+			PlaySprite(cutsceneSpr3, 3, 0, 1, 60)
+			StopSprite(cutsceneSpr3)
+			if screen = UPGRADE
+				StopMusicOGG(upgrade2M)
+				DeleteUpgrade2()
+			endif
+			screen = 0
+			nextScreen = MENU
+			SaveGame()
+				
+			
+		endif
+		
+	endif
+	
+endfunction
+
+function TintPauseText()
+	longLen = 0
+	for i = 1 to pauseLine.length
+		longLen = Max(longLen, Len(GetTextString(pauseLine[i])))
+	next i
+	r1 = 255
+	g1 = 50
+	b1 = 220
+	r2 = 129
+	g2 = 255
+	b2 = 124
+	
+	for i = 1 to pauseLine.length
+		strLen = Len(GetTextString(pauseLine[i]))
+		for j = 1 to strLen
+			SetTextCharColor(pauseLine[i], j, 255, 255, 255, 255)
+			if j < longLen*3/7 then SetTextCharColor(pauseLine[i], j, r1+(255-r1)*(j/longLen*3/7), g1+(255-g1)*j/longLen*3/7, b1+(255-b1)*j/longLen*3/7, 255)
+		next j
+	next i
+		
+endfunction
+
 function CreateTitle1()
+	
+	HideUIText()
+	SetSpriteVisible(pauseButton, 0)
+	
 	SetSpriteVisible(cutsceneSpr3, 1)
 	SetSpriteExpress(cutsceneSpr3, h, h, 0, 0, 10)
 	SetSpriteMiddleScreen(cutsceneSpr3)
@@ -173,6 +408,7 @@ function DoTitle1()
 		SetSpriteVisible(bg, 1)
 		PlayTweenSprite(tweenSprFadeOut, coverS, .3)
 		SetTextVisible(cutsceneSpr, 0)
+		SetSpriteVisible(pauseButton, 1)
 		
 	endif
 	
@@ -194,6 +430,7 @@ function DoTitle1()
 			PlaySound(clapS, volumeS)
 			WaitFadeTween()
 			DeleteScene(screen)
+			//DeleteScene(scene)
 			screen = 0
 			//TODO - change this current race set out to correspond with different menu screen buttons
 			if isDuckDeluxe = 0 then curRaceSet = 2
@@ -211,6 +448,9 @@ function CreateTitle2()
 	//firstDuck2Race = 1
 	//areaSeen = 3
 	//scrapTotal = 10
+	HideUIText()
+	SetSpriteVisible(pauseButton, 0)
+	
 	SetSpriteVisible(cutsceneSpr3, 1)
 	SetSpriteExpress(cutsceneSpr3, h, h, 0, 0, 10)
 	SetSpriteMiddleScreen(cutsceneSpr3)
@@ -274,6 +514,7 @@ function DoTitle2()
 		SetSpriteVisible(bg, 1)
 		PlayTweenSprite(tweenSprFadeOut, coverS, .3)
 		SetTextVisible(cutsceneSpr, 0)
+		SetSpriteVisible(pauseButton, 1)
 		
 	endif
 	
@@ -346,6 +587,8 @@ function DoTitle2()
 	endif
 endfunction
 
+//global saveSpr = 0
+global saveImg
 
 function SaveGame()
 //~	OpenToWrite(1, "duck2Save.txt")
@@ -356,6 +599,24 @@ function SaveGame()
 //~	
 //~	CloseFile(1)
 	
+	if GetSpriteExists(saveSpr) = 0
+		saveImg = LoadImage("saveIcon.png")
+		CreateSprite(saveSpr, saveImg)
+		SetSpriteExpress(saveSpr, 80, 80, w-120, h-120, 1)
+		FixSpriteToScreen(saveSpr, 1)
+		//AddSpriteAnimationFrame(saveSpr, blankI)
+		AddSpriteAnimationFrame(saveSpr, saveImg)
+		AddSpriteAnimationFrame(saveSpr, blankI)
+		AddSpriteAnimationFrame(saveSpr, saveImg)
+		AddSpriteAnimationFrame(saveSpr, blankI)
+		AddSpriteAnimationFrame(saveSpr, saveImg)
+		AddSpriteAnimationFrame(saveSpr, saveImg)
+		AddSpriteAnimationFrame(saveSpr, saveImg)
+		AddSpriteAnimationFrame(saveSpr, saveImg)
+		AddSpriteAnimationFrame(saveSpr, blankI)
+	endif
+	StopSprite(saveSpr)
+	PlaySprite(saveSpr, 8, 0)
 	
 	SaveSharedVariable("scrapTotal", str(scrapTotal))
 	SaveSharedVariable("areaSeen", str(areaSeen))
@@ -365,6 +626,11 @@ function SaveGame()
 			SaveSharedVariable("upgrade" + str(i) + str(j), str(upgrades[i, j]))
 		next j
 	next i
+	
+	SaveSharedVariable("volumeM", str(volumeM))
+	SaveSharedVariable("volumeS", str(volumeS))
+	SaveSharedVariable("volumeG", str(volumeG))
+	
 	
 endfunction
 
@@ -385,6 +651,10 @@ function LoadGame()
 			upgrades[i, j] = val(LoadSharedVariable("upgrade" + str(i) + str(j), "0"))
 		next j
 	next i
+	
+	volumeM = val(LoadSharedVariable("volumeM", "100"))
+	volumeS = val(LoadSharedVariable("volumeS", "100"))
+	volumeG = val(LoadSharedVariable("volumeG", "100"))
 	
 endfunction
 

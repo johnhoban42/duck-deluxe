@@ -8,6 +8,7 @@ global inputRight = 0
 global inputUp = 0
 global inputDown = 0
 global inputSpace = 0
+global inputEsc = 0
 global stateLeft = 0
 global stateRight = 0
 global stateUp = 0
@@ -16,6 +17,7 @@ global stateSpace = 0
 
 global releaseLeft = 0
 global releaseRight = 0
+global holdTimer# = 0
 
 function DoInputs()
 	inputSelect = 0
@@ -25,6 +27,7 @@ function DoInputs()
 	inputRight = 0
 	inputUp = 0
 	inputDown = 0
+	inputEsc = 0
 	stateLeft = 0
 	stateRight = 0
 	stateUp = 0
@@ -41,6 +44,7 @@ function DoInputs()
 	if GetRawKeyPressed(39) or GetRawKeyPressed(68) then inputRight = 1
 	if GetRawKeyPressed(38) or GetRawKeyPressed(87) then inputUp = 1
 	if GetRawKeyPressed(40) or GetRawKeyPressed(83) then inputDown = 1
+	if GetRawKeyPressed(27) then inputEsc = 1
 	
 	if GetRawKeyState(37) or GetRawKeyState(65) then stateLeft = 1
 	if GetRawKeyState(39) or GetRawKeyState(68) then stateRight = 1
@@ -70,6 +74,7 @@ endfunction
 //Volume for music and sound effects
 global volumeM = 100
 global volumeS = 100
+global volumeG = 80
 #constant ambVol 20
 
 //Core functions that are used in the app, and possible future apps
@@ -988,7 +993,57 @@ function SetTweenPulse(twn, spr, impact#)
 endfunction
 
 
+global popupSpr = 0
+global popupTxt = 0
 
+function ShowPopup(str$, playSE)
+	if GetSpriteExists(popupSpr) = 0
+		popupSpr = CreateSprite(0)
+		
+		AddSpriteAnimationFrame(popupSpr, warningI)
+		AddSpriteAnimationFrame(popupSpr, blankI)
+		AddSpriteAnimationFrame(popupSpr, warningI)
+		AddSpriteAnimationFrame(popupSpr, blankI)
+		AddSpriteAnimationFrame(popupSpr, warningI)
+		AddSpriteAnimationFrame(popupSpr, blankI)
+		AddSpriteAnimationFrame(popupSpr, warningI)
+		
+		SetSpriteExpress(popupSpr, 600, 150, 0, h - 170, 0)
+		SetSpriteMiddleScreenX(popupSpr)
+		
+		
+		popupTxt = CreateText("")
+		
+		SetTextExpress(popupTxt, str$, 40, fontMI, 0, GetSpriteX(popupSpr) + 60, GetSpriteY(popupSpr) + 30, -10, 0)
+		SetTextColor(popupTxt, 0, 0, 0, 255)
+		
+		FixSpriteToScreen(popupSpr, 1)
+		FixTextToScreen(popupTxt, 1)
+		
+	else
+		SetSpriteVisible(popupSpr, 1)
+		SetTextVisible(popupTxt, 1)
+		SetSpriteDepth(popupSpr, 0)
+		SetTextDepth(popupTxt, 0)
+	endif
+	
+	if playSE then PlaySound(haltS, volumeS*0.5)
+	SetTextString(popupTxt, str$)
+	PlaySprite(popupSpr, 10, 0) 
+	
+endfunction
+
+function GetPopupActive()
+	result = 0
+	if GetSpriteExists(popupSpr)
+		result = GetSpriteVisible(popupSpr)
+	endif
+endfunction result
+
+function ClearPopup()
+	SetSpriteVisible(popupSpr, 0)
+	SetTextVisible(popupTxt, 0)
+endfunction
 
 global selectTarget = 0
 global selectActive = 0
@@ -1033,6 +1088,29 @@ endfunction
 function MatchSpriteColor(spr, sprOrigin)
 	SetSpriteColor(spr, GetSpriteColorRed(sprOrigin), GetSpriteColorGreen(sprOrigin), GetSpriteColorBlue(sprOrigin), GetSpriteColorAlpha(sprOrigin))
 endfunction
+
+function TintImage(img, r, g, b)
+	mem = CreateMemblockFromImage(img)
+	
+
+	size = GetMemblockSize(mem)
+	for i = 12 to size-1 step 4
+		if GetMemblockByte(mem, i) = 0 and GetMemblockByte(mem, i+1) = 0 and GetMemblockByte(mem, i+2) = 0 then continue
+		mr = GetMemblockByte(mem, i)
+		mr = mr + (r*(1.0-(mr/255.0)))
+		SetMemblockByte(mem, i, mr)
+		
+		mg = GetMemblockByte(mem, i+1)
+		mg = mg + (g*(1.0-(mg/255.0)))
+		SetMemblockByte(mem, i+1, mg)
+		
+		mb = GetMemblockByte(mem, i+2)
+		mb = mb + (b*(1.0-(mb/255.0)))
+		SetMemblockByte(mem, i+2, mb)
+	next i
+	
+	imgNew = CreateImageFromMemblock(mem)
+endfunction imgNew
 
 function SetWords()
 	//Water 1
@@ -1307,10 +1385,10 @@ function SetPowers()
 	powers[3, 3, 6] = "x4.4 Wind Speed"
 	powers[3, 4, 6] = "x8.9 Wind Speed"
 	
-	powers[4, 1, 6] = "x1 Duck Speed"
-	powers[4, 2, 6] = "x1.75 Duck Speed"
-	powers[4, 3, 6] = "x3.15 Duck Speed"
-	powers[4, 4, 6] = "x4.5 Duck Speed"
+	powers[4, 1, 6] = "x1 Duck Mobility"
+	powers[4, 2, 6] = "x1.75 Duck Mobility"
+	powers[4, 3, 6] = "x3.15 Duck Mobility"
+	powers[4, 4, 6] = "x4.5 Duck Mobility"
 	
 	//Space 2
 	powers[1, 1, 7] = "x1 Base Speed"

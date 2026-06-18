@@ -34,22 +34,27 @@ global oops as integer[5]
 global oopsMax = 0
 global oopsUsed = 0
 
+//global spaceArrowColorSet = 0
+
+
 function CreateMashInputSprite(spr, dir)
 	if GetSpriteExists(spr) = 0 then CreateSprite(spr, 0)
 	SetSpriteExpress(spr, 40, 40, 0, 0, 20)
-	SetSpriteImage(spr, arrowI)
-	SetSpriteColor(spr, 0, 255, 255, 255)	//Teal
+
+	for i = 1 to 4
+		AddSpriteAnimationFrame(spr, spaceArrowColorI[dir, i])
+	next i
+	
+	PlaySprite(spr, 20, 1)
 	
 	if dir = 2
 		SetSpriteAngle(spr, 180)
-		SetSpriteColor(spr, 255, 184, 255, 255)	//Pink
 	elseif dir = 3
 		SetSpriteAngle(spr, 270)
-		SetSpriteColor(spr, 255, 0, 0, 255)	//Red
 	elseif dir = 4
 		SetSpriteAngle(spr, 90)
-		SetSpriteColor(spr, 255, 184, 82, 255)	//Orange
 	endif
+	
 	
 endfunction
 
@@ -270,10 +275,10 @@ function DoSpace2()
 	
 	SetSpriteAngle(hero, -6 + 12*cos(gameTime#))
 	
-	if inputSelect
-		CreateMashSequence()
-		
-	endif
+	//if inputSelect
+	//	CreateMashSequence()
+	//	
+	//endif
 	
 	//Print(mashPos)
 	//Print(onSplit)
@@ -342,8 +347,8 @@ function DoSpace2()
 				
 				if mashPos = MashList.length + 1
 					//Boost
-					PlaySound(boostS, volumeS/3)
-					PlaySoundR(spaceCSE[mashPos+1], volumeS/1.5)
+					PlaySound(boostS, volumeS/6)
+					PlaySoundR(spaceGSE[mashPos+1], volumeS/1.5)
 					spaceSpeedMult# = Pow(1 + 0.1*(MashList.length), 1.15)
 					spaceSpeed# = spaceSpeed#*spaceSpeedMult#
 					spaceBoost# = 1
@@ -364,7 +369,7 @@ function DoSpace2()
 					//Making a new mash sequence
 					CreateMashSequence()
 				else
-					PlaySoundR(spaceCSE[mashPos], volumeS/2)
+					PlaySoundR(spaceGSE[mashPos], volumeS/2)
 				endif
 			else
 				//WRONG INPUT!
@@ -386,7 +391,7 @@ function DoSpace2()
 				inc mashPos, 1
 				
 				if mashPos = MashSecond.length + 1
-					PlaySoundR(spaceCSE[splitPos+mashPos+1], volumeS/1.5)
+					PlaySoundR(spaceGSE[splitPos+mashPos+1], volumeS/1.5)
 					CollectScrap(SPACE2)
 					//Making the icons at the end of each line invisible
 					spr = spaceScrapS
@@ -400,7 +405,7 @@ function DoSpace2()
 					//Making a new mash sequence
 					CreateMashSequence()
 				else
-					PlaySoundR(spaceCSE[splitPos+mashPos], volumeS/2)
+					PlaySoundR(spaceGSE[splitPos+mashPos], volumeS/2)
 				endif
 			else
 				//WRONG INPUT!
