@@ -36,7 +36,7 @@ function InitAir2()
 	
 	SetViewZoomMode(1)
 	
-	LoadAnimatedSprite(hero, "mesaBG/duck", 5)
+	LoadAnimatedSprite(hero, "mesaBG/duck", 6)
 	SetSpriteExpress(hero, 100, 100, w/2, h/2 + heroAir2Y, 7)
 	FixSpriteToScreen(hero, 0)
 	SetSpriteShape(hero, 1)
@@ -101,7 +101,7 @@ function InitAir2()
 	air2SlipSpeed# = 0.4 * (1 + 1.5*upgrades[3, 6] + 1.4*upgrades[3, 6]/3 + 2*upgrades[3, 6]/3)
 	//Default speed
 	air2DefSpeed# = 0.1 * (1 + .75*upgrades[3, 6] + .65*upgrades[3, 6]/3 + .6*upgrades[3, 6]/3)
-	duck2MesaFrameSpeed = 10 + 5*0
+	duck2MesaFrameSpeed = 10 + 5*upgrades[3, 6]
 	//Movement is also be enhanced by default speed
 	air2Vel# = (2.0 + .25*upgrades[4, 6])/4.0
 	air2Accel# = (.015 + .005*upgrades[4, 6])/2.0
@@ -288,7 +288,7 @@ function DoAir2()
 		endif
 		if (inputSelect) or turnThisTime = 1
 			PlaySound(collectS, volumeS/4)
-			PlaySprite(hero, duck2MesaFrameSpeed*1.5, 0, 4, 5)
+			PlaySprite(hero, duck2MesaFrameSpeed*1.5, 0, 4, 6)
 			if air2TurnTarget < 0
 				SetSpriteFlip(hero, 0, 0)
 			else

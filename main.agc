@@ -326,8 +326,8 @@ function SetRaceQueue(raceSet)
 		raceQueue.insert(LAND)
 	elseif raceSet = 2 //Race Against a Duck 2 order
 		raceQueue.insert(LAND2)
-		raceQueue.insert(WATER2)
 		raceQueue.insert(AIR2)
+		raceQueue.insert(WATER2)
 		raceQueue.insert(SPACE2)
 	endif
 	raceQueueRef = raceQueue
@@ -672,7 +672,7 @@ do
 		//Print(duckSpeed#)
 		
 	endif
-	//Print("fpsr: " + Str(fpsr#))
+	Print("fpsr: " + Str(fpsr#))
 	Print("Cur FPS: " + Str(ScreenFPS()))
 	Print(GetRawLastKey())
 	//Print(ScreenFPS()*fpsr#)

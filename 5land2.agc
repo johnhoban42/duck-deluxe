@@ -158,10 +158,10 @@ function InitScrap()
     // more lanes unlocked = more scrap spawns
     sprScrapID = land2sprScrap
     scrapRank = GetScrapRank()
-    for i = 0 to 10 * land2nLanes
+    for i = 0 to 6 * land2nLanes
         sprScrapID = land2sprScrap + i
         scrapX = Random2(1, land2nLanes)
-        scrapY = 1000 + i * land2Distance / (10 * land2nLanes) + Random2(-100, 100)
+        scrapY = 1000 + i * land2Distance / (6 * land2nLanes) + Random2(-100, 100)
         // set scrap properties
         sprScrap as spawn
         sprScrap.spr = sprScrapID
@@ -320,7 +320,8 @@ function DoLand2()
     endif
     SetSpriteColor(hero, 255, 255 - 2*land2heroIFrames#, 255 - 2*land2heroIFrames#, 255)
     SetSpritePosition(hero, LaneToX(land2currentLane) - 9 * land2laneChangeDirection * land2laneChangeFrame, 300)
-    inc heroLocalDistance#, -1 * land2heroSpeed#
+    inc heroLocalDistance#, -1 * land2heroSpeed# *fpsr#*0.4166/3.74
+	
 
     DoSpawnables()
 
