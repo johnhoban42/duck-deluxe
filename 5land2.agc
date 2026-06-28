@@ -201,9 +201,14 @@ function InitLand2()
     SetSpritePosition(land2sprStreet, 0, 0)
     PlaySprite(land2sprStreet, land2baseLaneSpeed * land2heroSpeed# * land2scrollScalar#)
 
+    // reset hero movement characteristics
+    land2currentLane = 2
+    land2heroBoostFrames# = 0
+    land2heroIFrames# = 0
+    land2heroBoostCharges# = 0  // reset boost count
+
     // load boost meter
     // for now, just a basic rectangle that stretches with additional boosts
-    land2heroBoostCharges# = 0  // reset boost count
     CreateSpriteExpress(land2sprBoostMeter, 0, 30, 100, 600, 10)
     SetSpriteColor(land2sprBoostMeter, 255, 0, 0, 255)
 
