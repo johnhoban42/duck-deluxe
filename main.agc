@@ -1251,6 +1251,7 @@ function DeleteScene(scene)
 		    for lane = 0 to land2maxLanes - 1
 		        DeleteSprite(land2sprStreet + lane)
 		    next lane
+			DeleteSprite(land2sprBoostMeter)
 		endif
 		
 		if scene = AIR2
