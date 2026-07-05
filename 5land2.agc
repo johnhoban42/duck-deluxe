@@ -327,8 +327,29 @@ function DoLand2()
     SetSpriteColor(hero, 255, 255 - 2*land2heroIFrames#, 255 - 2*land2heroIFrames#, 255)
     SetSpritePosition(hero, LaneToX(land2currentLane) - 9 * land2laneChangeDirection * land2laneChangeFrame, 300)
     inc heroLocalDistance#, -1 * land2heroSpeed# * fpsr#*0.4166/3.74
-	
 
     DoSpawnables()
+
+endfunction
+
+function FreezeLand2()
+
+    // freeze background and hero animations
+    StopSprite(hero)
+    StopSprite(land2sprStreet)
+    // freeze all spawnables
+    for i = 0 to spawnActive.length - 1
+        StopSprite(spawnActive[i].spr)
+    next i
+    // hard stop for any SFX
+    StopSound(boostChargeS)
+    StopSound(boostS)
+    StopSound(hitS)
+
+endfunction
+
+function UnfreezeLand2()
+
+    // placeholder. all animations get restarted during the scene init
 
 endfunction
