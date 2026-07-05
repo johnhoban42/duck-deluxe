@@ -1504,8 +1504,9 @@ function FreezeGameplay(deleteParts)
 			StopSprite(spawnActive[i].spr)
 		next i
 		StopSound(swimmingS)
-	endif
-	if screen = AIR2
+	elseif screen = LAND2
+		FreezeLand2()
+	elseif screen = AIR2
 		StopSprite(hero)
 		for i = 1 to bulletActive.length
 			StopSprite(bulletActive[i].spr)
@@ -1513,8 +1514,7 @@ function FreezeGameplay(deleteParts)
 		StopSprite(eggBird)
 		StopSprite(eggBirdHead)
 		StopSound(jetstreamS)
-	endif
-	if screen = SPACE2
+	elseif screen = SPACE2
 		for i = 0 to MashList.length
 			if GetSpriteExists(MashList[i].spr) then StopSprite(MashList[i].spr)
 		next i
@@ -1532,16 +1532,16 @@ function UnfreezeGameplay()
 		for i = 1 to spawnActive.length
 			ResumeSprite(spawnActive[i].spr)
 		next i
-	endif
-	if screen = AIR2
+	elseif screen = LAND2
+		UnfreezeLand2()
+	elseif screen = AIR2
 		ResumeSprite(hero)
 		for i = 1 to bulletActive.length
 			ResumeSprite(bulletActive[i].spr)
 		next i
 		ResumeSprite(eggBird)
 		ResumeSprite(eggBirdHead)
-	endif
-	if screen = SPACE2
+	elseif screen = SPACE2
 		for i = 0 to MashList.length
 			if GetSpriteExists(MashList[i].spr) then ResumeSprite(MashList[i].spr)
 		next i
