@@ -42,7 +42,7 @@ global land2scrollScalar# = 0.1  // background scroll speed, relative to hero sp
 function InitUpgradeValues()
     // assign values to upgradeable attributes based on purchased levels 
     land2nLanes = 2 + upgrades[attrnLanes, LAND2]
-    land2heroSpeedMax# = 6 + 4 * upgrades[attrBaseSpeed, LAND2]
+    land2heroSpeedMax# = 6 + 3 * upgrades[attrBaseSpeed, LAND2]
     land2heroBoostFramesMax = 60 + 30 * upgrades[attrBoostFrames, LAND2]
     land2boostGroupLength = 5 + upgrades[attrBoostGroupLength, LAND2] + 2 * (upgrades[attrBoostGroupLength, LAND2] / 2)
 
@@ -99,7 +99,8 @@ function InitObstacles()
         sprCone.cat = BAD
         sprCone.size = 40
         LoadSpriteFromSpawnable(sprCone, "cone.png", 10) 
-        sprCone.y = 600 + 180 * i + Random2(0, 100)
+        // scale the offset of the first obstacle by hero speed
+        sprCone.y = 600 + (300 * upgrades[attrBaseSpeed, LAND2]) + (180 * i + Random2(0, 100))
         sprCone.x = SetObstacleLane(sprCone)
         spawnActive.insert(sprCone)
         inc sprID, 1
@@ -200,9 +201,14 @@ function InitLand2()
     SetSpritePosition(land2sprStreet, 0, 0)
     PlaySprite(land2sprStreet, land2baseLaneSpeed * land2heroSpeed# * land2scrollScalar#)
 
+    // reset hero movement characteristics
+    land2currentLane = 2
+    land2heroBoostFrames# = 0
+    land2heroIFrames# = 0
+    land2heroBoostCharges# = 0  // reset boost count
+
     // load boost meter
     // for now, just a basic rectangle that stretches with additional boosts
-    land2heroBoostCharges# = 0  // reset boost count
     CreateSpriteExpress(land2sprBoostMeter, 0, 30, 100, 600, 10)
     SetSpriteColor(land2sprBoostMeter, 255, 0, 0, 255)
 
@@ -226,7 +232,7 @@ function DoSpawnables()
     // process movement for all spawnables (boosts, obstacles)
     idx_to_delete = -1
     for i = 0 to spawnActive.length - 1
-        inc spawnActive[i].y, -3.5 * land2heroSpeed# * land2scrollScalar#
+        inc spawnActive[i].y, -3.5 * land2heroSpeed# * land2scrollScalar# * fpsr#*0.4166/3.74
         if spawnActive[i].cat = GOOD
             // check for collecting a boost
             if GetSpriteCollision(spawnActive[i].spr, hero) and spawnActive[i].x = land2currentLane
@@ -320,9 +326,30 @@ function DoLand2()
     endif
     SetSpriteColor(hero, 255, 255 - 2*land2heroIFrames#, 255 - 2*land2heroIFrames#, 255)
     SetSpritePosition(hero, LaneToX(land2currentLane) - 9 * land2laneChangeDirection * land2laneChangeFrame, 300)
-    inc heroLocalDistance#, -1 * land2heroSpeed# *fpsr#*0.4166/3.74
-	
+    inc heroLocalDistance#, -1 * land2heroSpeed# * fpsr#*0.4166/3.74
 
     DoSpawnables()
+
+endfunction
+
+function FreezeLand2()
+
+    // freeze background and hero animations
+    StopSprite(hero)
+    StopSprite(land2sprStreet)
+    // freeze all spawnables
+    for i = 0 to spawnActive.length - 1
+        StopSprite(spawnActive[i].spr)
+    next i
+    // hard stop for any SFX
+    StopSound(boostChargeS)
+    StopSound(boostS)
+    StopSound(hitS)
+
+endfunction
+
+function UnfreezeLand2()
+
+    // placeholder. all animations get restarted during the scene init
 
 endfunction
