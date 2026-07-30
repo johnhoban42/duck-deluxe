@@ -232,11 +232,13 @@ function DoPauseMenu()
 	Print(pauseLineSelected)
 	
 	if (stateLeft or stateRight) and GetSoundInstances(selectS) = 0
-		if stateLeft then dec holdTimer#, GetFrameTime()*8
-		if stateRight then inc holdTimer#, GetFrameTime()*8
+		if stateLeft then dec holdTimer#, GetFrameTime()*16
+		if stateRight then inc holdTimer#, GetFrameTime()*16
 		//Need to update strings outside of the inputLeft/Right block, should make a new stateLeft/Right block and move the string updates there
 	endif
 	Print(holdTimer#)
+	
+	volInc = 10
 	
 	if inputLeft or inputRight
 		ClearPopup()
@@ -244,9 +246,9 @@ function DoPauseMenu()
 		if pauseLineSelected = 2 //Global Volume
 			PlaySound(selectS, volumeS)
 			if inputLeft	//Lower
-				volumeG = Max(volumeG-20, 0)
+				volumeG = Max(volumeG-volInc, 0)
 			else	//Right, Higher
-				volumeG = Min(volumeG+20, 100)
+				volumeG = Min(volumeG+volInc, 100)
 			endif
 			settingsChanged = 1
 		endif
@@ -254,9 +256,9 @@ function DoPauseMenu()
 		if pauseLineSelected = 3 //Music Volume
 			PlaySound(selectS, volumeS)
 			if inputLeft	//Lower
-				volumeM = Max(volumeM-20, 0)
+				volumeM = Max(volumeM-volInc, 0)
 			else	//Right, Higher
-				volumeM = Min(volumeM+20, 100)
+				volumeM = Min(volumeM+volInc, 100)
 			endif
 			settingsChanged = 1
 		endif
@@ -264,9 +266,9 @@ function DoPauseMenu()
 		if pauseLineSelected = 4 //Sound Volume
 			PlaySound(selectS, volumeS)
 			if inputLeft	//Lower
-				volumeS = Max(volumeS-20, 0)
+				volumeS = Max(volumeS-volInc, 0)
 			else	//Right, Higher
-				volumeS = Min(volumeS+20, 100)
+				volumeS = Min(volumeS+volInc, 100)
 			endif
 			settingsChanged = 1
 		endif

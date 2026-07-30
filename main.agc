@@ -30,7 +30,7 @@ global isDuckDeluxe = 1	//This version makes the game the full release, instead 
 global webVersion = 0	//This variable sets the duck 1 game back to it's original version, instead of the ReDucks version
 if debug = 0 then SetErrorMode(1)
 global nextScreen = AIR
-//SetPhysicsDebugOn()
+SetPhysicsDebugOn()
 
 
 #constant w 1280
@@ -1245,12 +1245,14 @@ function DeleteScene(scene)
 		endif
 		
 		if scene = LAND2
-		    for i = 0 to 2
+		    for i = 0 to 4
 		        DeleteSprite(land2sprBuildings + i)
 		    next i
-		    for lane = 0 to land2maxLanes - 1
-		        DeleteSprite(land2sprStreet + lane)
-		    next lane
+		    	for i = 1 to land2sprStreet.length
+				for j = 1 to land2sprStreet[i].length 
+					DeleteSprite(land2sprStreet[i, j])
+				next j
+		    next i
 			DeleteSprite(land2sprBoostMeter)
 		endif
 		
