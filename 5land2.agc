@@ -35,22 +35,27 @@ global land2currentLane = 2  // current lane, 1 = leftmost lane
 global land2laneChangeFrame = 0  // frames remaining in lane change, max 5
 global land2laneChangeDirection = 0  // -1 -> left, 1 -> right
 global land2boostScalar# = 7.5
+global land2BehindCar = 0
+global land2AnimSpeed = 10
+
+global carListEnd = 0
 
 // background movement
 global land2baseLaneSpeed = 52
 global land2buildingXOffset = 0  // set in the init script
 global land2scrollScalar# = 0.1  // background scroll speed, relative to hero speed
 
-function InitUpgradeValues()
-    // assign values to upgradeable attributes based on purchased levels 
-    land2nLanes = 5//2 + upgrades[attrnLanes, LAND2]
-    land2heroSpeedMax# = 6 + 3 * upgrades[attrBaseSpeed, LAND2]
-    land2heroBoostFramesMax = 60 + 30 * upgrades[attrBoostFrames, LAND2]
-    land2boostGroupLength = 5 + upgrades[attrBoostGroupLength, LAND2] + 2 * (upgrades[attrBoostGroupLength, LAND2] / 2)
+//~function InitUpgradeValues()
+    //~// assign values to upgradeable attributes based on purchased levels 
+    //~land2nLanes = 5//2 + upgrades[attrnLanes, LAND2]
+    //~land2heroSpeedMax# = 6 + 3 * upgrades[attrBaseSpeed, LAND2]
+    //~land2AnimSpeed = 10 + 3 * upgrades[attrBaseSpeed, LAND2]
+    //~land2heroBoostFramesMax = 60 + 30 * upgrades[attrBoostFrames, LAND2]
+    //~land2boostGroupLength = 5 + upgrades[attrBoostGroupLength, LAND2] + 2 * (upgrades[attrBoostGroupLength, LAND2] / 2)
 
-    land2heroSpeed# = land2heroSpeedMax#
+    //~land2heroSpeed# = land2heroSpeedMax#
 
-endfunction
+//~endfunction
 
 //~function LoadSpriteFromSpawnable(spr as spawn, imagePath as string, depth as integer)
     //~// load a sprite from a spawnable's properties
@@ -64,12 +69,16 @@ endfunction x#
 
 function LaneToXWithOffset(lane as integer, yOffset as float)
     // calculate the current x-coordinate from a lane number and y-coordinate
-endfunction -50 + (yoffset * 3.0 / 2) + laneWid * (lane - 1)
+endfunction -80 + (yoffset * 3.0 / 2) + laneWid * (5 - lane - 1)
 //endfunction 105 + (yoffset * 4.0 / 3) + 100 * (lane - 1)
+
+function LaneToXWithOffsetCar(lane as integer, yOffset as float)
+    // calculate the current x-coordinate from a lane number and y-coordinate
+endfunction -10 + (yoffset * 3.0 / 2) + laneWid * (5 - lane - 1)
 
 function LaneToXWithOffsetBoost(lane as integer, yOffset as float)
     // calculate the current x-coordinate from a lane number, specific to boost panels
-endfunction -110 + (yoffset * 3.0 / 2) + laneWid * (lane - 1)
+endfunction -155 + (yoffset * 3.0 / 2) + laneWid * (5- lane - 1)
 //endfunction 45 + (yoffset * 4.0 / 3) + 100 * (lane - 1)
 
 function SetObstacleLane(obstacle as spawn)
@@ -96,19 +105,31 @@ endfunction x
 
 function InitObstacles()
     // load spawnable obstacles (cars and cones)
-    sprID = land2sprCones
-    for i = 0 to 19
+    lastLane = -1
+    //sprID = land2sprCones
+    carListEnd = 60
+    for i = 0 to carListEnd//19
         sprCone as spawn
-        sprCone.spr = sprID
+        sprCone.spr = LoadSprite("cbg/car"+str(Random(1,5))+".png") //sprID
         sprCone.cat = BAD
-        sprCone.size = 40
+        sprCone.size = 160
         // scale the offset of the first obstacle by hero speed
         sprCone.y = 600 + (300 * upgrades[attrBaseSpeed, LAND2]) + (180 * i + Random2(0, 100))
         //sprCone.x = SetObstacleLane(sprCone)
-        sprCone.x = 1
-        LoadSpriteExpress(sprCone.spr, "cone.png", sprCone.size, sprCone.size, sprCone.x, sprCone.y, 10)
+        sprCone.x = Random2(1, land2nLanes)
+        if Random(1,5) <> 5
+	        if sprCone.x = lastLane
+				sprCone.x = 1+Mod(sprCone.x, land2nLanes)
+	        endif
+	        lastLane = sprCone.x
+        endif
+        //sprCone.x = 1
+        
+        SetSpriteExpress(sprCone.spr, sprCone.size, sprCone.size, sprCone.x, sprCone.y, GetSpriteDepth(hero)-1)
+        SetSpriteShapeBox(sprCone.spr, 0, 0, 50, 10, 0, 0)
         spawnActive.insert(sprCone)
-        inc sprID, 1
+        //inc sprID, 1
+        
     next i
 endfunction
 
@@ -117,22 +138,25 @@ function InitBoostPanels()
     // panels come in runs and shift left or right one lane at a time
     // panels spawn less often until the player unlocks more lanes,
     // which is the incentive for that upgrade
-    sprBoostID = land2sprBoostPanels
-    nBoostStrings = 24 / (6 - land2nLanes)
+    //sprBoostID = land2sprBoostPanels
+    nBoostStrings = 72 / 4 // (6 - land2nLanes)
     for i = 0 to nBoostStrings
         panelX = Random2(1, land2nLanes)  // x coordinate -> which lane boost spawns in
         panelY# = (i / (1.0 * nBoostStrings)) * land2Distance + Random2(500, 750)  // race distance
         for panel = 0 to land2boostGroupLength - 1
             // set panel properties
             sprBoost as spawn
-            sprBoost.spr = sprBoostID
+            //sprBoost.spr = CreateSprite(0) //sprBoostID
             sprBoost.cat = GOOD
             sprBoost.x = panelX
             sprBoost.y = panelY#
-            sprBoost.size = 180
+            sprBoost.size = 70
             // todo - write something like LoadAnimatedSpriteFromSpawnable?
-            LoadAnimatedSprite(sprBoost.spr, "land2booster", 18)
-            SetSpriteSize(sprBoost.spr, sprBoost.size, sprBoost.size * 0.4)
+            sprBoost.spr = CreateSprite(0)
+            for j = 1 to 18
+				AddSpriteAnimationFrame(sprBoost.spr, boosterI[j])
+            next j
+            SetSpriteSize(sprBoost.spr, sprBoost.size*14/5, sprBoost.size)
             SetSpritePosition(sprBoost.spr, sprBoost.x, sprBoost.y)
             SetSpriteDepth(sprBoost.spr, 10)
             PlaySprite(sprBoost.spr, 30)
@@ -145,7 +169,7 @@ function InitBoostPanels()
             // prepare the next panel's properties
             // when shifting the next panel left or right, give it a greater probability
             // of turning out of the leftmost and rightmost lanes
-            inc sprBoostID, 1
+            //inc sprBoostID, 1
             if panelX = 1
                 inc panelX, Random2(0, 1)
             elseif panelX = land2nLanes
@@ -164,34 +188,61 @@ function InitScrap()
     // more lanes unlocked = more scrap spawns
     sprScrapID = land2sprScrap
     scrapRank = GetScrapRank()
-    for i = 0 to 6 * land2nLanes
-        sprScrapID = land2sprScrap + i
+    for i = 0 to 36 * land2nLanes
+       // sprScrapID = land2sprScrap + i
         scrapX = Random2(1, land2nLanes)
         scrapY = 1000 + i * land2Distance / (6 * land2nLanes) + Random2(-100, 100)
         // set scrap properties
         sprScrap as spawn
-        sprScrap.spr = sprScrapID
+        sprScrap.spr = CreateSprite(0) // = sprScrapID
         sprScrap.cat = SCRAP
         sprScrap.x = scrapX
         sprScrap.y = scrapY
         sprScrap.size = 60
+        
+		for j = 1 to carListEnd
+			//if spawnActive[j].x = sprScrap.x and Abs(sprScrap.y-spawnActive[j].x) < 250 then sprScrap.x = 1+Mod(sprScrap.x, land2nLanes)
+			if spawnActive[j].x = sprScrap.x and Abs(sprScrap.y-spawnActive[j].y) < 150 then sprScrap.y = sprScrap.y + 300
+        	next j
+        
         // randomize scrap sprite
+        
+			
+        
+        
         scrapType = Random2(1, 8)
         scrapImgPath$ = "scrap/scrap" + str(scrapType) + "_" + str(scrapRank) + "_"
         // final load
-        LoadAnimatedSprite(sprScrap.spr, scrapImgPath$, 4)
         SetSpriteSize(sprScrap.spr, sprScrap.size, sprScrap.size)
         SetSpritePosition(sprScrap.spr, sprScrap.x, sprScrap.y)
         SetSpriteDepth(sprScrap.spr, 10)
-        PlaySprite(sprScrap.spr, 5)
+        
+        scrapSet = GetScrapRank()
+			rnd = Random(1,8)
+			for j = 1 to 4
+				AddSpriteAnimationFrame(sprScrap.spr, scrapImgs[rnd, scrapSet, j])//First index will be a random
+			next j
+        PlaySprite(sprScrap.spr, 3+Random(1,3))
         spawnActive.insert(sprScrap)
+        
+		
+        
+        
     next i
 endfunction
 
 function InitLand2()
 
     // apply upgrade values
-    InitUpgradeValues()
+    // assign values to upgradeable attributes based on purchased levels 
+    land2nLanes = 5 + upgrades[attrnLanes, LAND2]
+    land2heroSpeedMax# = 6 + 3 * upgrades[attrBaseSpeed, LAND2]
+    land2AnimSpeed = 10 + 3 * upgrades[attrBaseSpeed, LAND2]
+    land2heroBoostFramesMax = 60 + 30 * upgrades[attrBoostFrames, LAND2]
+    land2boostGroupLength = 5 + upgrades[attrBoostGroupLength, LAND2] + 2 * (upgrades[attrBoostGroupLength, LAND2] / 2)
+
+    land2heroSpeed# = land2heroSpeedMax#
+    //InitUpgradeValues()
 	
     // load building sprites
     // building positioning depends on how many lanes are unlocked
@@ -202,6 +253,10 @@ function InitLand2()
    // SetSpriteColor(land2sprBuildings, 0, 255, 255, 255)
 
     //streetDir$ = "cbg/lanes" + str(land2nLanes) + "/c" + str(land2nLanes)
+	for i = 0 to 5
+		land2sprStreet[i].length = land2nLanes
+	next i
+	
 	land2sprStreet[1, 1] = LoadSprite("cbg/lane1.png")
     SetSpriteExpress(land2sprStreet[1, 1], 2*h, 2*h*30/42, 0, 0, 90)
     //SetSpriteExpress(land2sprStreet[1], 2*h*21/20, (2*h*21/20)*30/42, 0, 0, 1)
@@ -222,7 +277,6 @@ function InitLand2()
 
     // reset hero movement characteristics
     land2currentLane = 2
-    HighlightLaneLand2()
     land2heroBoostFrames# = 0
     land2heroIFrames# = 0
     land2heroBoostCharges# = 0  // reset boost count
@@ -236,26 +290,33 @@ function InitLand2()
     LoadAnimatedSprite(hero, "cbg/duckc", 4)
     SetSpriteSize(hero, 55, 55)
     SetSpritePosition(hero, 500, land2heroY)
-    SetSpriteDepth(hero, 1)
-    PlaySprite(hero, 10)
+    SetSpriteDepth(hero, 30)
+    SetSpriteShapeBox(hero, -80, -25, 120, 30, 0, 0)
+    PlaySprite(hero, land2AnimSpeed)
     heroLocalDistance# = land2Distance
 
     // create "spawnables" (boosts/obstacles/scrap)
     spawnActive.length = -1
-    InitBoostPanels()
     InitObstacles()
+    InitBoostPanels()
     InitScrap()
+    
+    HighlightLaneLand2()
 
 endfunction
 
 function DoSpawnables()
 	
-	
+	land2BehindCar = 0
 	
     // process movement for all spawnables (boosts, obstacles)
     idx_to_delete = -1
     for i = 0 to spawnActive.length - 1
-        inc spawnActive[i].y, -3.5 * land2heroSpeed# * land2scrollScalar# * fpsr#*0.4166/3.74
+        //inc spawnActive[i].y, -3.5 * land2heroSpeed# * land2scrollScalar# * fpsr#*0.4166/3.74
+        //spawnActive[i].y = heroLocalDistance#*2/3
+        //(-h*7.3 + Mod(heroLocalDistance#*2/3+GetSpriteHeight(land2sprBuildings)*8+GetSpriteHeight(land2sprBuildings)*4/9*i, GetSpriteHeight(land2sprBuildings)*20/9))
+        
+        //inc spawnActive[i].y, -3.5 * land2heroSpeed# * land2scrollScalar# * fpsr#*0.4166/3.74
         if spawnActive[i].cat = GOOD
             // check for collecting a boost
             if GetSpriteCollision(spawnActive[i].spr, hero) and spawnActive[i].x = land2currentLane
@@ -269,28 +330,38 @@ function DoSpawnables()
                 endif
                 PlaySound(boostChargeS, volumeS/4)
             endif
-            SetSpritePosition(spawnActive[i].spr, LaneToXWithOffsetBoost(spawnActive[i].x, spawnActive[i].y), spawnActive[i].y)
+            SetSpritePosition(spawnActive[i].spr, LaneToXWithOffsetBoost(spawnActive[i].x, spawnActive[i].y-(land2Distance-heroLocalDistance#)*2/3), spawnActive[i].y-(land2Distance-heroLocalDistance#)*2/3)
         elseif spawnActive[i].cat = BAD 
             // check for collisions
             if GetSpriteCollision(spawnActive[i].spr, hero) and spawnActive[i].x = land2currentLane //and land2HeroIFrames# = 0 
-                land2HeroIFrames# = land2heroIFramesMax
-                PlaySound(hitS, volumeS)
+                land2BehindCar = 1
+                //SetSprite
+                //land2HeroIFrames# = land2heroIFramesMax
+                //PlaySound(hitS, volumeS)
             endif
             // recycle obstacle spawnables once they scroll offscreen
-            if spawnActive[i].y < -100
+            if spawnActive[i].y < -300
                 inc spawnActive[i].y, 3600
                 spawnActive[i].x = SetObstacleLane(spawnActive[i])
             endif
-            SetSpritePosition(spawnActive[i].spr, LaneToXWithOffset(spawnActive[i].x, spawnActive[i].y), spawnActive[i].y)
+            SetSpritePosition(spawnActive[i].spr, LaneToXWithOffsetCar(spawnActive[i].x, spawnActive[i].y-(land2Distance-heroLocalDistance#)*2/3), spawnActive[i].y-(land2Distance-heroLocalDistance#)*2/3)
         elseif spawnActive[i].cat = SCRAP
             // check for collecting scrap
-            if GetSpriteCollision(spawnActive[i].spr, hero) and spawnActive[i].x = land2currentLane
+            if GetSpriteCollision(spawnActive[i].spr, hero) and spawnActive[i].x = land2currentLane and GetTweenExists(spawnActive[i].spr) = 0
                 CollectScrap(LAND2)
-                idx_to_delete = i
+                PlaySprite(spawnActive[i].spr, 30)
+				if GetTweenExists(spawnActive[i].spr) then DeleteTween(spawnActive[i].spr)
+				CreateTweenSprite(spawnActive[i].spr, .6)
+				SetTweenSpriteY(spawnActive[i].spr, GetSpriteY(spawnActive[i].spr), GetSpriteY(spawnActive[i].spr) - GetSpriteHeight(spawnActive[i].spr)*1.5, TweenSmooth1())
+				PlayTweenSprite(spawnActive[i].spr, spawnActive[i].spr, 0)
+				PlayTweenSprite(tweenSprFadeOut, spawnActive[i].spr, .1)
+                //idx_to_delete = i
             endif
-            SetSpritePosition(spawnActive[i].spr, LaneToXWithOffset(spawnActive[i].x, spawnActive[i].y), spawnActive[i].y)
+            if GetTweenExists(spawnActive[i].spr) = 0 then SetSpritePosition(spawnActive[i].spr, LaneToXWithOffset(spawnActive[i].x, spawnActive[i].y-(land2Distance-heroLocalDistance#)*2/3), spawnActive[i].y-(land2Distance-heroLocalDistance#)*2/3)
         endif
     next i
+	if GetSpriteY(spawnActive[i].spr) < GetSpriteY(hero)-80 and spawnActive[i].x = land2currentLane and GetSpriteDepth(spawnActive[i].spr) < GetSpriteDepth(hero) then SetSpriteDepth(spawnActive[i].spr, GetSpriteDepth(hero)+2)
+
     // delete any collected boosts
     if idx_to_delete <> -1
         DeleteSprite(spawnActive[idx_to_delete].spr)
@@ -307,7 +378,7 @@ function DoLand2()
         SetSpriteX(land2sprBuildings + i, -w*1.25+Mod(heroLocalDistance#+GetSpriteWidth(land2sprBuildings)*i, GetSpriteWidth(land2sprBuildings)*5))
         SetSpriteY(land2sprBuildings + i, (-h*7.3 + Mod(heroLocalDistance#*2/3+GetSpriteHeight(land2sprBuildings)*8+GetSpriteHeight(land2sprBuildings)*4/9*i, GetSpriteHeight(land2sprBuildings)*20/9)))
        
-		for j = 1 to land2sprStreet[i].length 
+		for j = 1 to land2sprStreet[i].length
 			SetSpritePosition(land2sprStreet[i+1, j], GetSpriteX(land2sprBuildings+i)+176-(j-1)*laneWid, 1293+GetSpriteY(land2sprBuildings+i)) //+4/6*GetSpriteHeight(land2sprBuildings))
        	next j
        //SetSpritePosition(land2sprStreet[i+1], GetSpriteX(land2sprBuildings+i)-26, 1260+GetSpriteY(land2sprBuildings+i)) //+4/6*GetSpriteHeight(land2sprBuildings))
@@ -317,6 +388,8 @@ function DoLand2()
         //    SetSpritePosition(land2sprBuildings + i, land2buildingXOffset + 2*w, 2.0 / 3 * h)
         //endif
     next i
+    
+    DoSpawnables()
 
 	
 	//SetSpritePosition(land2sprStreet[1], GetSpriteX(land2sprBuildings), 800+GetSpriteY(land2sprBuildings)) //+4/6*GetSpriteHeight(land2sprBuildings))
@@ -327,14 +400,26 @@ function DoLand2()
 	Print(GetViewOffsetX())
     // hero inputs
     DoInputs()
-    // start turning left
-    if inputLeft and land2laneChangeFrame = 0 and land2currentLane > 1
+    // start turning Right
+    
+	for i = 0 to spawnActive.length - 1
+		if GetSpriteCollision(spawnActive[i].spr, hero) and spawnActive[i].cat = BAD and spawnActive[i].x - land2currentLane = 1
+			inputLeft = 0
+			//Honk SE
+		endif
+		if GetSpriteCollision(spawnActive[i].spr, hero) and spawnActive[i].cat = BAD and spawnActive[i].x - land2currentLane = -1 
+			inputRight = 0
+			//Honk SE
+		endif
+	next i
+      
+    if inputRight and land2laneChangeFrame = 0 and land2currentLane > 1
         land2currentLane = max(1, land2currentLane - 1)
         land2laneChangeFrame = 5
         land2laneChangeDirection = -1
         HighlightLaneLand2()
-    // start turning right
-    elseif inputRight and land2laneChangeFrame = 0 and land2currentLane < land2nLanes
+    // start turning Left
+    elseif inputLeft and land2laneChangeFrame = 0 and land2currentLane < land2nLanes
         land2currentLane = min(land2nLanes, land2currentLane + 1)
         land2laneChangeFrame = 5
         land2laneChangeDirection = 1
@@ -358,10 +443,11 @@ function DoLand2()
     endif
     
     // hero movement
-    if land2heroIFrames# > 0 or land2heroBoostFrames# > 0
+    if land2heroIFrames# > 0 or land2heroBoostFrames# > 0 or land2BehindCar = 0
         land2heroIFrames# = max(0, land2heroIFrames# - 1)
         land2heroBoostFrames# = max(0, land2heroBoostFrames# - 1)
         land2heroSpeed# = land2heroSpeedMax# * (1 - 0.5 * (land2heroIFrames# / land2heroIFramesMax) + 1.5 * (land2heroBoostFrames# / land2heroBoostFramesMax))
+        if GetSpritePlaying(hero) = 0 then ResumeSprite(hero)
         // slow down lanes to match hero slowdown
 		//for i = 1 to land2sprStreet.length
         	//	SetSpriteSpeed(land2sprStreet[i], land2baseLaneSpeed * land2heroSpeed# * land2scrollScalar#)
@@ -369,49 +455,73 @@ function DoLand2()
     endif
     
     SetSpriteColor(hero, 255, 255 - 2*land2heroIFrames#, 255 - 2*land2heroIFrames#, 255)
-    SetSpritePosition(hero, LaneToX(land2currentLane) - 9 * land2laneChangeDirection * land2laneChangeFrame, 250)
-    Print(land2currentLane)
+    if fpsr# < 25 then GlideToX(hero, LaneToX(land2currentLane), 10)
+    //SetSpriteX(hero, LaneToX(land2currentLane) - 9 * land2laneChangeDirection * land2laneChangeFrame)
+    //Print(land2currentLane)
+    
+    if land2BehindCar
+    		land2heroSpeed# = 0
+    		StopSprite(hero)
+    		SetSpriteFrame(hero, 1)
+    	endif
     inc heroLocalDistance#, -1 * land2heroSpeed# * fpsr#*0.4166/3.74
 
-    DoSpawnables()
+    Print(land2BehindCar)
 
 endfunction
 
 function HighlightLaneLand2()
 	for i = 1 to land2sprStreet.length
 		for j = 1 to land2sprStreet[i].length 
-			if 6-j = land2currentLane
+			if j = land2currentLane
 				ColorLaneLand2(land2sprStreet[i, j], 0)
 			else
 				ColorLaneLand2(land2sprStreet[i, j], 1)
 			endif
 		next j
 	next i
+	
+	for i = 0 to spawnActive.length - 1
+		if spawnActive[i].x = land2currentLane
+			ColorSpawnableLand2(spawnActive[i].spr, 0)
+		elseif Abs(spawnActive[i].x - land2currentLane) < 2
+			ColorSpawnableLand2(spawnActive[i].spr, 1)
+		else
+			ColorSpawnableLand2(spawnActive[i].spr, 2)
+		endif
+		if spawnActive[i].x > land2currentLane
+			SetSpriteDepth(spawnActive[i].spr, GetSpriteDepth(hero)-3*Abs(spawnActive[i].x - land2currentLane))
+		else
+			SetSpriteDepth(spawnActive[i].spr, GetSpriteDepth(hero)+3*Abs(spawnActive[i].x - land2currentLane))
+		endif
+		if spawnActive[i].cat = GOOD then SetSpriteDepth(spawnActive[i].spr, GetSpriteDepth(spawnActive[i].spr)+2)
+	next i
+	
 endfunction
 
 function ColorLaneLand2(spr, dark)
+	alpha = GetSpriteColorAlpha(spr)
 	if dark = 0 then SetSpriteColor(spr, 214, 38, 255, 255)
 	if dark = 1 then SetSpriteColor(spr, 130*.6, 63*.6, 175*.6, 255)
+	SetSpriteColorAlpha(spr, alpha)
 endfunction
 
-function FreezeLand2()
-
-    // freeze background and hero animations
-    StopSprite(hero)
-    //StopSprite(land2sprStreet)
-    // freeze all spawnables
-    for i = 0 to spawnActive.length - 1
-        StopSprite(spawnActive[i].spr)
-    next i
-    // hard stop for any SFX
-    StopSound(boostChargeS)
-    StopSound(boostS)
-    StopSound(hitS)
-
+function ColorSpawnableLand2(spr, dark)
+	alpha = GetSpriteColorAlpha(spr)
+	if dark = 0 then SetSpriteColor(spr, 255, 255, 255, 255)
+	if dark = 1 then SetSpriteColor(spr, 230, 195, 230, 255)
+	if dark = 2 then SetSpriteColor(spr, 220, 180, 220, 255)
+	SetSpriteColorAlpha(spr, alpha)
 endfunction
 
-function UnfreezeLand2()
+//~function FreezeLand2()
 
-    // placeholder. all animations get restarted during the scene init
+    //~
 
-endfunction
+//~endfunction
+
+//~function UnfreezeLand2()
+
+    //~// placeholder. all animations get restarted during the scene init
+
+//~endfunction

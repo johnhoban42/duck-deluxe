@@ -55,12 +55,24 @@ global fish1I
 global fish2I
 global fish3I
 
+global slipstreamI as integer[8]
+global boosterI as integer[18]
+
 #constant spaceArrowI1 7001
 #constant spaceArrowI2 7002
 #constant spaceArrowI3 7003
 #constant spaceArrowI4 7004
 global spaceArrowColorI as integer[4, 4]
 function LoadGameImages()
+	for i = 1 to 8
+		slipstreamI[i] = LoadImage("slips/windtest"+str(i)+".png")
+		SetImageWrapU(slipstreamI[i], 1)
+		SetImageWrapV(slipstreamI[i], 1)
+	next i
+	for i = 1 to 18
+		boosterI[i] = LoadImage("land2booster"+str(19-i)+".png")
+	next i
+	
 	LoadImage(spaceArrowI1, "space/tearrow1.png")
 	LoadImage(spaceArrowI2, "space/tearrow2.png")
 	LoadImage(spaceArrowI3, "space/tearrow3.png")

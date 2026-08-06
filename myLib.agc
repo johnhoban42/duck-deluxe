@@ -168,6 +168,14 @@ function DeleteAnimatedSprite(spr)
 	//Checking we got a sprite ID and not an imageID
 	//if Abs(imageA[index] - imageA[index+1]) < 3 then //Find the next one, IDK
 	
+	
+	//for i = 1 to imageA.length
+	//	Print(imageA[i])
+	//next i
+	//SetPrintColor(0, 0, 0, 255)
+	//SetPrintSize(8)
+	//Sync()
+	
 	if index <> -1
 		size = imageA[index+1] + 2
 		for i = 1 to size

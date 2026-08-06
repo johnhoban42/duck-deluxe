@@ -330,9 +330,13 @@ function InitWater2()
 	FixSpriteToScreen(featherBoostFrameS, 1)
 	
 	featherBoostS = CreateSprite(0) 
-	SetSpriteExpress(featherBoostS, 20, 1, GetSpriteX(featherBoostFrameS) + GetSpriteWidth(featherBoostFrameS)*4/9, GetSpriteY(featherBoostFrameS) + GetSpriteHeight(featherBoostFrameS)*5/18, 6) 
+	SetSpriteExpress(featherBoostS, 20, 1, GetSpriteX(featherBoostFrameS) + GetSpriteWidth(featherBoostFrameS)*3/9, GetSpriteY(featherBoostFrameS) + GetSpriteHeight(featherBoostFrameS)*5/18, 6) 
 	//SetSpriteExpress(featherBoostS, 0, GetSpriteWidth(featherBoostFrameS)*2/9, GetSpriteX(featherBoostFrameS) + GetSpriteWidth(featherBoostFrameS)*4/9, GetSpriteY(featherBoostFrameS) + GetSpriteHeight(featherBoostFrameS)*5/18, 4) 
 	FixSpriteToScreen(featherBoostS, 1)
+	for i = 1 to 8
+		AddSpriteAnimationFrame(featherBoostS, slipstreamI[i])
+	next i
+	PlaySprite(featherBoostS, 15, 1)
 	
 	featherBoostTop = CreateSprite(featherImg1)
 	SetSpriteExpress(featherBoostTop, 50, 50, GetSpriteMiddleX(featherBoostFrameS)-50/2, GetSpriteY(featherBoostFrameS)-10, 4) 
@@ -641,16 +645,17 @@ function DoWater2()
 	
 	if diveBoost# > 0 or diveBoostQueue > 0
 		SetSpriteSize(featherBoostS, 20, 30*(diveBoost#+diveBoostQueue)*(2+upgrades[2, 4]))
-		SetSpriteY(featherBoostS, GetSpriteY(featherBoostFrameS)+18-GetSpriteHeight(featherBoostS))
+		SetSpriteY(featherBoostS, GetSpriteY(featherBoostFrameS)+28-GetSpriteHeight(featherBoostS))
+		SetSpriteUVScale(spr, 1, 1.0*GetSpriteHeight(featherBoostS)/GetSpriteWidth(featherBoostS))
 	else
 		SetSpriteSize(featherBoostS, 20, 0.1)
 	endif
-	SetSpriteY(featherBoostTop, GetSpriteY(featherBoostFrameS)-10-GetSpriteHeight(featherBoostS))
+	SetSpriteY(featherBoostTop, GetSpriteY(featherBoostFrameS)-5-GetSpriteHeight(featherBoostS))
 	
 	//Print(GetSpriteWidth(featherBoostS))
 	//Print(GetSpriteHeight(featherBoostS))
 	
-
+Print(GetImageWidth(slipstreamI[1]))
 	
 endfunction
 

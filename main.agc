@@ -30,8 +30,6 @@ global isDuckDeluxe = 1	//This version makes the game the full release, instead 
 global webVersion = 0	//This variable sets the duck 1 game back to it's original version, instead of the ReDucks version
 if debug = 0 then SetErrorMode(1)
 global nextScreen = AIR
-SetPhysicsDebugOn()
-
 
 #constant w 1280
 #constant h 720
@@ -49,6 +47,9 @@ SetScissor(0,0,0,0 ) // use the maximum available screen space, no black borders
 UseNewDefaultFonts( 1 ) // since version 2.0.22 we can use nicer default fonts
 SetDefaultMagFilter(0)
 SetDefaultMinFilter(0)
+
+SetDefaultWrapU(1)
+SetDefaultWrapV(1)
 
 //SetPhysicsDebugOn()
 SetVSync(1)
@@ -326,8 +327,8 @@ function SetRaceQueue(raceSet)
 		raceQueue.insert(LAND)
 	elseif raceSet = 2 //Race Against a Duck 2 order
 		raceQueue.insert(LAND2)
-		raceQueue.insert(AIR2)
 		raceQueue.insert(WATER2)
+		raceQueue.insert(AIR2)
 		raceQueue.insert(SPACE2)
 	endif
 	raceQueueRef = raceQueue
@@ -1254,6 +1255,11 @@ function DeleteScene(scene)
 				next j
 		    next i
 			DeleteSprite(land2sprBoostMeter)
+			
+			// for i = 1 to spawnActive.length
+				// DeleteSprite(spawnActive[1].spr)
+				// spawnActive.remove(0)
+			// next i
 		endif
 		
 		if scene = AIR2
@@ -1289,7 +1295,8 @@ function DeleteScene(scene)
 		
 		iMax = spawnActive.length
 		for i = 1 to iMax
-			DeleteAnimatedSprite(spawnActive[1].spr)
+			if scene <> LAND2 then DeleteAnimatedSprite(spawnActive[1].spr)
+			if scene = LAND2 then DeleteSprite(spawnActive[1].spr)
 			if GetTweenExists(spawnActive[1].spr) then DeleteTween(spawnActive[1].spr)
 			spawnActive.remove(1)
 		next i
@@ -1506,8 +1513,20 @@ function FreezeGameplay(deleteParts)
 			StopSprite(spawnActive[i].spr)
 		next i
 		StopSound(swimmingS)
+		StopSprite(featherBoostS)
 	elseif screen = LAND2
-		FreezeLand2()
+		//FreezeLand2()
+		// freeze background and hero animations
+	    StopSprite(hero)
+	    //StopSprite(land2sprStreet)
+	    // freeze all spawnables
+	    for i = 0 to spawnActive.length - 1
+	        StopSprite(spawnActive[i].spr)
+	    next i
+	    // hard stop for any SFX
+	    StopSound(boostChargeS)
+	    StopSound(boostS)
+	    StopSound(hitS)
 	elseif screen = AIR2
 		StopSprite(hero)
 		for i = 1 to bulletActive.length
@@ -1516,6 +1535,9 @@ function FreezeGameplay(deleteParts)
 		StopSprite(eggBird)
 		StopSprite(eggBirdHead)
 		StopSound(jetstreamS)
+		for i = 1 to slipEnd
+			StopSprite(slipS[i])
+		next i
 	elseif screen = SPACE2
 		for i = 0 to MashList.length
 			if GetSpriteExists(MashList[i].spr) then StopSprite(MashList[i].spr)
@@ -1534,8 +1556,13 @@ function UnfreezeGameplay()
 		for i = 1 to spawnActive.length
 			ResumeSprite(spawnActive[i].spr)
 		next i
+		ResumeSprite(featherBoostS)
 	elseif screen = LAND2
-		UnfreezeLand2()
+		//UnfreezeLand2()
+	    ResumeSprite(hero)
+	    for i = 0 to spawnActive.length - 1
+	        if GetSpriteFrameCount(spawnActive[i].spr) > 1 then ResumeSprite(spawnActive[i].spr)
+	    next i
 	elseif screen = AIR2
 		ResumeSprite(hero)
 		for i = 1 to bulletActive.length
@@ -1543,6 +1570,9 @@ function UnfreezeGameplay()
 		next i
 		ResumeSprite(eggBird)
 		ResumeSprite(eggBirdHead)
+		for i = 1 to slipEnd
+			ResumeSprite(slipS[i])
+		next i
 	elseif screen = SPACE2
 		for i = 0 to MashList.length
 			if GetSpriteExists(MashList[i].spr) then ResumeSprite(MashList[i].spr)

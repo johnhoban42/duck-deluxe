@@ -90,6 +90,12 @@ function InitAir2()
 		SetSpriteGroup(spr, AIR2)
 		SetSpriteColorAlpha(spr, 100)
 		FixSpriteToScreen(spr, 1)
+		for i = 1 to 8
+			AddSpriteAnimationFrame(spr, slipstreamI[i])
+		next i
+		PlaySprite(spr, 15, 1)
+		SetSpriteUVScale(spr, 1, 1.0*slipWid/h)
+		//SetSpriteUV (spr, 0, 0, 0, slipWid*2, slipWid*2, 0, slipWid*2, slipWid*2)
 		//Tessalate the slipstream image
 		//SetSpriteExpress(slipS[i])
 	next i
