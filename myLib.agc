@@ -1367,7 +1367,7 @@ function SetPowers()
 	powers[2, 3, 5] = "x2.0 Base Speed"
 	powers[2, 4, 5] = "x2.5 Base Speed"
 
-	powers[3, 1, 5] = "x1 Boost Time"
+	powers[3, 1, 5] = "Normal Boost Time"
 	powers[3, 2, 5] = "x1.5 Boost Time"
 	powers[3, 3, 5] = "x2 Boost Time"
 	powers[3, 4, 5] = "x2.5 Boost Time"

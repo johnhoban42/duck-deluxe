@@ -27,7 +27,6 @@ global jetSoundInstance = 0
 global duck2MesaFrameSpeed = 10
 
 function InitAir2()
-	
 	//PlayMusicOGG(ambAir2, 1)
 	//SetMusicVolumeOGG(ambAir2, ambVol*volumeS)
 	
@@ -37,7 +36,7 @@ function InitAir2()
 	SetViewZoomMode(1)
 	
 	LoadAnimatedSprite(hero, "mesaBG/duck", 6)
-	SetSpriteExpress(hero, 100, 100, w/2, h/2 + heroAir2Y, 7)
+	SetSpriteExpress(hero, 85, 85, w/2, h/2 + heroAir2Y, 7)
 	FixSpriteToScreen(hero, 0)
 	SetSpriteShape(hero, 1)
 	
@@ -47,8 +46,21 @@ function InitAir2()
 	air2TurnTarget = 0
 	air2Dir# = -1
 	
-	LoadSpriteExpress(duck, "upgradeR1.png", 100, 100, 460, 300, 190)
+	//if release = 1 then 
+	oldAreaSeen = areaSeen
+	areaSeen = Max(areaSeen, 3)
+	CreateSpriteExpress(duck, 100, 100, 460, 300, 190)
 	FixSpriteToScreen(duck, 1)
+	img = LoadImage("enemy2/air2foe"+str(areaSeen-2)+"a.png")
+	AddSpriteAnimationFrame(duck,img)
+	trashBag.insert(img)
+	img = LoadImage("enemy2/air2foe"+str(areaSeen-2)+"b.png")
+	AddSpriteAnimationFrame(duck,img)
+	trashBag.insert(img)
+	PlaySprite(duck, 20, 1)
+	SetSpriteColor(duck, 255, 231, 207, 255)
+	
+	areaSeen = oldAreaSeen
 	
 	//LoadAnimatedSprite(air2BG, "mbg\m4", 8)
 	CreateSprite(air2BG, 0)
@@ -90,11 +102,11 @@ function InitAir2()
 		SetSpriteGroup(spr, AIR2)
 		SetSpriteColorAlpha(spr, 100)
 		FixSpriteToScreen(spr, 1)
-		for i = 1 to 8
-			AddSpriteAnimationFrame(spr, slipstreamI[i])
-		next i
-		PlaySprite(spr, 15, 1)
-		SetSpriteUVScale(spr, 1, 1.0*slipWid/h)
+		for j = 1 to 8
+			AddSpriteAnimationFrame(spr, slipstreamI[j])
+		next j
+		PlaySprite(spr, 20, 1)
+		SetSpriteUVScale(spr, 1, 1.0*slipWid/(h*3))
 		//SetSpriteUV (spr, 0, 0, 0, slipWid*2, slipWid*2, 0, slipWid*2, slipWid*2)
 		//Tessalate the slipstream image
 		//SetSpriteExpress(slipS[i])

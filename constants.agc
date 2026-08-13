@@ -248,7 +248,8 @@ global pressThisBeam2
 
 global spaceBoostS
 global spaceScrapS
-
+global spacePlanetS
+global spaceBG
 
 
 #constant spawnStartS 10001
@@ -266,6 +267,10 @@ global arrowI
 #constant enemyP 4
 #constant eggP 5
 #constant shineP 6
+#constant spaceP1 7
+#constant spaceP2 8
+#constant spaceP3 9
+global spaceParticleS as integer [300]
 
 #constant GOOD 1
 #constant BAD 2

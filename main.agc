@@ -314,6 +314,7 @@ global musicFadeTween
 musicFadeTween = CreateTweenCustom(.6)
 SetTweenCustomInteger1(musicFadeTween, 0, 100, TweenEaseIn1())
 
+
 function SetRaceQueue(raceSet)
 	
 	//First, clearing the current race queue
@@ -326,10 +327,10 @@ function SetRaceQueue(raceSet)
 		raceQueue.insert(WATER)
 		raceQueue.insert(LAND)
 	elseif raceSet = 2 //Race Against a Duck 2 order
-		raceQueue.insert(LAND2)
-		raceQueue.insert(WATER2)
-		raceQueue.insert(AIR2)
 		raceQueue.insert(SPACE2)
+		raceQueue.insert(WATER2)
+		raceQueue.insert(LAND2)
+		raceQueue.insert(AIR2)
 	endif
 	raceQueueRef = raceQueue
 	
@@ -1291,6 +1292,12 @@ function DeleteScene(scene)
 				if GetSpriteExists(oops[i]) then DeleteSprite(oops[i])
 			next i
 			if GetSpriteExists(spaceScrapS) then DeleteAnimatedSprite(spaceScrapS)
+			
+			for i = 1 to spaceParticleS.length
+				DeleteSprite(spaceParticleS[i])
+			next i
+			DeleteSprite(spacePlanetS)
+			//DeleteSprite(spaceBG)
 		endif
 		
 		iMax = spawnActive.length

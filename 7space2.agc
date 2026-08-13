@@ -240,6 +240,45 @@ function InitSpace2()
 	//AddParticlesForce(shineP, 0, life#, -1000, 0)
 	FixParticlesToScreen(shineP, 1)
 	
+	//spaceBG = LoadSprite("space/spaceBG.png")
+	//SetSpriteExpress(spaceBG, w, h, 0, 0, 600)
+	//FixSpriteToScreen(spaceBG, 1)
+	
+	spacePlanetS = LoadSprite("space/legendp18.png")
+	SetSpriteExpress(spacePlanetS, 200, 200, 0, 0, 400)
+	SetSpriteMiddleScreen(spacePlanetS)
+	FixSpriteToScreen(spacePlanetS, 1)
+	SetSpriteShapeCircle(spacePlanetS, 0, 0, 8)
+	
+	for i = 0 to 2
+		part = spaceP1 + i
+		CreateParticlesExpress(part, 200, -1, 1, 360, 100)
+		img = LoadImage("space/particle"+str(i+1)+".png")
+		for j = 1 to 100
+			spr = CreateSprite(img)
+			spaceParticleS[i*100 + j] = spr
+			
+			SetSpriteExpress(spr, 10, 10, 0, 0, 500)
+			SetSpriteColorAlpha(spr, 255-Random(8,10))	//This determines the speed
+			SetSpriteAngle(spr, Random(1, 360))
+			RandoNum = Random(1, 800)
+			SetSpritePosition(spr, RandoNum*cos(GetSpriteAngle(spr))+w/2, RandoNum*sin(GetSpriteAngle(spr))+h/2)
+			
+			
+		next j
+		//~
+		//SetParticlesImage(part, img)
+		trashBag.insert(img)
+		//~FixParticlesToScreen(part, 1)
+		//~SetParticlesPosition(part, w/2, h/2)
+		//~SetParticlesDirection(part, 10, 0)
+		//~SetParticlesVelocityRange(part, 80, 100)
+		//~life# = .5
+		//~AddParticlesScaleKeyFrame(part, 0, 1)
+		//~AddParticlesScaleKeyFrame(part, life#, 10)
+	next i
+		
+	
 	CreateMashSequence()
 	
 	//Second chances are like 'oopsie' stickers, they get placed over a combo when the wrong thing is pushed
@@ -251,7 +290,24 @@ function DoSpace2()
 	
 	heroLocalDistance# = heroLocalDistance# - spaceSpeed#*fpsr#
 
-
+	SetSpriteSize(spacePlanetS, 200.0*((heroLocalDistance#+100)/space2Distance), 200.0*((heroLocalDistance#+100)/space2Distance)) 
+	SetSpriteMiddleScreen(spacePlanetS)
+	//SetSpriteShapeCircle(spacePlanetS, 0, 0, 20)
+	
+	for i = 1 to spaceParticleS.length
+		//For the frame-by-frame:
+		spr = spaceParticleS[i]
+		IncSpritePosition(spr, -(255-GetSpriteColorAlpha(spr))*cos(GetSpriteAngle(spr)), -(255-GetSpriteColorAlpha(spr))*sin(GetSpriteAngle(spr)))
+		//SetSpriteSizeCentered(spr, GetCL
+		scale = 10*(GetSpriteDistance(spr, spacePlanetS)+100)/1130.0
+		SetSpriteSizeSquare(spr, scale)
+		if GetSpriteCollision(spr, spacePlanetS)
+			SetSpriteColorAlpha(spr, 255-Random(8,10))	//This determines the speed
+			SetSpriteAngle(spr, Random(1, 360))
+			SetSpriteSizeSquare(spr, 10)
+			SetSpritePosition(spr, 800*cos(GetSpriteAngle(spr))+w/2, 800*sin(GetSpriteAngle(spr))+h/2)
+		endif
+	next i
 
 		
 	//After a successful boost, make the difference go more in favor of the hero

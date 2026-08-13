@@ -63,8 +63,12 @@ function InitWater2()
 	//heroImg2 = LoadImage("duckl1.png")
 	
 	//AddSpriteAnimationFrame(hero, heroImg2)
-	
-	LoadSpriteExpress(duck, "swampfoe1a.png", 120, 120, 999, 999, 60)
+	//if curRaceSet = 2
+		LoadSprite(duck, "enemy2/water2foe"+str(areaSeen)+".png")
+	//else
+		
+	//endif
+	SetSpriteExpress(duck, 120, 120, 999, 999, 60)
 	
 	//Gameplay setting
 	heroLocalDistance# = water2Distance
@@ -336,7 +340,7 @@ function InitWater2()
 	for i = 1 to 8
 		AddSpriteAnimationFrame(featherBoostS, slipstreamI[i])
 	next i
-	PlaySprite(featherBoostS, 15, 1)
+	PlaySprite(featherBoostS, 20, 1)
 	
 	featherBoostTop = CreateSprite(featherImg1)
 	SetSpriteExpress(featherBoostTop, 50, 50, GetSpriteMiddleX(featherBoostFrameS)-50/2, GetSpriteY(featherBoostFrameS)-10, 4) 
@@ -512,7 +516,11 @@ function DoWater2()
 		
 	endif
 	
-	SetSpritePosition(duck, -1*(duckDistance# - 20000*(raceSize - (curAreaSeen-1))) - (water2Distance-heroLocalDistance#)+80 + 60*diveLevel, 70+4*cos(gameTime#*2))
+	enemyHeight = 70
+	if areaSeen = 2 then enemyHeight = 240
+	if areaSeen = 3 then enemyHeight = 165
+	if areaSeen = 4 then enemyHeight = 165
+	SetSpritePosition(duck, -1*(duckDistance# - 20000*(raceSize - (curAreaSeen-1))) - (water2Distance-heroLocalDistance#)+80 + 60*diveLevel, enemyHeight+4*cos(gameTime#*2))
 	//SetSpritePosition(duck, -1*(duckDistance# - 20000*(raceSize-1)) - (water2Distance-heroLocalDistance#)+80 + 60*diveLevel, 70+4*cos(gameTime#*2))
 	
 	if firstDuck2Race = 0
@@ -646,7 +654,7 @@ function DoWater2()
 	if diveBoost# > 0 or diveBoostQueue > 0
 		SetSpriteSize(featherBoostS, 20, 30*(diveBoost#+diveBoostQueue)*(2+upgrades[2, 4]))
 		SetSpriteY(featherBoostS, GetSpriteY(featherBoostFrameS)+28-GetSpriteHeight(featherBoostS))
-		SetSpriteUVScale(spr, 1, 1.0*GetSpriteHeight(featherBoostS)/GetSpriteWidth(featherBoostS))
+		SetSpriteUVScale(featherBoostS, 1, 1.0*GetSpriteWidth(featherBoostS)/GetSpriteHeight(featherBoostS))
 	else
 		SetSpriteSize(featherBoostS, 20, 0.1)
 	endif

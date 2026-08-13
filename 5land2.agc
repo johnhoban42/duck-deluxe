@@ -30,13 +30,14 @@ global land2heroIFramesMax = 120
 global land2heroBoostCharges# = 0
 global land2heroBoostChargesMax = 10
 global land2heroBoostFrames# = 0  // current remaining frames of boost
-global land2heroBoostFramesMax = 60
+global land2heroBoostFramesMax = 1//60
 global land2currentLane = 2  // current lane, 1 = leftmost lane
 global land2laneChangeFrame = 0  // frames remaining in lane change, max 5
 global land2laneChangeDirection = 0  // -1 -> left, 1 -> right
 global land2boostScalar# = 7.5
 global land2BehindCar = 0
 global land2AnimSpeed = 10
+//global land2DrainSpeed# =
 
 global carListEnd = 0
 
@@ -235,10 +236,10 @@ function InitLand2()
 
     // apply upgrade values
     // assign values to upgradeable attributes based on purchased levels 
-    land2nLanes = 5 + upgrades[attrnLanes, LAND2]
+    land2nLanes = 2 + upgrades[attrnLanes, LAND2]
     land2heroSpeedMax# = 6 + 3 * upgrades[attrBaseSpeed, LAND2]
     land2AnimSpeed = 10 + 3 * upgrades[attrBaseSpeed, LAND2]
-    land2heroBoostFramesMax = 60 + 30 * upgrades[attrBoostFrames, LAND2]
+    land2heroBoostFramesMax = 1 + 0.5 * upgrades[attrBoostFrames, LAND2]
     land2boostGroupLength = 5 + upgrades[attrBoostGroupLength, LAND2] + 2 * (upgrades[attrBoostGroupLength, LAND2] / 2)
 
     land2heroSpeed# = land2heroSpeedMax#
@@ -295,6 +296,11 @@ function InitLand2()
     PlaySprite(hero, land2AnimSpeed)
     heroLocalDistance# = land2Distance
 
+	oldAreaSeen = areaSeen
+	areaSeen = 4//Max(areaSeen, 2)
+	LoadSpriteExpress(duck, "enemy2/land2foe"+str(areaSeen-1)+".png", 200, 200, 460, 300, 5)
+	areaSeen = oldAreaSeen
+
     // create "spawnables" (boosts/obstacles/scrap)
     spawnActive.length = -1
     InitObstacles()
@@ -322,12 +328,7 @@ function DoSpawnables()
             if GetSpriteCollision(spawnActive[i].spr, hero) and spawnActive[i].x = land2currentLane
                 idx_to_delete = i
                 land2heroBoostCharges# = min(land2heroBoostCharges# + 1, land2heroBoostChargesMax)
-                SetSpriteSize(land2sprBoostMeter, 20 * land2heroBoostCharges#, 20)
-                if land2heroBoostCharges# = land2heroBoostChargesMax
-                    SetSpriteColor(land2sprBoostMeter, 255, 215, 0, 255)
-                elseif land2heroBoostCharges# >= 5
-                    SetSpriteColor(land2sprBoostMeter, 0, 255, 0, 255)
-                endif
+                
                 PlaySound(boostChargeS, volumeS/4)
             endif
             SetSpritePosition(spawnActive[i].spr, LaneToXWithOffsetBoost(spawnActive[i].x, spawnActive[i].y-(land2Distance-heroLocalDistance#)*2/3), spawnActive[i].y-(land2Distance-heroLocalDistance#)*2/3)
@@ -427,12 +428,15 @@ function DoLand2()
     // use boost once meter with at least 5 charges held
     // boost time is proportionate to the number of charges held
     // if the boost meter is full (10 charges), the boost is extra long
-    elseif stateSpace and land2heroBoostCharges# >= 5
-        if land2heroBoostCharges# = land2heroBoostChargesMax
-            land2heroBoostFrames# = land2heroBoostFramesMax * 1.5
-        else
-            land2heroBoostFrames# = land2heroBoostFramesMax * (land2heroBoostCharges# / land2heroBoostChargesMax)
-        endif
+   	endif
+   	if inputSelect and land2heroBoostCharges# >= 5
+        land2heroBoostFrames# = land2heroBoostFramesMax*(1.0 + 0.05*(land2heroBoostChargesMax-land2heroBoostCharges#))
+        
+        //if land2heroBoostCharges# = land2heroBoostChargesMax
+        //    land2heroBoostFrames# = land2heroBoostFramesMax * 1.5
+        //else
+        //    land2heroBoostFrames# = land2heroBoostFramesMax * (land2heroBoostCharges# / land2heroBoostChargesMax)
+       // endif
         land2heroBoostCharges# = 0
         SetSpriteSize(land2sprBoostMeter, 0, 20)
         SetSpriteColor(land2sprBoostMeter, 255, 0, 0, 255)
@@ -442,10 +446,26 @@ function DoLand2()
         inc land2laneChangeFrame, -1
     endif
     
+    if land2heroBoostCharges# > 0
+   	 	land2heroBoostCharges# = land2heroBoostCharges# - GetFrameTime()/2
+   	 	SetSpriteSize(land2sprBoostMeter, 20 * land2heroBoostCharges#, 20)
+        if land2heroBoostCharges# = land2heroBoostChargesMax
+            SetSpriteColor(land2sprBoostMeter, 255, 215, 0, 255)
+        elseif land2heroBoostCharges# >= 5
+            SetSpriteColor(land2sprBoostMeter, 0, 255, 0, 255)
+        endif
+        duckMinus = 155.0*land2heroBoostCharges#/land2heroBoostChargesMax
+        Print(duckMinus)
+        SetSpriteColor(hero, 255-duckMinus, 255, 255, 255)
+   	 	//SetSpriteSize(land2sprBoostMeter, 0, 20)
+       	 //SetSpriteColor(land2sprBoostMeter, 255, 0, 0, 255)
+	endif
+    
+    Print(land2heroBoostFrames#)
     // hero movement
     if land2heroIFrames# > 0 or land2heroBoostFrames# > 0 or land2BehindCar = 0
         land2heroIFrames# = max(0, land2heroIFrames# - 1)
-        land2heroBoostFrames# = max(0, land2heroBoostFrames# - 1)
+        land2heroBoostFrames# = max(0, land2heroBoostFrames# - GetFrameTime())
         land2heroSpeed# = land2heroSpeedMax# * (1 - 0.5 * (land2heroIFrames# / land2heroIFramesMax) + 1.5 * (land2heroBoostFrames# / land2heroBoostFramesMax))
         if GetSpritePlaying(hero) = 0 then ResumeSprite(hero)
         // slow down lanes to match hero slowdown
@@ -454,7 +474,8 @@ function DoLand2()
 		//next i
     endif
     
-    SetSpriteColor(hero, 255, 255 - 2*land2heroIFrames#, 255 - 2*land2heroIFrames#, 255)
+    //SetSpriteColor(hero, 255, 255 - 2*land2heroIFrames#, 255 - 2*land2heroIFrames#, 255)
+    //SetSpriteColor(hero, 255, 255, 255, 255)
     if fpsr# < 25 then GlideToX(hero, LaneToX(land2currentLane), 10)
     //SetSpriteX(hero, LaneToX(land2currentLane) - 9 * land2laneChangeDirection * land2laneChangeFrame)
     //Print(land2currentLane)
@@ -465,6 +486,8 @@ function DoLand2()
     		SetSpriteFrame(hero, 1)
     	endif
     inc heroLocalDistance#, -1 * land2heroSpeed# * fpsr#*0.4166/3.74
+
+	SetSpritePosition(duck, LaneToXWithOffset(land2nLanes+1.5, 0-(duckDistance#-(heroLocalDistance#-land2Distance) - 20000*(raceSize - (curAreaSeen-1)))*2/3), 0-(duckDistance#-(heroLocalDistance#-land2Distance) - 20000*(raceSize - (curAreaSeen-1)))*2/3)
 
     Print(land2BehindCar)
 

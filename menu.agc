@@ -368,9 +368,11 @@ function TintPauseText()
 	
 	for i = 1 to pauseLine.length
 		strLen = Len(GetTextString(pauseLine[i]))
-		for j = 1 to strLen
+		for j = 0 to strLen
 			SetTextCharColor(pauseLine[i], j, 255, 255, 255, 255)
-			if j < longLen*3/7 then SetTextCharColor(pauseLine[i], j, r1+(255-r1)*(j/longLen*3/7), g1+(255-g1)*j/longLen*3/7, b1+(255-b1)*j/longLen*3/7, 255)
+			if j < longLen*3/7 then SetTextCharColor(pauseLine[i], j, r1+(255-r1)*(j/(longLen*3/7)), g1+(255-g1)*j/(longLen*3/7), b1+(255-b1)*j/(longLen*3/7), 255)
+			if j > longLen*4/7 then SetTextCharColor(pauseLine[i], j, 255-((j-longLen*4/7)*(255-r2)/(longLen*3/7)), 255-((j-longLen*4/7)*(255-g2)/(longLen*3/7)), 255-((j-longLen*4/7)*(255-b2)/(longLen*3/7)), 255)
+			//255-((j-longLen*4/7)*(255-r2)/(longLen*3/7))
 		next j
 	next i
 		
