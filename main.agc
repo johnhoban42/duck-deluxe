@@ -327,9 +327,9 @@ function SetRaceQueue(raceSet)
 		raceQueue.insert(WATER)
 		raceQueue.insert(LAND)
 	elseif raceSet = 2 //Race Against a Duck 2 order
+		raceQueue.insert(LAND2)
 		raceQueue.insert(SPACE2)
 		raceQueue.insert(WATER2)
-		raceQueue.insert(LAND2)
 		raceQueue.insert(AIR2)
 	endif
 	raceQueueRef = raceQueue
@@ -756,9 +756,16 @@ function SetupScene(scene)
 //~		SetMusicVolumeOGG(landM, 0)
 //~		SetMusicVolumeOGG(airM, 0)
 		
-		CreateTextExpress(instruct, "", 44, fontGI, 2, w-20, 580, -13, 2)
+		CreateTextExpress(instruct, "", 44, fontGI, 0, w-20, 580, -13, 2)
 		FixTextToScreen(instruct, 1)
 		SetBG(scene)
+		if scene = LAND2
+			SetTextAlignment(instruct, 0)
+			SetTextX(instruct, 20)
+		else
+			SetTextAlignment(instruct, 2)
+			SetTextX(instruct, w-20)
+		endif
 		
 		CreateParticlesExpress(enemyP, 10, 15, 4, 360, 500)
 		SetParticlesImage(enemyP, enemyPI)
@@ -1088,47 +1095,42 @@ function CollectScrap(area)
 		if area = WATER or area = WATER2
 			num = Random(3, 5)
 			if scrapTotal < 10 then num = 5
-			inc scrapTotal, num
 		elseif area = LAND
 			num = Random(10, 14)
-			inc scrapTotal, num
 		else //AIR
 			num = Random(20, 29)
-			inc scrapTotal, num
 		endif
 	else
 		//RAAD2+ numbers
 		if curAreaSeen = 1
 			num = Random(3, 5)
 			if scrapTotal < 10 then num = 5
-			inc scrapTotal, num
 		elseif curAreaSeen = 2
 			num = Random(10, 14)
-			inc scrapTotal, num
 		elseif curAreaSeen = 3
 			num = Random(20, 29)
-			inc scrapTotal, num
 		elseif curAreaSeen = 4
 			num = Random(45, 60)
-			inc scrapTotal, num
 		elseif curAreaSeen = 5
 			//These numbers and below aren't balanced yet
 			num = Random(20, 29)
-			inc scrapTotal, num
 		elseif curAreaSeen = 6
 			num = Random(20, 29)
-			inc scrapTotal, num
 		else
 			num = Random(20, 29)
-			inc scrapTotal, num
 		endif
 	endif
 	
 	//Bit of extra balancing for space
 	if area = SPACE2
 		num = 0.4*MashList.length
-		inc scrapTotal, num
 	endif
+	
+	if area = CARSCRAP
+		num = Random(1,2)
+	endif
+	
+	inc scrapTotal, num
 	
 	UpdateScrapText()
 	//Updating the scrap textbox
@@ -1187,6 +1189,11 @@ function SetInstructionText(sceneL)
 			SetTextString(instruct, "SPACE - Dive" + CHR(10) + "LEFT/RIGHT - Adjust" + CHR(10) + "Feather - Boost")
 		endif
 	elseif sceneL = LAND2
+		if upgrades[attrBoostFrames, LAND2] = 0 and upgrades[attrBoostGroupLength, LAND2] = 0
+			SetTextString(instruct, "LEFT/RIGHT - Change Lanes" + CHR(10) + "Collect Bolts + Blue - Boost")
+		else
+			SetTextString(instruct, "LEFT/RIGHT - Change Lanes" + CHR(10) + "Collect Bolts + Blue - Boost" + CHR(10) + "Boost into Cars - Free Scrap!")
+		endif
 	elseif sceneL = AIR2
 		SetTextString(instruct, "SPACE - Turn" + CHR(10) + "Touch Slipstream - Speed Up")
 	elseif sceneL = SPACE2
@@ -1261,6 +1268,11 @@ function DeleteScene(scene)
 				// DeleteSprite(spawnActive[1].spr)
 				// spawnActive.remove(0)
 			// next i
+			
+			for i = 1 to 10
+				DeleteSprite(land2Bolt[i])
+			next i
+			DeleteSprite(finishLine)
 		endif
 		
 		if scene = AIR2
@@ -1268,7 +1280,7 @@ function DeleteScene(scene)
 			DeleteSprite(air2BBG)
 			DeleteSprite(eggBird)
 			DeleteSprite(eggBirdHead)
-			DeleteSprite(airFinishLine)
+			DeleteSprite(finishLine)
 			DeleteSprite(air2WindBG)
 			
 			iMax = bulletActive.length

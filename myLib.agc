@@ -1367,15 +1367,18 @@ function SetPowers()
 	powers[2, 3, 5] = "x2.0 Base Speed"
 	powers[2, 4, 5] = "x2.5 Base Speed"
 
-	powers[3, 1, 5] = "Normal Boost Time"
+	powers[3, 1, 5] = "x1 Boost Time"
 	powers[3, 2, 5] = "x1.5 Boost Time"
 	powers[3, 3, 5] = "x2 Boost Time"
-	powers[3, 4, 5] = "x2.5 Boost Time"
+	powers[3, 4, 5] = "x3 Boost Time"
 
-	powers[4, 1, 5] = "x1 Boost Chain Length"
-	powers[4, 2, 5] = "x1.2 Boost Chain Length"
-	powers[4, 3, 5] = "x1.6 Boost Chain Length"
-	powers[4, 4, 5] = "x2 Boost Chain Length"
+	powers[4, 1, 5] = "Short Boost Chain"
+	powers[4, 2, 5] = "+1 Boost Chain Length"
+	powers[4, 3, 5] = "+3 Boost Chain Length"
+	powers[4, 4, 5] = "+5 Boost Chain Length"
+	//powers[4, 2, 5] = "x1.2 Boost Chain Length"
+	//powers[4, 3, 5] = "x1.6 Boost Chain Length"
+	//powers[4, 4, 5] = "x2 Boost Chain Length"
 	
 	//Mountains/Air 2
 	powers[1, 1, 6] = "One Slipstream"

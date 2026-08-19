@@ -482,7 +482,7 @@ function DoUpgrade2()
 	if Button(startRace) or wantToStart
 		canStillSpend = 0
 		for i = 1 to upPods.length-1
-			if scrapTotal >= GetCost2(upPods[i].row, upPods[i].column, upPods[i].rID) then canStillSpend = 1
+			if scrapTotal >= GetCost2(upPods[i].row, upPods[i].column, upPods[i].rID) and GetCost2(upPods[i].row, upPods[i].column, upPods[i].rID) <> 0 then canStillSpend = 1
 		next i
 			
 		if canStillSpend and GetPopupActive() = 0
@@ -569,7 +569,7 @@ function DeleteUpgrade2()
 		DeleteTween(upPods[i].twnBuyTuck)
 	next i
 	
-	for i = 0 to raceQueueRef.length-1
+	for i = 0 to raceQueueRef.length
 		DeleteSprite(upCols[i])
 	next i
 	

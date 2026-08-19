@@ -30,7 +30,8 @@ global land2heroIFramesMax = 120
 global land2heroBoostCharges# = 0
 global land2heroBoostChargesMax = 10
 global land2heroBoostFrames# = 0  // current remaining frames of boost
-global land2heroBoostFramesMax = 1//60
+global land2heroBoostFramesMax# = 1//60
+global land2TriggerBoost = 0
 global land2currentLane = 2  // current lane, 1 = leftmost lane
 global land2laneChangeFrame = 0  // frames remaining in lane change, max 5
 global land2laneChangeDirection = 0  // -1 -> left, 1 -> right
@@ -154,13 +155,27 @@ function InitBoostPanels()
             sprBoost.size = 70
             // todo - write something like LoadAnimatedSpriteFromSpawnable?
             sprBoost.spr = CreateSprite(0)
-            for j = 1 to 18
-				AddSpriteAnimationFrame(sprBoost.spr, boosterI[j])
-            next j
+            if panel <> land2boostGroupLength - 1
+            		for j = 1 to 18
+					AddSpriteAnimationFrame(sprBoost.spr, boosterI[j])
+	            next j
+			else
+				for j = 1 to 18
+					AddSpriteAnimationFrame(sprBoost.spr, boosterLastI[j])
+	            next j
+            	
+            endif
+            
             SetSpriteSize(sprBoost.spr, sprBoost.size*14/5, sprBoost.size)
+            SetSpriteShapeBox(sprBoost.spr, -sprBoost.size*7/5, -sprBoost.size/2, sprBoost.size*7/5, sprBoost.size/2-15, 0, 0)
             SetSpritePosition(sprBoost.spr, sprBoost.x, sprBoost.y)
             SetSpriteDepth(sprBoost.spr, 10)
             PlaySprite(sprBoost.spr, 30)
+            if panel = land2boostGroupLength - 1
+            		SetSpriteGroup(sprBoost.spr, LAND2) //If a panel is the last one, then trigger the boost
+            		//SetSpriteColor(sprBoost.spr, 0, 0, 255, 255)
+            		//SetSpriteColor(sprBoost.spr, 255, 0, 255, 255)
+            endif
             spawnActive.insert(sprBoost)
             // set the panel's underlying sprite's position.
             // we need to do this so we can check for overlaps when spawning
@@ -237,9 +252,9 @@ function InitLand2()
     // apply upgrade values
     // assign values to upgradeable attributes based on purchased levels 
     land2nLanes = 2 + upgrades[attrnLanes, LAND2]
-    land2heroSpeedMax# = 6 + 3 * upgrades[attrBaseSpeed, LAND2]
+    land2heroSpeedMax# = 5 + 2.5 * upgrades[attrBaseSpeed, LAND2]
     land2AnimSpeed = 10 + 3 * upgrades[attrBaseSpeed, LAND2]
-    land2heroBoostFramesMax = 1 + 0.5 * upgrades[attrBoostFrames, LAND2]
+    land2heroBoostFramesMax# = 0.4 + 0.2 * upgrades[attrBoostFrames, LAND2] + 0.2 * (upgrades[attrBoostFrames, LAND2]/3)
     land2boostGroupLength = 5 + upgrades[attrBoostGroupLength, LAND2] + 2 * (upgrades[attrBoostGroupLength, LAND2] / 2)
 
     land2heroSpeed# = land2heroSpeedMax#
@@ -269,7 +284,7 @@ function InitLand2()
 		for j = 1 to land2sprStreet[i].length
 			if i <> 1 or j <> 1
 				land2sprStreet[i, j] = LoadSprite("cbg/lane" + str(1+Mod(j+1, 2)) + ".png")
-				SetSpriteExpress(land2sprStreet[i, j], 2*h, 2*h*30/42, 0, 0, 90)
+				SetSpriteExpress(land2sprStreet[i, j], 2*h, 2*h*30/42, 0, 0, 110)
 				//SetSpriteColorRed(land2sprStreet[i, j], 200-i*50)
 			endif
     		//LoadSprite(land2sprStreet[i], land2sprStreet[1])
@@ -292,7 +307,7 @@ function InitLand2()
     SetSpriteSize(hero, 55, 55)
     SetSpritePosition(hero, 500, land2heroY)
     SetSpriteDepth(hero, 30)
-    SetSpriteShapeBox(hero, -80, -25, 120, 30, 0, 0)
+    SetSpriteShapeBox(hero, -60, -25, 60, 20, 0, 0)
     PlaySprite(hero, land2AnimSpeed)
     heroLocalDistance# = land2Distance
 
@@ -300,6 +315,22 @@ function InitLand2()
 	areaSeen = 4//Max(areaSeen, 2)
 	LoadSpriteExpress(duck, "enemy2/land2foe"+str(areaSeen-1)+".png", 200, 200, 460, 300, 5)
 	areaSeen = oldAreaSeen
+
+	img = LoadImage("cbg/bolt.png")
+	for i = 1 to 10
+		land2Bolt[i] = CreateSprite(img)
+		SetSpriteExpress(land2Bolt[i], 20, 20, 999,999, 999)
+	next i
+	trashBag.insert(img)
+	
+	finishLine = LoadSprite("finishRod.png")
+	SetSpriteSize(finishLine, 20, 700)
+	SetSpriteDepth(finishLine, 101)
+	SetSpriteOffset(finishLine, 10, 350)
+	SetSpriteAngle(finishLine, 90)
+	SetSpriteMiddleScreenX(finishLine)
+	//FixSpriteToScreen(finishLine, 1)
+	
 
     // create "spawnables" (boosts/obstacles/scrap)
     spawnActive.length = -1
@@ -327,11 +358,22 @@ function DoSpawnables()
             // check for collecting a boost
             if GetSpriteCollision(spawnActive[i].spr, hero) and spawnActive[i].x = land2currentLane
                 idx_to_delete = i
-                land2heroBoostCharges# = min(land2heroBoostCharges# + 1, land2heroBoostChargesMax)
+                land2heroBoostCharges# = land2heroBoostCharges# + 1
+                //land2heroBoostCharges# = min(land2heroBoostCharges# + 1, land2heroBoostChargesMax)
+                
+                if GetSpriteGroup(spawnActive[i].spr) = LAND2
+                	land2TriggerBoost = 1
+                endif
                 
                 PlaySound(boostChargeS, volumeS/4)
             endif
             SetSpritePosition(spawnActive[i].spr, LaneToXWithOffsetBoost(spawnActive[i].x, spawnActive[i].y-(land2Distance-heroLocalDistance#)*2/3), spawnActive[i].y-(land2Distance-heroLocalDistance#)*2/3)
+            if (GetSpriteY(spawnActive[i].spr)+GetSpriteHeight(spawnActive[i].spr) < GetSpriteY(hero)) and GetSpriteGroup(spawnActive[i].spr) = LAND2
+            	//land2TriggerBoost = 1
+            	land2HeroBoostCharges# = 0
+            	SetSpriteGroup(spawnActive[i].spr, 0)
+            endif
+            
         elseif spawnActive[i].cat = BAD 
             // check for collisions
             if GetSpriteCollision(spawnActive[i].spr, hero) and spawnActive[i].x = land2currentLane //and land2HeroIFrames# = 0 
@@ -339,13 +381,25 @@ function DoSpawnables()
                 //SetSprite
                 //land2HeroIFrames# = land2heroIFramesMax
                 //PlaySound(hitS, volumeS)
+                if land2heroBoostFrames# > 0
+                	SetSpriteGroup(spawnActive[i].spr, LAND2)
+                	CollectScrap(CARSCRAP)
+                	//Sound
+                else
+                	land2BehindCar = 1
+                endif
+                
             endif
             // recycle obstacle spawnables once they scroll offscreen
             if spawnActive[i].y < -300
                 inc spawnActive[i].y, 3600
                 spawnActive[i].x = SetObstacleLane(spawnActive[i])
             endif
-            SetSpritePosition(spawnActive[i].spr, LaneToXWithOffsetCar(spawnActive[i].x, spawnActive[i].y-(land2Distance-heroLocalDistance#)*2/3), spawnActive[i].y-(land2Distance-heroLocalDistance#)*2/3)
+            if GetSpriteGroup(spawnActive[i].spr) <> LAND2 then SetSpritePosition(spawnActive[i].spr, LaneToXWithOffsetCar(spawnActive[i].x, spawnActive[i].y-(land2Distance-heroLocalDistance#)*2/3), spawnActive[i].y-(land2Distance-heroLocalDistance#)*2/3)
+        		if GetSpriteGroup(spawnActive[i].spr) = LAND2
+                		IncSpritePosition(spawnActive[i].spr, 1.4*fpsr#, -0.8*fpsr#)
+                		IncSpriteAngle(spawnActive[i].spr, 1.4*fpsr#)
+                endif
         elseif spawnActive[i].cat = SCRAP
             // check for collecting scrap
             if GetSpriteCollision(spawnActive[i].spr, hero) and spawnActive[i].x = land2currentLane and GetTweenExists(spawnActive[i].spr) = 0
@@ -360,6 +414,9 @@ function DoSpawnables()
             endif
             if GetTweenExists(spawnActive[i].spr) = 0 then SetSpritePosition(spawnActive[i].spr, LaneToXWithOffset(spawnActive[i].x, spawnActive[i].y-(land2Distance-heroLocalDistance#)*2/3), spawnActive[i].y-(land2Distance-heroLocalDistance#)*2/3)
         endif
+        
+        if GetSpriteY(spawnActive[i].spr) > GetSpriteY(finishLine) then SetSpriteVisible(spawnActive[i].spr, 0)
+        
     next i
 	if GetSpriteY(spawnActive[i].spr) < GetSpriteY(hero)-80 and spawnActive[i].x = land2currentLane and GetSpriteDepth(spawnActive[i].spr) < GetSpriteDepth(hero) then SetSpriteDepth(spawnActive[i].spr, GetSpriteDepth(hero)+2)
 
@@ -390,8 +447,10 @@ function DoLand2()
         //endif
     next i
     
+    SetSpritePosition(finishLine, LaneToXWithOffset(1, land2Distance*2/3-(land2Distance-heroLocalDistance#)*2/3)+60, land2Distance*2/3-(land2Distance-heroLocalDistance#)*2/3-120)
+    
+    land2TriggerBoost = 0
     DoSpawnables()
-
 	
 	//SetSpritePosition(land2sprStreet[1], GetSpriteX(land2sprBuildings), 800+GetSpriteY(land2sprBuildings)) //+4/6*GetSpriteHeight(land2sprBuildings))
 	//SetSpritePosition(land2sprStreet[2], GetSpriteX(land2sprBuildings), GetSpriteY(land2sprBuildings)+1.2*GetSpriteHeight(land2sprBuildings))
@@ -404,13 +463,27 @@ function DoLand2()
     // start turning Right
     
 	for i = 0 to spawnActive.length - 1
-		if GetSpriteCollision(spawnActive[i].spr, hero) and spawnActive[i].cat = BAD and spawnActive[i].x - land2currentLane = 1
-			inputLeft = 0
-			//Honk SE
+		if GetSpriteCollision(spawnActive[i].spr, hero) and spawnActive[i].cat = BAD and spawnActive[i].x - land2currentLane = 1 and inputLeft
+			if land2heroBoostFrames# > 0 
+				SetSpriteGroup(spawnActive[i].spr, LAND2)
+	            	CollectScrap(CARSCRAP)
+	            	//Sound
+	           else
+	           	inputLeft = 0
+				//Honk SE
+			endif
+			
+			
 		endif
-		if GetSpriteCollision(spawnActive[i].spr, hero) and spawnActive[i].cat = BAD and spawnActive[i].x - land2currentLane = -1 
-			inputRight = 0
-			//Honk SE
+		if GetSpriteCollision(spawnActive[i].spr, hero) and spawnActive[i].cat = BAD and spawnActive[i].x - land2currentLane = -1 and inputRight
+			if land2heroBoostFrames# > 0 
+				SetSpriteGroup(spawnActive[i].spr, LAND2)
+	            	CollectScrap(CARSCRAP)
+	            	//Sound
+	           else
+	           	inputRight = 0
+				//Honk SE
+			endif
 		endif
 	next i
       
@@ -429,9 +502,11 @@ function DoLand2()
     // boost time is proportionate to the number of charges held
     // if the boost meter is full (10 charges), the boost is extra long
    	endif
-   	if inputSelect and land2heroBoostCharges# >= 5
-        land2heroBoostFrames# = land2heroBoostFramesMax*(1.0 + 0.05*(land2heroBoostChargesMax-land2heroBoostCharges#))
-        
+   	//if inputSelect and land2heroBoostCharges# >= 5
+   	if land2TriggerBoost
+   		land2TriggerBoost = 0
+        land2heroBoostFrames# = land2heroBoostFramesMax# //*(1.0 + 0.05*(land2heroBoostChargesMax-land2heroBoostCharges#))
+        land2boostSpeed# = land2heroBoostCharges#
         //if land2heroBoostCharges# = land2heroBoostChargesMax
         //    land2heroBoostFrames# = land2heroBoostFramesMax * 1.5
         //else
@@ -447,44 +522,88 @@ function DoLand2()
     endif
     
     if land2heroBoostCharges# > 0
-   	 	land2heroBoostCharges# = land2heroBoostCharges# - GetFrameTime()/2
-   	 	SetSpriteSize(land2sprBoostMeter, 20 * land2heroBoostCharges#, 20)
-        if land2heroBoostCharges# = land2heroBoostChargesMax
-            SetSpriteColor(land2sprBoostMeter, 255, 215, 0, 255)
-        elseif land2heroBoostCharges# >= 5
-            SetSpriteColor(land2sprBoostMeter, 0, 255, 0, 255)
-        endif
-        duckMinus = 155.0*land2heroBoostCharges#/land2heroBoostChargesMax
-        Print(duckMinus)
-        SetSpriteColor(hero, 255-duckMinus, 255, 255, 255)
+    		for i = 1 to Round(land2heroBoostCharges#)
+    			
+			//The orbs circling the sun
+			theta = gameTime#
+			
+			ratioC# = 360*i/Round(land2heroBoostCharges#)
+			
+			
+			yAng# = theta + ratioC#
+			if Mod(yAng#, 360) > 180
+				SetSpriteDepth(land2Bolt[i], GetSpriteDepth(hero) + 1)
+			else
+				SetSpriteDepth(land2Bolt[i], GetSpriteDepth(hero) - 1)
+			endif
+			SetSpritePosition(land2Bolt[i], GetSpriteMiddleX(hero) + 40*cos(theta + ratioC#)-GetSpriteWidth(hero)/2, GetSpriteMiddleY(hero)-20 + 10*sin(theta + ratioC#))
+    		next i
+   	 	//land2heroBoostCharges# = land2heroBoostCharges# - GetFrameTime()/2
+   	 	//SetSpriteSize(land2sprBoostMeter, 20 * land2heroBoostCharges#, 20)
+        //if land2heroBoostCharges# = land2heroBoostChargesMax
+        //    SetSpriteColor(land2sprBoostMeter, 255, 215, 0, 255)
+        //elseif land2heroBoostCharges# >= 5
+        //    SetSpriteColor(land2sprBoostMeter, 0, 255, 0, 255)
+        //endif
+        //duckMinus = 155.0*land2heroBoostCharges#/land2heroBoostChargesMax
+       // Print(duckMinus)
+        //SetSpriteColor(hero, 255-duckMinus, 255, 255, 255)
    	 	//SetSpriteSize(land2sprBoostMeter, 0, 20)
        	 //SetSpriteColor(land2sprBoostMeter, 255, 0, 0, 255)
+	else
+		for i = 1 to 10
+    			SetSpritePosition(land2Bolt[i], 999, 999)
+    		next i
 	endif
     
     Print(land2heroBoostFrames#)
     // hero movement
-    if land2heroIFrames# > 0 or land2heroBoostFrames# > 0 or land2BehindCar = 0
+    if land2BehindCar = 0 //land2heroIFrames# > 0 or land2heroBoostFrames# > 0 or land2BehindCar = 0
         land2heroIFrames# = max(0, land2heroIFrames# - 1)
         land2heroBoostFrames# = max(0, land2heroBoostFrames# - GetFrameTime())
-        land2heroSpeed# = land2heroSpeedMax# * (1 - 0.5 * (land2heroIFrames# / land2heroIFramesMax) + 1.5 * (land2heroBoostFrames# / land2heroBoostFramesMax))
+        if land2heroBoostFrames# <= 0 then land2boostSpeed# = 0
+        //land2heroSpeed# = land2heroSpeedMax# * (1 - 0.5 * (land2heroIFrames# / land2heroIFramesMax) + 1.5 * (land2heroBoostFrames# / land2heroBoostFramesMax))
+        land2heroSpeed# = land2heroSpeedMax# * (1 + 0.1*land2boostSpeed# + 0.04 * (land2boostSpeed#^2))
+        
+        
+        
+        
         if GetSpritePlaying(hero) = 0 then ResumeSprite(hero)
+        
+        //Modifying the speed at the end of a boost
+        if land2heroBoostFrames# > 0
+        		SetSpriteSpeed(hero, land2AnimSpeed*2)
+        		if land2heroBoostFrames# < land2heroBoostFramesMax#/3 then land2heroSpeed# = land2heroSpeed#*(land2heroBoostFrames#/(land2heroBoostFramesMax#/3))
+        		if land2heroBoostFrames# < land2heroBoostFramesMax#/6
+		    		StopSprite(hero)
+		    		SetSpriteFrame(hero, 1)
+		    	endif
+        		//if land2heroSpeed# < land2heroSpeedMax# then land2heroSpeed# = land2heroSpeedMax#
+        else
+        		SetSpriteSpeed(hero, land2AnimSpeed)
+        	endif
+        
+        
         // slow down lanes to match hero slowdown
 		//for i = 1 to land2sprStreet.length
         	//	SetSpriteSpeed(land2sprStreet[i], land2baseLaneSpeed * land2heroSpeed# * land2scrollScalar#)
 		//next i
+    else
+    		//For when you are stuck behind a car
+   	 	land2heroSpeed# = 0
+    		StopSprite(hero)
+    		SetSpriteFrame(hero, 1)
     endif
     
     //SetSpriteColor(hero, 255, 255 - 2*land2heroIFrames#, 255 - 2*land2heroIFrames#, 255)
+    SetSpriteColor(hero, 255 - 255*(land2heroBoostFrames#/(land2heroBoostFramesMax#)), 255, 255, 255)
     //SetSpriteColor(hero, 255, 255, 255, 255)
     if fpsr# < 25 then GlideToX(hero, LaneToX(land2currentLane), 10)
     //SetSpriteX(hero, LaneToX(land2currentLane) - 9 * land2laneChangeDirection * land2laneChangeFrame)
     //Print(land2currentLane)
     
-    if land2BehindCar
-    		land2heroSpeed# = 0
-    		StopSprite(hero)
-    		SetSpriteFrame(hero, 1)
-    	endif
+
+    //inc heroLocalDistance#, -1 * land2heroSpeed# * fpsr#*0.4166/3.74
     inc heroLocalDistance#, -1 * land2heroSpeed# * fpsr#*0.4166/3.74
 
 	SetSpritePosition(duck, LaneToXWithOffset(land2nLanes+1.5, 0-(duckDistance#-(heroLocalDistance#-land2Distance) - 20000*(raceSize - (curAreaSeen-1)))*2/3), 0-(duckDistance#-(heroLocalDistance#-land2Distance) - 20000*(raceSize - (curAreaSeen-1)))*2/3)
@@ -531,10 +650,14 @@ endfunction
 
 function ColorSpawnableLand2(spr, dark)
 	alpha = GetSpriteColorAlpha(spr)
+	blue = GetSpriteColorgreen(spr)
 	if dark = 0 then SetSpriteColor(spr, 255, 255, 255, 255)
 	if dark = 1 then SetSpriteColor(spr, 230, 195, 230, 255)
 	if dark = 2 then SetSpriteColor(spr, 220, 180, 220, 255)
 	SetSpriteColorAlpha(spr, alpha)
+	if blue = 0
+		SetSpriteColorgreen(spr, 0)
+	endif
 endfunction
 
 //~function FreezeLand2()

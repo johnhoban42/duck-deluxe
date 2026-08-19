@@ -262,13 +262,13 @@ function InitAir2()
 	
 		
 		
-	airFinishLine = LoadSprite("finishRod.png")
-	SetSpriteSize(airFinishLine, 20, 700)
-	SetSpriteDepth(airFinishLine, 10)
-	SetSpriteOffset(airFinishLine, 10, 350)
-	SetSpriteAngle(airFinishLine, 90)
-	SetSpriteMiddleScreenX(airFinishLine)
-	FixSpriteToScreen(airFinishLine, 1)
+	finishLine = LoadSprite("finishRod.png")
+	SetSpriteSize(finishLine, 20, 700)
+	SetSpriteDepth(finishLine, 10)
+	SetSpriteOffset(finishLine, 10, 350)
+	SetSpriteAngle(finishLine, 90)
+	SetSpriteMiddleScreenX(finishLine)
+	FixSpriteToScreen(finishLine, 1)
 	
 	//spawnActive.insert(newS)
 	
@@ -289,8 +289,8 @@ function DoAir2()
 	SetSpriteX(duck, w/2 - GetSpriteWidth(duck) + 300*sin(gameTime#/10))
 	SetSpriteY(duck, h*4/5 + (duckDistance# - 20000*(raceSize) - (heroLocalDistance#-air2Distance)))
 	
-	SetSpriteY(airFinishLine, GetSpriteY(hero) - heroLocalDistance#*1.5 + 1310)
-	//Print("Finish Line Y: " + Str(GetSpriteY(airFinishLine)))
+	SetSpriteY(finishLine, GetSpriteY(hero) - heroLocalDistance#*1.5 + 1310)
+	//Print("Finish Line Y: " + Str(GetSpriteY(finishLine)))
 	//dec heroLocalDistance#, 0.1*fpsr#
 	
 	//Turning, but you can't turn if you're hurt

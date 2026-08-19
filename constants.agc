@@ -13,6 +13,7 @@ global AREA_CHARS as string[7] = ["W", "L", "S", "W", "L", "S", "Z"]
 #constant LAND2 5
 #constant AIR2 6
 #constant SPACE2 7
+#constant CARSCRAP 99
 
 #constant UPGRADE 8
 #constant TITLE 9
@@ -57,6 +58,7 @@ global fish3I
 
 global slipstreamI as integer[8]
 global boosterI as integer[18]
+global boosterLastI as integer[18]
 
 #constant spaceArrowI1 7001
 #constant spaceArrowI2 7002
@@ -70,7 +72,8 @@ function LoadGameImages()
 		SetImageWrapV(slipstreamI[i], 1)
 	next i
 	for i = 1 to 18
-		boosterI[i] = LoadImage("land2booster"+str(19-i)+".png")
+		boosterI[i] = LoadImage("cbg/land2booster"+str(19-i)+".png")
+		boosterLastI[i] = LoadImage("cbg/lastPad/land2booster"+str(19-i)+".png")
 	next i
 	
 	LoadImage(spaceArrowI1, "space/tearrow1.png")
@@ -222,6 +225,7 @@ global land2sprStreet as integer [5, 5]
 #constant land2sprScrap 5500  // reserved 5500 - 5699 for scrap sprites
 #constant land2sprCones 5700  // reserved 5700 - 5799 for cone sprites
 #constant land2sprBoostPanels 5800  // reserved 5800 - 5999 for boost panel sprites
+global land2Bolt as integer[10]
 
 #constant air2BG 6001
 #constant air2BBG 6002
@@ -239,7 +243,7 @@ global eggBadI as integer[3]
 global eggGoodI
 global miniBird1I
 global miniBird2I
-global airFinishLine
+global finishLine
 
 //Space 2 Sprites
 global pressThis

@@ -248,11 +248,11 @@ function InitSpace2()
 	SetSpriteExpress(spacePlanetS, 200, 200, 0, 0, 400)
 	SetSpriteMiddleScreen(spacePlanetS)
 	FixSpriteToScreen(spacePlanetS, 1)
-	SetSpriteShapeCircle(spacePlanetS, 0, 0, 8)
+	SetSpriteShapeCircle(spacePlanetS, 0, 0, 20)
 	
 	for i = 0 to 2
 		part = spaceP1 + i
-		CreateParticlesExpress(part, 200, -1, 1, 360, 100)
+		//CreateParticlesExpress(part, 200, -1, 1, 360, 100)
 		img = LoadImage("space/particle"+str(i+1)+".png")
 		for j = 1 to 100
 			spr = CreateSprite(img)
@@ -297,7 +297,7 @@ function DoSpace2()
 	for i = 1 to spaceParticleS.length
 		//For the frame-by-frame:
 		spr = spaceParticleS[i]
-		IncSpritePosition(spr, -(255-GetSpriteColorAlpha(spr))*cos(GetSpriteAngle(spr)), -(255-GetSpriteColorAlpha(spr))*sin(GetSpriteAngle(spr)))
+		if fpsr# < 25 then IncSpritePosition(spr, -(255-GetSpriteColorAlpha(spr))*cos(GetSpriteAngle(spr))*fpsr#/6, -(255-GetSpriteColorAlpha(spr))*sin(GetSpriteAngle(spr))*fpsr#/6)
 		//SetSpriteSizeCentered(spr, GetCL
 		scale = 10*(GetSpriteDistance(spr, spacePlanetS)+100)/1130.0
 		SetSpriteSizeSquare(spr, scale)
