@@ -46,6 +46,7 @@ global carListEnd = 0
 global land2baseLaneSpeed = 52
 global land2buildingXOffset = 0  // set in the init script
 global land2scrollScalar# = 0.1  // background scroll speed, relative to hero speed
+global duckStepSoundPlayed = 0
 
 //~function InitUpgradeValues()
     //~// assign values to upgradeable attributes based on purchased levels 
@@ -106,6 +107,7 @@ function SetObstacleLane(obstacle as spawn)
 endfunction x
 
 function InitObstacles()
+	
     // load spawnable obstacles (cars and cones)
     lastLane = -1
     //sprID = land2sprCones
@@ -247,6 +249,11 @@ function InitScrap()
     next i
 endfunction
 
+//Once your boost gets high enough, flash the instructions to show that you can destroy cars for scrap
+global land2InsTrigger1 = 0
+
+	
+
 function InitLand2()
 
     // apply upgrade values
@@ -259,7 +266,12 @@ function InitLand2()
 
     land2heroSpeed# = land2heroSpeedMax#
     //InitUpgradeValues()
-	
+
+	if (upgrades[attrBoostFrames, LAND2] <> 0 or upgrades[attrBoostGroupLength, LAND2] <> 0) and land2InsTrigger1 = 0
+		land2InsTrigger1 = 1
+		flashNextInstruct = 1
+	endif
+			
     // load building sprites
     // building positioning depends on how many lanes are unlocked
     land2buildingXOffset = -105 + 55 * land2nLanes
@@ -312,7 +324,7 @@ function InitLand2()
     heroLocalDistance# = land2Distance
 
 	oldAreaSeen = areaSeen
-	areaSeen = 4//Max(areaSeen, 2)
+	areaSeen = Max(areaSeen, 2)
 	LoadSpriteExpress(duck, "enemy2/land2foe"+str(areaSeen-1)+".png", 200, 200, 460, 300, 5)
 	areaSeen = oldAreaSeen
 
@@ -345,7 +357,7 @@ endfunction
 function DoSpawnables()
 	
 	land2BehindCar = 0
-	
+	print(land2heroBoostCharges#)
     // process movement for all spawnables (boosts, obstacles)
     idx_to_delete = -1
     for i = 0 to spawnActive.length - 1
@@ -363,9 +375,11 @@ function DoSpawnables()
                 
                 if GetSpriteGroup(spawnActive[i].spr) = LAND2
                 	land2TriggerBoost = 1
+                	
+            		PlaySound(cityBoostS, volumeS)
                 endif
                 
-                PlaySound(boostChargeS, volumeS/4)
+                PlaySound(cityCharge1S+Min(Round(land2heroBoostCharges#-1), 3), volumeS/5)
             endif
             SetSpritePosition(spawnActive[i].spr, LaneToXWithOffsetBoost(spawnActive[i].x, spawnActive[i].y-(land2Distance-heroLocalDistance#)*2/3), spawnActive[i].y-(land2Distance-heroLocalDistance#)*2/3)
             if (GetSpriteY(spawnActive[i].spr)+GetSpriteHeight(spawnActive[i].spr) < GetSpriteY(hero)) and GetSpriteGroup(spawnActive[i].spr) = LAND2
@@ -376,7 +390,8 @@ function DoSpawnables()
             
         elseif spawnActive[i].cat = BAD 
             // check for collisions
-            if GetSpriteCollision(spawnActive[i].spr, hero) and spawnActive[i].x = land2currentLane //and land2HeroIFrames# = 0 
+            if GetSpriteCollision(spawnActive[i].spr, hero) and spawnActive[i].x = land2currentLane and GetSpriteGroup(spawnActive[i].spr) <> LAND2 //and land2HeroIFrames# = 0 
+                
                 land2BehindCar = 1
                 //SetSprite
                 //land2HeroIFrames# = land2heroIFramesMax
@@ -384,9 +399,10 @@ function DoSpawnables()
                 if land2heroBoostFrames# > 0
                 	SetSpriteGroup(spawnActive[i].spr, LAND2)
                 	CollectScrap(CARSCRAP)
-                	//Sound
+                	if GetSoundInstances(carFling1S) = 0 and GetSoundInstances(carFling2S) = 0 then PlaySound(carFling1S+Random(0, 1), volumeS)
                 else
                 	land2BehindCar = 1
+                	if GetSoundInstances(carHonk1S) = 0 and GetSoundInstances(carHonk1S) = 0 then PlaySound(carHonk1S+Random(0, 1), volumeS*2/3)
                 endif
                 
             endif
@@ -415,7 +431,7 @@ function DoSpawnables()
             if GetTweenExists(spawnActive[i].spr) = 0 then SetSpritePosition(spawnActive[i].spr, LaneToXWithOffset(spawnActive[i].x, spawnActive[i].y-(land2Distance-heroLocalDistance#)*2/3), spawnActive[i].y-(land2Distance-heroLocalDistance#)*2/3)
         endif
         
-        if GetSpriteY(spawnActive[i].spr) > GetSpriteY(finishLine) then SetSpriteVisible(spawnActive[i].spr, 0)
+        if GetSpriteY(spawnActive[i].spr) > GetSpriteMiddleY(finishLine) then SetSpriteVisible(spawnActive[i].spr, 0)
         
     next i
 	if GetSpriteY(spawnActive[i].spr) < GetSpriteY(hero)-80 and spawnActive[i].x = land2currentLane and GetSpriteDepth(spawnActive[i].spr) < GetSpriteDepth(hero) then SetSpriteDepth(spawnActive[i].spr, GetSpriteDepth(hero)+2)
@@ -457,7 +473,6 @@ function DoLand2()
 	//IncSpriteY(land2sprStreet[1], GetSpriteHeight(land2sprBuildings+1))
 //Print(GetSpriteX(land2sprStreet[1]))
 //Print(GetSpriteY(land2sprStreet[1]))
-	Print(GetViewOffsetX())
     // hero inputs
     DoInputs()
     // start turning Right
@@ -470,7 +485,7 @@ function DoLand2()
 	            	//Sound
 	           else
 	           	inputLeft = 0
-				//Honk SE
+				PlaySound(carHonkSideS, volumeS)
 			endif
 			
 			
@@ -482,18 +497,20 @@ function DoLand2()
 	            	//Sound
 	           else
 	           	inputRight = 0
-				//Honk SE
+				PlaySound(carHonkSideS, volumeS)
 			endif
 		endif
 	next i
       
     if inputRight and land2laneChangeFrame = 0 and land2currentLane > 1
+   	 	PlaySound(collectS, volumeS/4)
         land2currentLane = max(1, land2currentLane - 1)
         land2laneChangeFrame = 5
         land2laneChangeDirection = -1
         HighlightLaneLand2()
     // start turning Left
     elseif inputLeft and land2laneChangeFrame = 0 and land2currentLane < land2nLanes
+    		PlaySound(collectS, volumeS/4)
         land2currentLane = min(land2nLanes, land2currentLane + 1)
         land2laneChangeFrame = 5
         land2laneChangeDirection = 1
@@ -515,7 +532,7 @@ function DoLand2()
         land2heroBoostCharges# = 0
         SetSpriteSize(land2sprBoostMeter, 0, 20)
         SetSpriteColor(land2sprBoostMeter, 255, 0, 0, 255)
-        PlaySound(boostS)
+        //PlaySound(boostS)
     endif
     if land2laneChangeFrame
         inc land2laneChangeFrame, -1
@@ -556,7 +573,7 @@ function DoLand2()
     		next i
 	endif
     
-    Print(land2heroBoostFrames#)
+    //Print(land2heroBoostFrames#)
     // hero movement
     if land2BehindCar = 0 //land2heroIFrames# > 0 or land2heroBoostFrames# > 0 or land2BehindCar = 0
         land2heroIFrames# = max(0, land2heroIFrames# - 1)
@@ -602,13 +619,19 @@ function DoLand2()
     //SetSpriteX(hero, LaneToX(land2currentLane) - 9 * land2laneChangeDirection * land2laneChangeFrame)
     //Print(land2currentLane)
     
+	if duckStepSoundPlayed = 0 and Mod(GetSpriteCurrentFrame(hero), 2) = 1
+		PlaySound(duckStepS, volumeS/5)
+		duckStepSoundPlayed = 1
+	elseif duckStepSoundPlayed = 1 and Mod(GetSpriteCurrentFrame(hero), 2) = 0
+		duckStepSoundPlayed = 0
+	endif
 
     //inc heroLocalDistance#, -1 * land2heroSpeed# * fpsr#*0.4166/3.74
     inc heroLocalDistance#, -1 * land2heroSpeed# * fpsr#*0.4166/3.74
 
 	SetSpritePosition(duck, LaneToXWithOffset(land2nLanes+1.5, 0-(duckDistance#-(heroLocalDistance#-land2Distance) - 20000*(raceSize - (curAreaSeen-1)))*2/3), 0-(duckDistance#-(heroLocalDistance#-land2Distance) - 20000*(raceSize - (curAreaSeen-1)))*2/3)
 
-    Print(land2BehindCar)
+    //Print(land2BehindCar)
 
 endfunction
 

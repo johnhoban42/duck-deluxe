@@ -34,11 +34,18 @@ global firstDuck2Race = 1
 
 global fixedWater2Speed# = 0.11 //Upgrade variable
 
-
+//After the first 'race', play the instructions once
+global water2InsTrigger1 = 0
 
 function InitWater2()
 	
 	if debug then firstDuck2Race = 1
+	
+	if firstDuck2Race = 1 and water2InsTrigger1 = 0
+		water2InsTrigger1 = 1
+		flashNextInstruct = 1
+		SetTextVisible(instruct, 0)
+	endif
 	
 	//PlayMusicOGG(ambWater2, 1)
 	//SetMusicVolumeOGG(ambWater2, ambVol*volumeS)
@@ -88,6 +95,8 @@ function InitWater2()
 	waterSpeedX# = (0.25) * (1 + 0.2*upgrades[4, 4] + 0.2*upgrades[4, 4]/3)
 	
 	//Dive depth, upgrade 3
+	//upgrades[3, 4] = 3
+	
 	diveLevel = 1 + upgrades[3, 4]
 	if diveLevel = 1 then diveDeepTimerMax# = 0.28/(diveVelMax#)
 	if diveLevel = 2 then diveDeepTimerMax# = 0.41/(diveVelMax#)
@@ -234,6 +243,7 @@ function InitWater2()
 	for i = 1 to iEnd
 		newS.spr = spawnS
 		newS.cat = Random(1, 7)
+		if upgrades[3, 4] = 3 then newS.cat = Random(1, 6)	//If deepness is fully upgraded, lower the chance of bad fish
 		if newS.cat <= 3
 			inc newS.cat, scrapWeight/2
 		endif
@@ -400,7 +410,7 @@ function DoWater2()
 	
 	if diveDamage
 		SetSpriteAngle(hero, Mod(heroY#*7, 360))
-		diveVelY# = -0.4
+		diveVelY# = -0.4*(1+0.3*upgrades[3, 4])
 		heroLocalDistance# = heroLocalDistance# + fixedWater2Speed#*fpsr#*2/3
 		SetSpriteColor(hero, 255, 100, 100, 255)
 		if heroY# < 0
@@ -663,7 +673,6 @@ function DoWater2()
 	//Print(GetSpriteWidth(featherBoostS))
 	//Print(GetSpriteHeight(featherBoostS))
 	
-Print(GetImageWidth(slipstreamI[1]))
 	
 endfunction
 

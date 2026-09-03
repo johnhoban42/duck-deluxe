@@ -52,6 +52,24 @@ function LoadScrapImages()
 		next j
 	next i
 endfunction
+
+global scrapTxtTwnUp as integer[5]
+global scrapTxtTwnDown as integer[5]
+function MakeScrapTweens()
+	for i = 1 to scrapTxtTwnUp.length
+		if GetTweenCharExists(scrapTxtTwnUp[i]) then DeleteTween(scrapTxtTwnUp[i])
+		if GetTweenCharExists(scrapTxtTwnDown[i]) then DeleteTween(scrapTxtTwnDown[i])
+	next i
+	
+	for i = 1 to scrapTxtTwnUp.length
+		scrapTxtTwnUp[i] = CreateTweenChar(0.2)
+		SetTweenCharY(scrapTxtTwnUp[i], -4, 0, TweenEaseIn1())
+		
+		scrapTxtTwnDown[i] = CreateTweenChar(0.2)
+		SetTweenCharY(scrapTxtTwnDown[i], 4, 0, TweenEaseIn1())
+	next i
+endfunction
+
 global fish1I
 global fish2I
 global fish3I
@@ -65,7 +83,21 @@ global boosterLastI as integer[18]
 #constant spaceArrowI3 7003
 #constant spaceArrowI4 7004
 global spaceArrowColorI as integer[4, 4]
+
+global progFlagI as integer[7]
+global progFinishI as integer[9]
+global progMapI as integer[7]
+
 function LoadGameImages()
+	
+	for i = 1 to 7
+		progFlagI[i] = LoadImage("mapBars/flag" + str(i) + ".png")
+		progFinishI[i] = LoadImage("mapBars/finish" + str(i) + ".png")
+		progMapI[i] = LoadImage("mapBars/mapBar" + str(i) + ".png")
+	next
+	progFinishI[8] = LoadImage("mapBars/finish" + str(8) + ".png")
+	progFinishI[9] = LoadImage("mapBars/finish" + str(9) + ".png")
+	
 	for i = 1 to 8
 		slipstreamI[i] = LoadImage("slips/windtest"+str(i)+".png")
 		SetImageWrapU(slipstreamI[i], 1)

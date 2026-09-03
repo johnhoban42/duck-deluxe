@@ -211,7 +211,7 @@ function DoPauseMenu()
 			endif
 		elseif pauseLineSelected = 5 //Forfeit Race
 			if GetPopupActive()
-				duckSpeed# = 12*fpsr#
+				duckSpeed# = 36*fpsr#
 				leavePause = 1
 			else
 				ShowPopup("You sure? You will keep your" + chr(10) + "scrap. (You can also press 'R'.)", 1)
@@ -232,13 +232,13 @@ function DoPauseMenu()
 	Print(pauseLineSelected)
 	
 	if (stateLeft or stateRight) and GetSoundInstances(selectS) = 0
-		if stateLeft then dec holdTimer#, GetFrameTime()*16
-		if stateRight then inc holdTimer#, GetFrameTime()*16
+		if stateLeft then dec holdTimer#, GetFrameTime()*90
+		if stateRight then inc holdTimer#, GetFrameTime()*90
 		//Need to update strings outside of the inputLeft/Right block, should make a new stateLeft/Right block and move the string updates there
 	endif
 	Print(holdTimer#)
 	
-	volInc = 10
+	volInc = 5
 	
 	if inputLeft or inputRight
 		ClearPopup()
@@ -250,6 +250,7 @@ function DoPauseMenu()
 			else	//Right, Higher
 				volumeG = Min(volumeG+volInc, 100)
 			endif
+			volumeG = Round((volumeG)/5) * 5
 			settingsChanged = 1
 		endif
 		
@@ -260,6 +261,7 @@ function DoPauseMenu()
 			else	//Right, Higher
 				volumeM = Min(volumeM+volInc, 100)
 			endif
+			volumeM = Round((volumeM)/5) * 5
 			settingsChanged = 1
 		endif
 		
@@ -270,31 +272,38 @@ function DoPauseMenu()
 			else	//Right, Higher
 				volumeS = Min(volumeS+volInc, 100)
 			endif
+			volumeS = Round((volumeS)/5) * 5
 			settingsChanged = 1
 		endif
 		
 		SetMusicSystemVolumeOGG(volumeG*volumeM/100.0)
 		SetSoundSystemVolume(volumeG*volumeS/100.0)
 	endif
-
+	
 	if stateLeft or stateRight
 		if pauseLineSelected = 2 //Global Volume
 			SetTextString(pauseLine[2], pauseOptions[2] + ": <- " + str(Trunc(volumeG+holdTimer#)) + " ->")
 			if (volumeG+holdTimer#) <= 0 then SetTextString(pauseLine[2], pauseOptions[2] + ":    0 ->")
 			if (volumeG+holdTimer#) >= 100 then SetTextString(pauseLine[2], pauseOptions[2] + ": <- 100")
+			
+			SetMusicSystemVolumeOGG((volumeG+holdTimer#)*volumeM/100.0)
+			SetSoundSystemVolume((volumeG+holdTimer#)*volumeS/100.0)
 		endif
 		
 		if pauseLineSelected = 3 //Music Volume
 			SetTextString(pauseLine[3], pauseOptions[3] + ": <- " + str(Trunc(volumeM+holdTimer#)) + " ->")
 			if (volumeM+holdTimer#) <= 0 then SetTextString(pauseLine[3], pauseOptions[3] + ":    0 ->")
 			if (volumeM+holdTimer#) >= 100 then SetTextString(pauseLine[3], pauseOptions[3] + ": <- 100")
+			SetMusicSystemVolumeOGG((volumeM+holdTimer#)*volumeG/100.0)
 		endif
 		
 		if pauseLineSelected = 4 //Sound Volume
 			SetTextString(pauseLine[4], pauseOptions[4] + ": <- " + str(Trunc(volumeS+holdTimer#)) + " ->")
 			if (volumeS+holdTimer#) <= 0 then SetTextString(pauseLine[4], pauseOptions[4] + ":    0 ->")
 			if (volumeS+holdTimer#) >= 100 then SetTextString(pauseLine[4], pauseOptions[4] + ": <- 100")
+			SetSoundSystemVolume((volumeS+holdTimer#)*volumeG/100.0)
 		endif
+		
 	endif
 
 	if inputEsc and pauseLineSelected then leavePause = 1
@@ -303,8 +312,11 @@ function DoPauseMenu()
 		if pauseLineSelected = 2 then volumeG = Min(Max(volumeG + holdTimer#, 0), 100)
 		if pauseLineSelected = 3 then volumeM = Min(Max(volumeM + holdTimer#, 0), 100)
 		if pauseLineSelected = 4 then volumeS = Min(Max(volumeS + holdTimer#, 0), 100)
+		SetMusicSystemVolumeOGG(volumeG*volumeM/100.0)
+		SetSoundSystemVolume(volumeG*volumeS/100.0)
 	endif
 	
+	Print(volumeG)
 
 	TintPauseText()
 	
@@ -320,6 +332,13 @@ function DoPauseMenu()
 		ResumeMusicOGG(curRaceMusic)
 		ResumeMusicOGG(oldRaceMusic)
 		if settingsChanged <> 0 then SaveGame()
+		if screen = UPGRADE and webVersion = 0
+			PauseMusicOGG(upgrade2M)
+			ResumeMusicOGG(upgrade2M)
+		elseif screen = UPGRADE and webVersion = 1
+			PauseMusicOGG(upgradeM)
+			ResumeMusicOGG(upgradeM)
+		endif
 		ClearPopup()
 		UnfreezeGameplay()
 		paused = 0
@@ -634,6 +653,11 @@ function SaveGame()
 	SaveSharedVariable("volumeM", str(volumeM))
 	SaveSharedVariable("volumeS", str(volumeS))
 	SaveSharedVariable("volumeG", str(volumeG))
+	SaveSharedVariable("tipNum", str(tipNum))
+	
+	SaveSharedVariable("water2InsTrigger1", str(water2InsTrigger1))
+	SaveSharedVariable("land2InsTrigger1", str(land2InsTrigger1))
+	SaveSharedVariable("upgradeInsTrigger1", str(upgradeInsTrigger1))
 	
 	
 endfunction
@@ -659,6 +683,11 @@ function LoadGame()
 	volumeM = val(LoadSharedVariable("volumeM", "100"))
 	volumeS = val(LoadSharedVariable("volumeS", "100"))
 	volumeG = val(LoadSharedVariable("volumeG", "100"))
+	tipNum = val(LoadSharedVariable("tipNum", "0"))
+	
+	water2InsTrigger1 = val(LoadSharedVariable("water2InsTrigger1", "0"))
+	land2InsTrigger1 = val(LoadSharedVariable("land2InsTrigger1", "0"))
+	upgradeInsTrigger1 = val(LoadSharedVariable("upgradeInsTrigger1", "0"))
 	
 endfunction
 

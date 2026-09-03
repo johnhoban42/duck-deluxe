@@ -1049,8 +1049,8 @@ function GetPopupActive()
 endfunction result
 
 function ClearPopup()
-	SetSpriteVisible(popupSpr, 0)
-	SetTextVisible(popupTxt, 0)
+	if GetSpriteExists(popupSpr) then 	SetSpriteVisible(popupSpr, 0)
+	if GetTextExists(popupSpr) then SetTextVisible(popupTxt, 0)
 endfunction
 
 global selectTarget = 0
@@ -1372,10 +1372,10 @@ function SetPowers()
 	powers[3, 3, 5] = "x2 Boost Time"
 	powers[3, 4, 5] = "x3 Boost Time"
 
-	powers[4, 1, 5] = "Short Boost Chain"
-	powers[4, 2, 5] = "+1 Boost Chain Length"
-	powers[4, 3, 5] = "+3 Boost Chain Length"
-	powers[4, 4, 5] = "+5 Boost Chain Length"
+	powers[4, 1, 5] = "Short Bolt Chain"
+	powers[4, 2, 5] = "+1 Bolt Chain Length"
+	powers[4, 3, 5] = "+3 Bolt Chain Length"
+	powers[4, 4, 5] = "+5 Bolt Chain Length"
 	//powers[4, 2, 5] = "x1.2 Boost Chain Length"
 	//powers[4, 3, 5] = "x1.6 Boost Chain Length"
 	//powers[4, 4, 5] = "x2 Boost Chain Length"
@@ -1422,4 +1422,13 @@ function SetPowers()
 	powers[4, 3, 7] = "Mega Combo"
 	powers[4, 4, 7] = "Zetta Combo"
 
+endfunction
+
+function SetTips()
+	tips[0] = "Tip: Upgrade to"+chr(10)+"win the race!"
+	tips[1] = "Tip: Hitting fish takes"+chr(10)+"away your boosts."
+	tips[2] = "Tip: Release SPACE to"+chr(10)+"end dive early."
+	tips[3] = "Tip: You won't win"+chr(10)+"unless you upgrade."
+	
+	tips[5] = "Tip: Scrap is stronger"+chr(10)+"deeper into the race."
 endfunction

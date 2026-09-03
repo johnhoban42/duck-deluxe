@@ -39,6 +39,7 @@ function InitAir2()
 	SetSpriteExpress(hero, 85, 85, w/2, h/2 + heroAir2Y, 7)
 	FixSpriteToScreen(hero, 0)
 	SetSpriteShape(hero, 1)
+	SetSpriteShapeCircle(hero, 0, 0, 20)
 	
 	slipStreamUse# = 0
 	air2X# = 400
@@ -156,7 +157,7 @@ function InitAir2()
 			newS.size = 140
 			
 			SetSpriteSizeSquare(spawnS, newS.size)
-			SetSpriteShapeCircle(spawnS, 0, 0, newS.size/2-30)
+			SetSpriteShapeCircle(spawnS, 0, 0, newS.size/2-35)
 			SetSpriteColor(spawnS, 100, 100, 100, 255)
 			//SetSpriteFlip(spawnS, 1, 0)
 		else
@@ -167,7 +168,7 @@ function InitAir2()
 			PlaySprite(spawnS, 3+Random(1,3))
 			newS.size = 60
 			SetSpriteSizeSquare(spawnS, newS.size)
-			
+			//SetSpriteShapeBox(spawnS, -1*newS.size*1.8, -1*newS.size*1.8, newS.size*1.8, newS.size*1.8, 0)
 		endif
 		SetSpriteDepth(spawnS, 50)
 		
@@ -287,7 +288,8 @@ function DoAir2()
 	SetSpriteY(hero, (h/2 + GetSpriteHeight(hero)/2 - 50 + GetViewOffsetY()) + heroAir2Y*(1/GetViewZoom()) - 15*slipStreamUse#) //-30 + 520*sqrt((air2Distance-heroLocalDistance#)/air2Distance))
 	
 	SetSpriteX(duck, w/2 - GetSpriteWidth(duck) + 300*sin(gameTime#/10))
-	SetSpriteY(duck, h*4/5 + (duckDistance# - 20000*(raceSize) - (heroLocalDistance#-air2Distance)))
+	SetSpriteY(duck, h*4/5 + (duckDistance# - 20000*(raceSize - (curAreaSeen-1))) + (air2Distance-heroLocalDistance#))
+	
 	
 	SetSpriteY(finishLine, GetSpriteY(hero) - heroLocalDistance#*1.5 + 1310)
 	//Print("Finish Line Y: " + Str(GetSpriteY(finishLine)))
@@ -305,8 +307,9 @@ function DoAir2()
 			turnThisTime = 1
 		endif
 		if (inputSelect) or turnThisTime = 1
-			PlaySound(collectS, volumeS/4)
-			PlaySprite(hero, duck2MesaFrameSpeed*1.5, 0, 4, 6)
+			
+			if GetSoundInstances(collectS) < 1 then PlaySound(collectS, volumeS/4)
+			if GetSpriteCurrentFrame(hero) < 4 then PlaySprite(hero, duck2MesaFrameSpeed*1.5, 0, 4, 6)
 			if air2TurnTarget < 0
 				SetSpriteFlip(hero, 0, 0)
 			else
@@ -359,8 +362,6 @@ function DoAir2()
 		endif
 		
 	next i
-	
-	Print(gameTime#)
 	
 	
 	heroLocalDistance# = heroLocalDistance# - air2DefSpeed#*fpsr#
@@ -459,12 +460,12 @@ function DoAir2()
 			
 			if bulletActive[i].formula = 1 and GetSpriteGroup(bulletActive[i].spr) <> SCRAP
 				if time# < 2
-					destX = GetSpriteMiddleX(eggBird) + time#/2*(bulletActive[i].batchOffset + bulletActive[i].num*120)
+					destX = GetSpriteMiddleX(eggBird) + time#/2*(bulletActive[i].batchOffset + bulletActive[i].num*140)
 				else
-					destX = GetSpriteMiddleX(eggBird) + bulletActive[i].batchOffset + bulletActive[i].num*120
+					destX = GetSpriteMiddleX(eggBird) + bulletActive[i].batchOffset + bulletActive[i].num*140
 				endif
 				//destY = GetSpriteMiddleY(eggBird) + 90 + bulletActive[i].time*150
-				destY = GetSpriteMiddleY(eggBird) + time#*80
+				destY = GetSpriteMiddleY(eggBird) + time#*100
 			endif
 			if bulletActive[i].formula = 2 and GetSpriteGroup(bulletActive[i].spr) <> SCRAP
 				if time# < .5
@@ -473,7 +474,7 @@ function DoAir2()
 					destX = GetSpriteMiddleX(eggBird) + bulletActive[i].batchOffset + 200*sin(30.0*time#)*bulletActive[i].flip
 				endif
 				//destY = GetSpriteMiddleY(eggBird) + 90 + time#*150
-				destY = GetSpriteMiddleY(eggBird) + time#*85
+				destY = GetSpriteMiddleY(eggBird) + time#*115
 			endif
 			if bulletActive[i].formula = 3 and GetSpriteGroup(bulletActive[i].spr) <> SCRAP
 				if time# < 1.2
@@ -530,6 +531,7 @@ function DoAir2()
 					AddSpriteAnimationFrame(bulletActive[i].spr, scrapImgs[rnd, scrapSet, 3])
 					AddSpriteAnimationFrame(bulletActive[i].spr, scrapImgs[rnd, scrapSet, 4])
 					PlaySprite(bulletActive[i].spr, 10, 1, 1, 4)
+					SetSpriteShapeBox(bulletActive[i].spr, -50, -50, 50, 50, 0)
 				else
 					AddSpriteAnimationFrame(bulletActive[i].spr, miniBird1I)
 					AddSpriteAnimationFrame(bulletActive[i].spr, miniBird2I)
@@ -573,7 +575,7 @@ function DoAir2()
 			//SetSpriteX(bulletActive[i].spr, w/2 - GetSpriteWidth(bulletActive[i].spr)/2 + 400*sin(gameTime#/20))
 		endif
 	next i
-	Print(GetSpriteAngle(hero))
+	//Print(GetSpriteAngle(hero))
 	//Ramifications of damage
 	
 	if airHurtTimer# > 0 and airHurtTimer# <= 360
@@ -688,7 +690,7 @@ function MakeBullets()
 		newB.batchOffset = batchOffset
 		
 		if newB.formula = 1 then newB.time = -(i-1)*0.3
-		if newB.formula = 2 then newB.time = -(i-1)*0.75
+		if newB.formula = 2 then newB.time = -(i-1)*0.95
 		if newB.formula = 3 then newB.time = 0
 		if newB.formula = 4 then newB.time = 0
 		newB.num = -bulletAmt/2 + i*newB.flip + 0.5

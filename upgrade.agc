@@ -77,7 +77,7 @@ function CreatePod(row, col)
 	//THE POSITIONS OF ALL THE BELOW ARE UPDATED EVERY FRAME IN THE 'ALIGNPOD' METHOD!!!
 	
 	pod.sprLetter = LoadSprite("raceLetters/let" + str(row+1) + "r" + str(rID) + ".png")
-	SetSpriteExpress(pod.sprLetter, 75, 75, GetSpriteX(spr)-5, GetSpriteY(spr)-10, 3)
+	SetSpriteExpress(pod.sprLetter, 75, 75, GetSpriteX(spr)-5, GetSpriteY(spr)-10, 8)
 	
 	pod.sprIconBG = LoadSprite("upgrade/icon" + str(rID) + "bg.png")
 	SetSpriteExpress(pod.sprIconBG, 60, 60, GetSpriteX(spr) + 285, GetSpriteY(spr) + 14, 14)
@@ -202,26 +202,26 @@ function CreateUpgrade2()
 			LoadMusicOGG(upgrade2M, "music/upgrade2-1.ogg")
 			SetMusicLoopTimesOGG(upgrade2M, 6.667, -1)
 			PlayMusicOGG(ambUpgrade2, 1)
-			SetMusicVolumeOGG(ambUpgrade2, volumeG/100*ambVol*.2)
+			SetMusicVolumeOGG(ambUpgrade2, ambVol/2)
 			LoadSpriteExpress(upgradeBGTop, "fallfilter.png", w, h, 0, 0, 800)
 		endif
 		if areaSeen = 2	//Winter
 			LoadMusicOGG(upgrade2M, "music/upgrade2-2.ogg")
 			SetMusicLoopTimesOGG(upgrade2M, 6.0, -1)
 			PlayMusicOGG(ambAir1, 1)
-			SetMusicVolumeOGG(ambAir1, volumeG/100*ambVol*.2)
+			SetMusicVolumeOGG(ambAir1, ambVol/2)
 		endif
 		if areaSeen = 3	//Spring
 			LoadMusicOGG(upgrade2M, "music/upgrade2-3.ogg")
 			SetMusicLoopTimesOGG(upgrade2M, 7.385, -1)
 			PlayMusicOGG(ambUpgrade2, 1)
-			SetMusicVolumeOGG(ambUpgrade2, volumeG/100*ambVol*.2)
+			SetMusicVolumeOGG(ambUpgrade2, ambVol/2)
 		endif
 		if areaSeen >= 4	//Summer Night
 			LoadMusicOGG(upgrade2M, "music/upgrade2-4.ogg")
 			SetMusicLoopTimesOGG(upgrade2M, 7.5, -1)
 			PlayMusicOGG(ambLand1, 1)
-			SetMusicVolumeOGG(ambLand1, volumeG/100*ambVol*.2)
+			SetMusicVolumeOGG(ambLand1, ambVol/2)
 		endif
 		
 		
@@ -232,9 +232,7 @@ function CreateUpgrade2()
 	if GetMusicExistsOGG(upgrade2M) = 0 then LoadMusicOGG(upgrade2M, "music/upgrade.ogg")
 	
 	
-	PlayMusicOGG(upgrade2M, 1)
-	SetMusicVolumeOGG(upgrade2M, volumeM*volumeG/100.0)
-	
+	PlayMusicOGG(upgrade2M, 1)	
 	
 	
 	FixSpriteToScreen(upgradeBG, 1)
@@ -280,19 +278,33 @@ function CreateUpgrade2()
 	next col
 	
 	IncTextY(scrapText, -16)
-	scrapBG = LoadSprite("upgrade/scrapBG.png")
+	//scrapBG = LoadSprite("upgrade/scrapBG.png")
 	SetSpriteExpress(scrapBG, GetTextTotalWidth(scrapText)*1.2, GetTextTotalHeight(scrapText)*1.2, GetTextX(scrapText) - GetTextTotalWidth(scrapText)*.1, GetTextY(scrapText) - GetTextTotalHeight(scrapText)*.1, GetTextDepth(scrapText)+1)
 	SetSpriteColorAlpha(scrapBG, 170)
 	FixSpriteToScreen(scrapBG, 1)
 	
 	LoadSpriteExpress(startRace, "nextRace.png", 420/2.5, 165/2.5, GetSpriteX(upPods[areaSeen*4-1].sprBG)+500, 350, 5)
 	SetSpritePosition(startRace, GetSpriteX(upPods[areaSeen*4-1].sprBG)+500, 350)
+	//scrapTotal = 9999
+	
+	//Auto scrolling the page over if all previous upgrades are bought 
+	for i = 1 to raceQueueRef.length-1
+		if upgrades[1, raceQueueRef[i-1]] = 3 and upgrades[2, raceQueueRef[i-1]] = 3 and upgrades[3, raceQueueRef[i-1]] = 3 and upgrades[4, raceQueueRef[i-1]] = 3
+			SetViewOffset(((78+32*areaSeen)*(i)), 0)
+		else
+			i = 7
+		endif
+	
+	next i
 	
 	PlayTweenSprite(tweenSprFadeOut, coverS, 0)
 	
 endfunction
 function DoUpgrade2()
-	if debug = 1 then scrapTotal = 10000
+	Print(GetMusicPlayingOgg(upgrade2M))
+	//SetMusicVolumeOGG(upgrade2M, 100)
+	//Print(GetMusic(upgrade2M))
+	if debug = 1 then scrapTotal = 9999
 	triggerMove = 0
 	if inputLeft then triggerMove = -4
 	if inputRight then triggerMove = 4
@@ -406,7 +418,7 @@ function DoUpgrade2()
 			PlaySound(buyS, volumeS)
 			
 			dec scrapTotal, GetCost2(curP.row, curP.column, curP.rID)
-			UpdateScrapText()
+			UpdateScrapText(-1)
 			
 			inc upgrades[curP.row+1, curP.rID], 1
 			
@@ -458,7 +470,7 @@ function DoUpgrade2()
 	next i
 	
 	//Won't update the scroll if not enough areas were seen yet
-	if areaSeen > 2
+	if areaSeen > 2 and selectedPod <> -1
 		if selectedPod <> startRace
 			GlideViewOffset(((78+32*areaSeen)*(selectedPod/4)), 0, 40, 2)
 		else
@@ -682,7 +694,7 @@ function DoUpgradePod(row, col)
 		inc scrapTotal, -cost
 		PlaySound(buyS, volumeS)
 		PlaySound(selectS, volumeS)
-		UpdateScrapText()
+		UpdateScrapText(-1)
 		
 		if upgrades[row+1, col+1] <> 3
 			SetTextString(spr + 1, words[row+1, upgrades[row+1,col+1]+1, raceQueueRef[col]])
@@ -732,6 +744,9 @@ function DoUpgrade()
 		SetViewOffset(0, 0)
 		
 		DeleteScene(UPGRADE)
+		if GetSpriteExists(pauseButton) then DeleteSprite(pauseButton)
+		if GetSpriteExists(pauseButtonCol) then DeleteSprite(pauseButtonCol)
+		
 		screen = 0
 		//The next three lines are identical to the title screen - should it be combined into a little function? IDK
 		SetRaceQueue(curRaceSet)

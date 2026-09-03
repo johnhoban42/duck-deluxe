@@ -34,12 +34,13 @@ global oops as integer[5]
 global oopsMax = 0
 global oopsUsed = 0
 
+
 //global spaceArrowColorSet = 0
 
 
 function CreateMashInputSprite(spr, dir)
 	if GetSpriteExists(spr) = 0 then CreateSprite(spr, 0)
-	SetSpriteExpress(spr, 40, 40, 0, 0, 20)
+	SetSpriteExpress(spr, 80, 80, 0, 0, 20)
 
 	for i = 1 to 4
 		AddSpriteAnimationFrame(spr, spaceArrowColorI[dir, i])
@@ -87,7 +88,7 @@ function CreateMashSequence()
 		
 		CreateMashInputSprite(mash.spr, mash.dir)
 		
-		SetSpritePosition(mash.spr, w/2 - GetSpriteWidth(mash.spr)/2 - (-i+0.5+(curMashLen/2.0))*(100), 500)
+		SetSpritePosition(mash.spr, w/2 - GetSpriteWidth(mash.spr)/2 - (-i+0.5+(curMashLen/2.0))*(150), 460)
 		
 		if i >= splitPos
 			//Moving the top path up
@@ -104,7 +105,7 @@ function CreateMashSequence()
 			endwhile
 			MashSecond.insert(mash)
 			CreateMashInputSprite(mash.spr, mash.dir)
-			SetSpritePosition(mash.spr, w/2 - GetSpriteWidth(mash.spr)/2 - (-i+0.5+(curMashLen/2.0))*(100), 500)
+			SetSpritePosition(mash.spr, w/2 - GetSpriteWidth(mash.spr)/2 - (-i+0.5+(curMashLen/2.0))*(150), 460)
 			
 			IncSpriteY(mash.spr, 50*dir)
 		endif
@@ -126,7 +127,7 @@ function CreateMashSequence()
 	
 	//Making the booster at the end of the normal chain
 	LoadSpriteExpress(spawnS, "space/boostIcon.png", 10, 10, w, h, 8)
-	newS.size = 75
+	newS.size = 100
 	SetSpriteSizeSquare(spawnS, newS.size)
 	SetSpriteY(spawnS, GetSpriteMiddleY(MashList[MashList.length].spr)-GetSpriteHeight(spawnS)/2)
 	spaceBoostS = spawnS
@@ -143,7 +144,7 @@ function CreateMashSequence()
 			AddSpriteAnimationFrame(spawnS, scrapImgs[rnd, scrapSet, j])//First index will be a random
 		next j
 		PlaySprite(spawnS, 3+Random(1,3))
-		newS.size = 50
+		newS.size = 80
 		SetSpriteSizeSquare(spawnS, newS.size)
 		SetSpriteY(spawnS, GetSpriteMiddleY(MashSecond[MashSecond.length].spr)-GetSpriteHeight(spawnS)/2)
 		
@@ -175,6 +176,64 @@ function DeleteMashSequence()
 	
 endfunction
 
+global spaceTween
+function SetSpaceTween(dir)
+	if GetTweenExists(spaceTween) then DeleteTween(spaceTween)
+	
+	//1 - Up
+	//2 - Down
+	//3 - Left
+	//4 - Right
+	
+	if dir <= 4
+		//A small tween for just one button press
+		spaceTween = CreateTweenSprite(0.2)
+		dis = 30
+		
+		if dir = 1
+			SetTweenSpriteY(spaceTween, GetSpriteY(hero)-dis, GetSpriteY(hero), TweenOvershoot())
+		
+		elseif dir = 2
+			SetTweenSpriteY(spaceTween, GetSpriteY(hero)+dis, GetSpriteY(hero), TweenOvershoot())
+			
+		elseif dir = 3
+			SetTweenSpriteX(spaceTween, GetSpriteX(hero)-dis, GetSpriteX(hero), TweenOvershoot())
+			
+		elseif dir = 4
+			SetTweenSpriteX(spaceTween, GetSpriteX(hero)+dis, GetSpriteX(hero), TweenOvershoot())
+			
+		endif
+		
+	else
+		//A longer tween for a combo finisher
+		spaceTween = CreateTweenSprite(0.4)
+		dir = dir-4
+		dis = 80
+		
+		if dir = 1
+			SetTweenSpriteY(spaceTween, GetSpriteY(hero)-dis, GetSpriteY(hero), TweenBounce())
+		
+		elseif dir = 2
+			SetTweenSpriteY(spaceTween, GetSpriteY(hero)+dis, GetSpriteY(hero), TweenBounce())
+			
+		elseif dir = 3
+			SetTweenSpriteX(spaceTween, GetSpriteX(hero)-dis, GetSpriteX(hero), TweenBounce())
+			
+		elseif dir = 4
+			SetTweenSpriteX(spaceTween, GetSpriteX(hero)+dis, GetSpriteX(hero), TweenBounce())
+		endif
+		if Random(1, 2) = 2
+			SetTweenSpriteAngle(spaceTween, 1, 359, TweenOvershoot())
+		else
+			SetTweenSpriteAngle(spaceTween, 359, 1, TweenOvershoot())
+		endif
+	endif
+	
+	if GetTweenExists(spaceTween) then PlayTweenSprite(spaceTween, hero, 0)
+	
+	
+endfunction
+
 function InitSpace2()
 	
 	//PlayMusicOGG(ambSpace2, 1)
@@ -183,7 +242,7 @@ function InitSpace2()
 	//No boosts... but INCREASED SPEED!
 	
 	pressThis = LoadSprite("space/pressSign.png")
-	SetSpriteExpress(pressThis, 80, 80, w/2-40, h-100, 100)
+	SetSpriteExpress(pressThis, 100, 100, w/2-50, h-110, 100)
 	
 	pressThisBeam = LoadSprite("space/pressSignBeam.png")
 	SetSpriteExpress(pressThisBeam, GetSpriteWidth(pressThis), 100, GetSpriteX(pressThis), GetSpriteY(pressThis)-200, 100)
@@ -329,7 +388,7 @@ function DoSpace2()
 	
 	if duckDistance# < 20000*(raceSize-curAreaSeen) then PlayTweenSprite(tweenSprFadeOut, duck, 0)
 	
-	SetSpriteAngle(hero, -6 + 12*cos(gameTime#))
+	SetSpriteAngle(hero, -2 + 4*cos(gameTime#))
 	
 	//if inputSelect
 	//	CreateMashSequence()
@@ -368,11 +427,20 @@ function DoSpace2()
 			endif
 		endif
 		
+		
 		if contMash = 0 and oopsUsed < oopsMax
 			contMash = 1
 			inc oopsUsed, 1
 			SetSpriteVisible(oops[oopsUsed], 0)
 			PlaySound(oopsS, volumeS)
+		endif
+		
+		tempDir = -1
+		if contMash
+			if inputUp then tempDir = 1
+			if inputDown then tempDir = 2
+			if inputLeft then tempDir = 3
+			if inputRight then tempDir = 4
 		endif
 		
 		if onSplit
@@ -424,8 +492,13 @@ function DoSpace2()
 					if GetSpriteExists(spaceScrapS) then SetSpriteVisible(spaceScrapS, 0)
 					//Making a new mash sequence
 					CreateMashSequence()
+					
+					SetSpaceTween(tempDir+4)
+					
 				else
 					PlaySoundR(spaceGSE[mashPos], volumeS/2)
+					
+					SetSpaceTween(tempDir)
 				endif
 			else
 				//WRONG INPUT!
@@ -488,23 +561,24 @@ function DoSpace2()
 	//if fpsr# < 5
 	if ScreenFPS()*fpsr# < 550 and fpsr# < 28
 		//Updating the mash list positions, so the current one is centered
+		mashDis = 130
 		for i = 0 to MashList.length
 			offset# = -i + mashPos + splitPos*onSplit //-i+0.5 + mashPos
-			GlideToX(MashList[i].spr, w/2 - GetSpriteWidth(MashList[i].spr)/2 - (offset#)*(100), 20)		
+			GlideToX(MashList[i].spr, w/2 - GetSpriteWidth(MashList[i].spr)/2 - (offset#)*(mashDis), 20)		
 		next i
 		for i = 0 to MashSecond.length
 			offset# = -i + mashPos - splitPos + splitPos*onSplit //-i+0.5 + mashPos - splitPos
-			GlideToX(MashSecond[i].spr, w/2 - GetSpriteWidth(MashSecond[i].spr)/2 - (offset#)*(100), 20)
+			GlideToX(MashSecond[i].spr, w/2 - GetSpriteWidth(MashSecond[i].spr)/2 - (offset#)*(mashDis), 20)
 			
 		next i
 		//Repositioning the boost and scrap sprites at the end of the line, if they exist
 		if GetSpriteExists(spaceBoostS)
 			offset# = -(MashList.length+1) + mashPos + splitPos*onSplit
-			GlideToX(spaceBoostS, w/2 - GetSpriteWidth(spaceBoostS)/2 - (offset#)*(100), 20)
+			GlideToX(spaceBoostS, w/2 - GetSpriteWidth(spaceBoostS)/2 - (offset#)*(mashDis), 20)
 		endif
 		if GetSpriteExists(spaceScrapS)
 			offset# = -(MashSecond.length+1) + mashPos - splitPos + splitPos*onSplit
-			GlideToX(spaceScrapS, w/2 - GetSpriteWidth(spaceScrapS)/2 - (offset#)*(100), 20)
+			GlideToX(spaceScrapS, w/2 - GetSpriteWidth(spaceScrapS)/2 - (offset#)*(mashDis), 20)
 		endif
 	endif
 	
