@@ -168,6 +168,14 @@ function DeleteAnimatedSprite(spr)
 	//Checking we got a sprite ID and not an imageID
 	//if Abs(imageA[index] - imageA[index+1]) < 3 then //Find the next one, IDK
 	
+	
+	//for i = 1 to imageA.length
+	//	Print(imageA[i])
+	//next i
+	//SetPrintColor(0, 0, 0, 255)
+	//SetPrintSize(8)
+	//Sync()
+	
 	if index <> -1
 		size = imageA[index+1] + 2
 		for i = 1 to size
@@ -1041,8 +1049,8 @@ function GetPopupActive()
 endfunction result
 
 function ClearPopup()
-	SetSpriteVisible(popupSpr, 0)
-	SetTextVisible(popupTxt, 0)
+	if GetSpriteExists(popupSpr) then 	SetSpriteVisible(popupSpr, 0)
+	if GetTextExists(popupTxt) then SetTextVisible(popupTxt, 0)
 endfunction
 
 global selectTarget = 0
@@ -1362,12 +1370,15 @@ function SetPowers()
 	powers[3, 1, 5] = "x1 Boost Time"
 	powers[3, 2, 5] = "x1.5 Boost Time"
 	powers[3, 3, 5] = "x2 Boost Time"
-	powers[3, 4, 5] = "x2.5 Boost Time"
+	powers[3, 4, 5] = "x3 Boost Time"
 
-	powers[4, 1, 5] = "x1 Boost Chain Length"
-	powers[4, 2, 5] = "x1.2 Boost Chain Length"
-	powers[4, 3, 5] = "x1.6 Boost Chain Length"
-	powers[4, 4, 5] = "x2 Boost Chain Length"
+	powers[4, 1, 5] = "Short Bolt Chain"
+	powers[4, 2, 5] = "+1 Bolt Chain Length"
+	powers[4, 3, 5] = "+3 Bolt Chain Length"
+	powers[4, 4, 5] = "+5 Bolt Chain Length"
+	//powers[4, 2, 5] = "x1.2 Boost Chain Length"
+	//powers[4, 3, 5] = "x1.6 Boost Chain Length"
+	//powers[4, 4, 5] = "x2 Boost Chain Length"
 	
 	//Mountains/Air 2
 	powers[1, 1, 6] = "One Slipstream"
@@ -1411,4 +1422,13 @@ function SetPowers()
 	powers[4, 3, 7] = "Mega Combo"
 	powers[4, 4, 7] = "Zetta Combo"
 
+endfunction
+
+function SetTips()
+	tips[0] = "Tip: Upgrade to"+chr(10)+"win the race!"
+	tips[1] = "Tip: Hitting fish takes"+chr(10)+"away your boosts."
+	tips[2] = "Tip: Release SPACE to"+chr(10)+"end dive early."
+	tips[3] = "Tip: You won't win"+chr(10)+"unless you upgrade."
+	
+	tips[5] = "Tip: Scrap is stronger"+chr(10)+"deeper into the race."
 endfunction

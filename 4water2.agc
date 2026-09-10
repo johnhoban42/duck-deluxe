@@ -34,11 +34,18 @@ global firstDuck2Race = 1
 
 global fixedWater2Speed# = 0.11 //Upgrade variable
 
-
+//After the first 'race', play the instructions once
+global water2InsTrigger1 = 0
 
 function InitWater2()
 	
 	if debug then firstDuck2Race = 1
+	
+	if firstDuck2Race = 1 and water2InsTrigger1 = 0
+		water2InsTrigger1 = 1
+		flashNextInstruct = 1
+		SetTextVisible(instruct, 0)
+	endif
 	
 	//PlayMusicOGG(ambWater2, 1)
 	//SetMusicVolumeOGG(ambWater2, ambVol*volumeS)
@@ -63,8 +70,12 @@ function InitWater2()
 	//heroImg2 = LoadImage("duckl1.png")
 	
 	//AddSpriteAnimationFrame(hero, heroImg2)
-	
-	LoadSpriteExpress(duck, "swampfoe1a.png", 120, 120, 999, 999, 60)
+	//if curRaceSet = 2
+		LoadSprite(duck, "enemy2/water2foe"+str(areaSeen)+".png")
+	//else
+		
+	//endif
+	SetSpriteExpress(duck, 120, 120, 999, 999, 60)
 	
 	//Gameplay setting
 	heroLocalDistance# = water2Distance
@@ -84,6 +95,8 @@ function InitWater2()
 	waterSpeedX# = (0.25) * (1 + 0.2*upgrades[4, 4] + 0.2*upgrades[4, 4]/3)
 	
 	//Dive depth, upgrade 3
+	//upgrades[3, 4] = 3
+	
 	diveLevel = 1 + upgrades[3, 4]
 	if diveLevel = 1 then diveDeepTimerMax# = 0.28/(diveVelMax#)
 	if diveLevel = 2 then diveDeepTimerMax# = 0.41/(diveVelMax#)
@@ -230,6 +243,7 @@ function InitWater2()
 	for i = 1 to iEnd
 		newS.spr = spawnS
 		newS.cat = Random(1, 7)
+		if upgrades[3, 4] = 3 then newS.cat = Random(1, 6)	//If deepness is fully upgraded, lower the chance of bad fish
 		if newS.cat <= 3
 			inc newS.cat, scrapWeight/2
 		endif
@@ -286,6 +300,7 @@ function InitWater2()
 			PlaySprite(spawnS, 3+Random(1,3))
 			newS.size = 60
 			SetSpriteSizeSquare(spawnS, newS.size)
+			//SetSpriteGroup(spawnS, WATER2)
 		endif
 		SetSpriteDepth(spawnS, 50)
 		
@@ -330,9 +345,13 @@ function InitWater2()
 	FixSpriteToScreen(featherBoostFrameS, 1)
 	
 	featherBoostS = CreateSprite(0) 
-	SetSpriteExpress(featherBoostS, 20, 1, GetSpriteX(featherBoostFrameS) + GetSpriteWidth(featherBoostFrameS)*4/9, GetSpriteY(featherBoostFrameS) + GetSpriteHeight(featherBoostFrameS)*5/18, 6) 
+	SetSpriteExpress(featherBoostS, 20, 1, GetSpriteX(featherBoostFrameS) + GetSpriteWidth(featherBoostFrameS)*3/9, GetSpriteY(featherBoostFrameS) + GetSpriteHeight(featherBoostFrameS)*5/18, 6) 
 	//SetSpriteExpress(featherBoostS, 0, GetSpriteWidth(featherBoostFrameS)*2/9, GetSpriteX(featherBoostFrameS) + GetSpriteWidth(featherBoostFrameS)*4/9, GetSpriteY(featherBoostFrameS) + GetSpriteHeight(featherBoostFrameS)*5/18, 4) 
 	FixSpriteToScreen(featherBoostS, 1)
+	for i = 1 to 8
+		AddSpriteAnimationFrame(featherBoostS, slipstreamI[i])
+	next i
+	PlaySprite(featherBoostS, 20, 1)
 	
 	featherBoostTop = CreateSprite(featherImg1)
 	SetSpriteExpress(featherBoostTop, 50, 50, GetSpriteMiddleX(featherBoostFrameS)-50/2, GetSpriteY(featherBoostFrameS)-10, 4) 
@@ -392,7 +411,7 @@ function DoWater2()
 	
 	if diveDamage
 		SetSpriteAngle(hero, Mod(heroY#*7, 360))
-		diveVelY# = -0.4
+		diveVelY# = -0.4*(1+0.3*upgrades[3, 4])
 		heroLocalDistance# = heroLocalDistance# + fixedWater2Speed#*fpsr#*2/3
 		SetSpriteColor(hero, 255, 100, 100, 255)
 		if heroY# < 0
@@ -508,7 +527,11 @@ function DoWater2()
 		
 	endif
 	
-	SetSpritePosition(duck, -1*(duckDistance# - 20000*(raceSize - (curAreaSeen-1))) - (water2Distance-heroLocalDistance#)+80 + 60*diveLevel, 70+4*cos(gameTime#*2))
+	enemyHeight = 70
+	if areaSeen = 2 then enemyHeight = 240
+	if areaSeen = 3 then enemyHeight = 165
+	if areaSeen = 4 then enemyHeight = 165
+	SetSpritePosition(duck, -1*(duckDistance# - 20000*(raceSize - (curAreaSeen-1))) - (water2Distance-heroLocalDistance#)+80 + 60*diveLevel, enemyHeight+4*cos(gameTime#*2))
 	//SetSpritePosition(duck, -1*(duckDistance# - 20000*(raceSize-1)) - (water2Distance-heroLocalDistance#)+80 + 60*diveLevel, 70+4*cos(gameTime#*2))
 	
 	if firstDuck2Race = 0
@@ -600,6 +623,10 @@ function DoWater2()
 					//Sound effect
 					//SetSpriteColor(hero, 255, 100, 100, 255)
 				elseif GetTweenExists(spr) = 0 //SCRAP
+					Print(GetSpriteWidth(spawnActive[i].spr))
+					Sync()
+					Sleep(500)
+					
 					CollectScrap(WATER2)
 					SetSpriteGroup(spr, SCRAP)
 					PlaySprite(spr, 30)
@@ -641,16 +668,16 @@ function DoWater2()
 	
 	if diveBoost# > 0 or diveBoostQueue > 0
 		SetSpriteSize(featherBoostS, 20, 30*(diveBoost#+diveBoostQueue)*(2+upgrades[2, 4]))
-		SetSpriteY(featherBoostS, GetSpriteY(featherBoostFrameS)+18-GetSpriteHeight(featherBoostS))
+		SetSpriteY(featherBoostS, GetSpriteY(featherBoostFrameS)+28-GetSpriteHeight(featherBoostS))
+		SetSpriteUVScale(featherBoostS, 1, 1.0*GetSpriteWidth(featherBoostS)/GetSpriteHeight(featherBoostS))
 	else
 		SetSpriteSize(featherBoostS, 20, 0.1)
 	endif
-	SetSpriteY(featherBoostTop, GetSpriteY(featherBoostFrameS)-10-GetSpriteHeight(featherBoostS))
+	SetSpriteY(featherBoostTop, GetSpriteY(featherBoostFrameS)-5-GetSpriteHeight(featherBoostS))
 	
 	//Print(GetSpriteWidth(featherBoostS))
 	//Print(GetSpriteHeight(featherBoostS))
 	
-
 	
 endfunction
 

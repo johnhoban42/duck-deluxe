@@ -25,13 +25,11 @@ SetWindowSize( 1280, 720, 0 )
 SetWindowAllowResize( 1 ) // allow the user to resize the window
 
 global debug = 0
-global release = 0	//This makes the game go to the title screen, instead of loading right into a race
-global isDuckDeluxe = 1	//This version makes the game the full release, instead of the standalone version of RAaD 2
+global release = 1	//This makes the game go to the title screen, instead of loading right into a race
+global isDuckDeluxe = 0	//This version makes the game the full release, instead of the standalone version of RAaD 2
 global webVersion = 0	//This variable sets the duck 1 game back to it's original version, instead of the ReDucks version
 if debug = 0 then SetErrorMode(1)
 global nextScreen = AIR
-//SetPhysicsDebugOn()
-
 
 #constant w 1280
 #constant h 720
@@ -49,6 +47,9 @@ SetScissor(0,0,0,0 ) // use the maximum available screen space, no black borders
 UseNewDefaultFonts( 1 ) // since version 2.0.22 we can use nicer default fonts
 SetDefaultMagFilter(0)
 SetDefaultMinFilter(0)
+
+SetDefaultWrapU(1)
+SetDefaultWrapV(1)
 
 //SetPhysicsDebugOn()
 SetVSync(1)
@@ -125,6 +126,30 @@ LoadSoundOGG(clickUpS, "sounds/clickUp.ogg")
 LoadSoundOGG(clickDownS, "sounds/clickDown.ogg")
 #constant birdCoughS 36
 LoadSoundOGG(birdCoughS, "sounds/birdCough.ogg")
+
+#constant carFling1S 37
+LoadSoundOGG(carFling1S, "sounds/carfling1.ogg")
+#constant carFling2S 38
+LoadSoundOGG(carFling2S, "sounds/carfling2.ogg")
+#constant cityCharge1S 39
+#constant cityCharge2S 40
+#constant cityCharge3S 41
+#constant cityCharge4S 42
+LoadSoundOGG(cityCharge1S, "sounds/cityCharge1.ogg")
+LoadSoundOGG(cityCharge2S, "sounds/cityCharge2.ogg")
+LoadSoundOGG(cityCharge3S, "sounds/cityCharge3.ogg")
+LoadSoundOGG(cityCharge4S, "sounds/cityCharge4.ogg")
+#constant cityBoostS 43
+LoadSoundOGG(cityBoostS, "sounds/cityBoost.ogg")
+#constant carHonk1S 44
+#constant carHonk2S 45
+#constant carHonkSideS 46
+LoadSoundOGG(carHonk1S, "sounds/carHonk1.ogg")
+LoadSoundOGG(carHonk2S, "sounds/carHonk2.ogg")
+LoadSoundOGG(carHonkSideS, "sounds/carHonkSide.ogg")
+#constant duckStepS 47
+LoadSoundOGG(duckStepS, "sounds/duckStep.ogg")
+
 
 global spaceCSE as integer[13]
 global spaceGSE as integer[13]
@@ -229,6 +254,12 @@ SetWords()
 global powers as string[4, 4, 7]
 SetPowers()
 
+//Triggers the intructions when going to the upgrade screen
+global upgradeInsTrigger1 = 0
+global tipNum = 0
+global tips as string[12]
+SetTips()
+
 //Overhead variables
 global fpsr# = 100
 global screen = 0
@@ -313,6 +344,7 @@ global musicFadeTween
 musicFadeTween = CreateTweenCustom(.6)
 SetTweenCustomInteger1(musicFadeTween, 0, 100, TweenEaseIn1())
 
+
 function SetRaceQueue(raceSet)
 	
 	//First, clearing the current race queue
@@ -326,9 +358,9 @@ function SetRaceQueue(raceSet)
 		raceQueue.insert(LAND)
 	elseif raceSet = 2 //Race Against a Duck 2 order
 		raceQueue.insert(LAND2)
-		raceQueue.insert(AIR2)
 		raceQueue.insert(WATER2)
 		raceQueue.insert(SPACE2)
+		raceQueue.insert(AIR2)
 	endif
 	raceQueueRef = raceQueue
 	
@@ -389,6 +421,7 @@ do
 	if (paused = 0 and GetSpriteVisible(pauseButton) and (inputEsc or Button(pauseButtonCol))) // or (paused = 1 and (GetPointerPressed() or inputSelect or GetRawKeyPressed(27)))) and screen < UPGRADE 
 		paused = 1
 		inputEsc = 0
+		ClearPopup()
 		//paused = Mod(paused+1, 2)
 		//SaveGame()
 		pauseLineSelected = 1
@@ -400,6 +433,7 @@ do
 			FreezeGameplay(0)
 			PauseMusicOGG(curRaceMusic)
 			PauseMusicOGG(oldRaceMusic)
+			PauseMusicOGG(upgrade2M)
 			
 			if GetSpriteExists(pauseScreen) = 0
 				LoadSpriteExpress(pauseScreen, "pauseScreen.png", w, h, 0, 0, 1)
@@ -477,6 +511,7 @@ do
 		if heroLocalDistance# <= 0
 			if raceQueue.length >= 0
 				//Loading in the next race
+				//if screen = LAND2 then PlaySound(cityBoostS, volumeS)
 				PlayTweenSprite(tweenSprFadeIn, coverS, 0)
 				PlaySound(windMS, volumeS)
 				WaitFadeTween()
@@ -488,7 +523,10 @@ do
 				raceQueue.remove(0)
 				inc curAreaSeen, 1
 				//Making the duck start with you if you discover a new area, and duck is in rapid finish mode
-				if areaSeen < curAreaSeen then duckDistance# = Max(20000*(raceSize-areaSeen), duckDistance#)
+				if areaSeen < curAreaSeen
+					duckDistance# = Max(20000*(raceSize-areaSeen), duckDistance#)
+					flashNextInstruct = 1
+				endif
 				areaSeen = Max(areaSeen, curAreaSeen)
 			else
 				//Last race just ended, finishing this 'session'
@@ -525,11 +563,11 @@ do
 		endif
 				
 		duckDistance# = duckDistance# - duckSpeed#*fpsr#
-		if duckDistance# < 20000*(raceSize-areaSeen) then duckSpeed# = 10*fpsr#
+		if duckDistance# < 20000*(raceSize-areaSeen) then duckSpeed# = Max(10*fpsr#, duckSpeed#)
 		//Below is the old, hardcoded values for speeding the duck up when he reaches an undiscovered section - the above line is the updated one, though it may not work (needs testing)
 		//if duckDistance# < 40000 and areaSeen = 1 then duckSpeed# = 100
 		//if duckDistance# < 20000 and areaSeen = 2 then duckSpeed# = 100
-		if GetRawKeyPressed(82) then duckSpeed# = 12*fpsr#
+		if GetRawKeyPressed(82) then duckSpeed# = 36*fpsr#
 		if GetSpriteExists(cutsceneSpr)
 			if GetSpriteCurrentFrame(cutsceneSpr) <> 4 then duckDistance# = duckDistance# + duckSpeed#*fpsr#
 		endif
@@ -648,6 +686,10 @@ do
 		
 	endif
 	
+	if instructCountdown# > 0 and GetTextExists(instruct)
+		InstructFlash()
+	endif
+	
 	if screen = MENU
 		DoMenu()
 	endif
@@ -672,9 +714,9 @@ do
 		//Print(duckSpeed#)
 		
 	endif
-	Print("fpsr: " + Str(fpsr#))
+	//Print("fpsr: " + Str(fpsr#))
 	Print("Cur FPS: " + Str(ScreenFPS()))
-	Print(GetRawLastKey())
+	//Print(GetRawLastKey())
 	//Print(ScreenFPS()*fpsr#)
 	//Print("Game Timer: " + str(gameTime#))
     Sync()
@@ -694,6 +736,8 @@ endfunction
 function HideUIText()
 	if GetTextExists(instruct) then SetTextVisible(instruct, 0)
 	if GetTextExists(scrapText) then SetTextVisible(scrapText, 0)
+	if GetSpriteExists(scrapBG) then SetSpriteVisible(scrapBG, 0)
+	if GetSpriteExists(pauseButton) then SetSpriteVisible(pauseButton, 0)
 endfunction
 
 global trashBag as integer[0]
@@ -738,10 +782,41 @@ function SetupScene(scene)
 	endif
 
 	if scene <> TITLE and scene <> FINISH
-		CreateTextExpress(scrapText, "Scrap: " + str(scrapTotal) + " ~", 50, fontGI, 0, 1000, 30, -12, 5)
+		CreateTextExpress(scrapText, "Scrap: " + str(scrapTotal) + " ~", 50, fontGI, 0, 930, 35, -12, 5)
+		if webVersion then SetSpritePosition(scrapText, 1000, 30)
 		FixTextToScreen(scrapText, 1)
+		MakeScrapTweens()
+		
+		scrapBG = LoadSprite("upgrade/scrapBG.png")
+		SetSpriteExpress(scrapBG, GetTextTotalWidth(scrapText)*1.2, GetTextTotalHeight(scrapText)*1.2, GetTextX(scrapText) - GetTextTotalWidth(scrapText)*.1, GetTextY(scrapText) - GetTextTotalHeight(scrapText)*.1, GetTextDepth(scrapText)+1)
+		SetSpriteColorAlpha(scrapBG, 140)
+		FixSpriteToScreen(scrapBG, 1)
+		
 		//SetTextColor(scrapText, 0, 0, 0, 255)
+		
+		CreateTextExpress(instruct, "", 44, fontGI, 0, w-20, 580, -13, 2)
+		FixTextToScreen(instruct, 1)
+		SetInstructionText(scene)
+		if GetTweenExists(instruct) then DeleteTween(instruct)
+		CreateTweenText(instruct, 0.5)
+		if scene = LAND2
+			SetTextAlignment(instruct, 0)
+			SetTextX(instruct, 20)
+			SetTweenTextX(instruct, instructFlashLandX, GetTextX(instruct), TweenLinear())
+		elseif scene = UPGRADE
+			SetTextAlignment(instruct, 2)
+			SetTextX(instruct, w-20)
+			SetTweenTextX(instruct, instructFlashUpgradeX, GetTextX(instruct), TweenLinear())
+		else
+			SetTextAlignment(instruct, 2)
+			SetTextX(instruct, w-20)
+			SetTweenTextX(instruct, instructFlashX, GetTextX(instruct), TweenLinear())
+		endif
+		SetTweenTextY(instruct, instructFlashY, GetTextY(instruct), TweenLinear())
+		
 	endif
+
+
 
 	if scene < UPGRADE
 
@@ -754,9 +829,11 @@ function SetupScene(scene)
 //~		SetMusicVolumeOGG(landM, 0)
 //~		SetMusicVolumeOGG(airM, 0)
 		
-		CreateTextExpress(instruct, "", 44, fontGI, 2, w-20, 580, -13, 2)
-		FixTextToScreen(instruct, 1)
 		SetBG(scene)
+		
+		
+		
+		
 		
 		CreateParticlesExpress(enemyP, 10, 15, 4, 360, 500)
 		SetParticlesImage(enemyP, enemyPI)
@@ -799,9 +876,10 @@ function SetupScene(scene)
 			
 		next i
 
-		SetInstructionText(scene)
 		
-		LoadSpriteExpress(pauseButton, "pauseButton.png", 75, 75, w - 100, 100, 5)
+		
+		if GetSpriteExists(pauseButton) then DeleteSprite(pauseButton)
+		LoadSpriteExpress(pauseButton, "pauseButton.png", 80, 80, w - 97, 20, 5)
 		FixSpriteToScreen(pauseButton, 1)
 		CreateSpriteExpress(pauseButtonCol, GetSpriteWidth(pauseButton), GetSpriteHeight(pauseButton), GetSpriteX(pauseButton), GetSpriteY(pauseButton), 5)
 		SetSpriteVisible(pauseButtonCol, 0)
@@ -882,8 +960,15 @@ function SetupScene(scene)
 			//Only creating the top UI sprites if they don't exist yet
 			CreateSpriteExpress(progBack, 610, 35, 0, 50, 9)
 			SetSpriteMiddleScreenX(progBack)
+			if webVersion then SetSpriteY(progBack, 50)
+			if webVersion = 0 then IncSpriteX(progBack, -40)
+			if scene = SPACE2
+				IncSpriteSizeCenteredMult(progBack, 1.3)
+				IncSpriteY(progBack, 65)
+				SetSpriteMiddleScreenX(progBack)
+			endif
 			SetSpriteColor(progBack, 100, 100, 100, 0)
-			FixSpriteToScreen(progBack, 1)
+			FixSpriteToScreen(progBack, 1) 
 			
 			progFlags[1] = 1051
 			progFlags[2] = 1052
@@ -894,16 +979,20 @@ function SetupScene(scene)
 			progFlags[7] = 1057
 			
 			for i = 1 to 7
-				progFronts[i] = LoadSprite("mapBars/mapBar" + Str(i) + ".png")
+				progFronts[i] = CreateSprite(progMapI[i])
 				SetSpriteExpress(progFronts[i], GetSpriteWidth(progBack), GetSpriteHeight(progBack)-10, GetSpriteX(progBack), GetSpriteY(progBack)+5, 7)
 				FixSpriteToScreen(progFronts[i], 1)
 				//Sleep(2000)
+				progFlags[i] = CreateSprite(0)
 				if i < 7
-					if i = 1 then LoadAnimatedSprite(progFlags[i], "flag", 7)
-					if i > 1 then CreateSpriteExistingAnimation(progFlags[i], progFlags[1])
+					for j = 1 to 7
+						AddSpriteAnimationFrame(progFlags[i], progFlagI[j])
+					next j
 					PlaySprite(progFlags[i], 15, 1, 1, 7)
 				else
-					LoadAnimatedSprite(progFlags[i], "finish", 9)
+					for j = 1 to 9
+						AddSpriteAnimationFrame(progFlags[i], progFinishI[j])
+					next j
 					PlaySprite(progFlags[i], 15, 1, 1, 9)
 					SetSpriteDepth(progFlags[i], 3)
 				endif
@@ -922,9 +1011,9 @@ function SetupScene(scene)
 			SetSpriteY(duckIcon, GetSpriteMiddleY(progBack) - GetSpriteHeight(duckIcon)/2)
 			
 		else
-			//This is setting things for every time a map is reloaded
-			SetSpriteVisible(heroIcon, 1)
-			SetSpriteVisible(duckIcon, 1)
+			//This is setting things for every time a map is reloaded		//Probably not relevant anymore, since these elements are now recreated every scene reload
+			// SetSpriteVisible(heroIcon, 1)
+			// SetSpriteVisible(duckIcon, 1)
 		endif
 		//The below is done every time a map reloads
 		//Setting the position of the flags correctly
@@ -964,11 +1053,15 @@ function SetupScene(scene)
 			CreateUpgrade()
 		else
 			CreateUpgrade2()
-			LoadSpriteExpress(pauseButton, "settingsButton.png", 75, 75, w - 100, 100, 5)
+			LoadSpriteExpress(pauseButton, "settingsButton.png", 80, 80, w - 97, 20, 5)
 			FixSpriteToScreen(pauseButton, 1)
 			CreateSpriteExpress(pauseButtonCol, GetSpriteWidth(pauseButton), GetSpriteHeight(pauseButton), GetSpriteX(pauseButton), GetSpriteY(pauseButton), 5)
 			SetSpriteVisible(pauseButtonCol, 0)
 			FixSpriteToScreen(pauseButtonCol, 1)
+			if upgradeInsTrigger1 = 0
+				flashNextInstruct = 1
+				upgradeInsTrigger1 = 1
+			endif
 		endif
 		SaveGame()
 		
@@ -976,7 +1069,7 @@ function SetupScene(scene)
 	elseif scene = TITLE
 		SetBG(TITLE)
 		
-		LoadSpriteExpress(pauseButton, "settingsButton.png", 75, 75, w - 100, 25, 5)
+		LoadSpriteExpress(pauseButton, "settingsButton.png", 100, 100, w - 125, 25, 5)
 		FixSpriteToScreen(pauseButton, 1)
 		CreateSpriteExpress(pauseButtonCol, GetSpriteWidth(pauseButton), GetSpriteHeight(pauseButton), GetSpriteX(pauseButton), GetSpriteY(pauseButton), 5)
 		SetSpriteVisible(pauseButtonCol, 0)
@@ -1028,7 +1121,10 @@ function SetupScene(scene)
 		PlayTweenSprite(tweenSprFadeOut, coverS, 0)
 	endif
 	
-	
+	if flashNextInstruct
+		instructCountdown# = instructCountdownMax
+		flashNextInstruct = 0
+	endif
 	
 	screen = scene
 	
@@ -1086,49 +1182,48 @@ function CollectScrap(area)
 		if area = WATER or area = WATER2
 			num = Random(3, 5)
 			if scrapTotal < 10 then num = 5
-			inc scrapTotal, num
 		elseif area = LAND
 			num = Random(10, 14)
-			inc scrapTotal, num
 		else //AIR
 			num = Random(20, 29)
-			inc scrapTotal, num
 		endif
 	else
 		//RAAD2+ numbers
 		if curAreaSeen = 1
 			num = Random(3, 5)
 			if scrapTotal < 10 then num = 5
-			inc scrapTotal, num
 		elseif curAreaSeen = 2
 			num = Random(10, 14)
-			inc scrapTotal, num
 		elseif curAreaSeen = 3
 			num = Random(20, 29)
-			inc scrapTotal, num
 		elseif curAreaSeen = 4
 			num = Random(45, 60)
-			inc scrapTotal, num
 		elseif curAreaSeen = 5
 			//These numbers and below aren't balanced yet
 			num = Random(20, 29)
-			inc scrapTotal, num
 		elseif curAreaSeen = 6
 			num = Random(20, 29)
-			inc scrapTotal, num
 		else
 			num = Random(20, 29)
-			inc scrapTotal, num
 		endif
 	endif
 	
 	//Bit of extra balancing for space
 	if area = SPACE2
 		num = 0.4*MashList.length
-		inc scrapTotal, num
 	endif
 	
-	UpdateScrapText()
+	if area = CARSCRAP
+		num = Random(1,2)
+	endif
+	
+	inc scrapTotal, num
+	
+	if num > 0
+		UpdateScrapText(1)
+	else
+		UpdateScrapText(-1)
+	endif
 	//Updating the scrap textbox
 	
 endfunction
@@ -1148,9 +1243,20 @@ function GetScrapRank()
 
 endfunction returnSet
 
-function UpdateScrapText()
-	
+function UpdateScrapText(up)
 	SetTextString(scrapText, "Scrap: " + str(scrapTotal) + " ~")
+	
+	if webVersion = 0
+		scrpLen = Len(str(scrapTotal))
+		for i = 1 to scrpLen
+			if up = 1
+				PlayTweenChar(scrapTxtTwnUp[i], scrapText, FindString(GetTextString(scrapText), ":")+i, (i-1)*0.05)
+			else
+				PlayTweenChar(scrapTxtTwnDown[i], scrapText, FindString(GetTextString(scrapText), ":")+i, (i-1)*0.05)
+			endif
+			
+		next i
+	endif
 endfunction
 
 
@@ -1185,17 +1291,82 @@ function SetInstructionText(sceneL)
 			SetTextString(instruct, "SPACE - Dive" + CHR(10) + "LEFT/RIGHT - Adjust" + CHR(10) + "Feather - Boost")
 		endif
 	elseif sceneL = LAND2
+		if upgrades[attrBoostFrames, LAND2] = 0 and upgrades[attrBoostGroupLength, LAND2] = 0
+			SetTextString(instruct, "LEFT/RIGHT - Change Lanes" + CHR(10) + "Collect Bolts - Boost on Blue")
+		else
+			SetTextString(instruct, "LEFT/RIGHT - Change Lanes" + CHR(10) + "Collect Bolts - Boost on Blue" + CHR(10) + "Boost into Cars - Free Scrap!")
+		endif
 	elseif sceneL = AIR2
-		SetTextString(instruct, "SPACE - Turn" + CHR(10) + "Touch Slipstream - Speed Up")
+		SetTextString(instruct, "SPACE - Turn" + CHR(10) + "Fly Into Slipstream - Speed Up")
 	elseif sceneL = SPACE2
 		SetTextString(instruct, "MASH the sequence!" + CHR(10) + "BOOST your speed!" + CHR(10) + "WIN the race!!")
+	elseif sceneL = UPGRADE
+		if areaSeen <= 2
+			SetTextString(instruct, "ARROW KEYS/MOUSE - Pick Upgrade" + CHR(10) + "SPACE/CLICK - Buy Upgrade")
+		else
+			SetTextString(instruct, "ARROWS - Pick Upgrade" + CHR(10) + "SPACE - Buy Upgrade")
+		endif
+		if curRaceSet = 2
+			if areaSeen = 1
+				if tipNum <= 4
+					SetTextString(instruct, GetTextString(instruct) + CHR(10) + tips[tipNum])
+					inc tipNum, 1
+				else
+					SetTextString(instruct, GetTextString(instruct) + CHR(10) + tips[Random(0,2)])
+				endif
+			else
+				SetTextString(instruct, GetTextString(instruct) + CHR(10) + tips[0])
+			endif
+			
+		endif
 	endif
 	
 	//Corrects the spacing based on how many lines there are
 	SetTextY(instruct, 580 - 44*(FindStringCount(GetTextString(instruct), chr(10)) - 2))
 endfunction
 
+
+
+
+global instructCountdown#
+#constant instructCountdownMax 1.5
+#constant instructFlashLandX 400
+#constant instructFlashUpgradeX 920
+#constant instructFlashX 780
+#constant instructFlashY 240
+global flashNextInstruct = 0
+
+function InstructFlash()
+	
+	instructCountdown# = instructCountdown# - GetFrameTime()
+	
+	if instructCountdown# > 0
+		if Mod(instructCountdown#*12, 4) = 1
+			SetTextVisible(instruct, 0)
+		else
+			SetTextVisible(instruct, 1)
+		endif
+		
+		if screen = LAND2
+			SetTextX(instruct, instructFlashLandX)
+		elseif screen = UPGRADE
+			SetTextX(instruct, instructFlashUpgradeX)
+		else
+			SetTextX(instruct, instructFlashX)
+		endif
+		SetTextY(instruct, instructFlashY)
+		
+	else
+		SetTextVisible(instruct, 1)
+		PlayTweenText(instruct, instruct, 0)
+	endif
+	
+endfunction
+
 function DeleteScene(scene)
+	
+	if GetSpriteExists(pauseButton) then DeleteSprite(pauseButton)
+	if GetSpriteExists(pauseButtonCol) then DeleteSprite(pauseButtonCol)
 	
 	if scene < UPGRADE
 		StopAmbientMusic()
@@ -1203,8 +1374,7 @@ function DeleteScene(scene)
 		if GetSpriteExists(hero2) then DeleteSprite(hero2)		
 		DeleteAnimatedSprite(duck)
 		if GetParticlesExists(enemyP) then DeleteParticles(enemyP)
-		DeleteSprite(pauseButton)
-		DeleteSprite(pauseButtonCol)
+		
 		
 		if scene = WATER
 			SetSpriteVisible(waterS, 0)
@@ -1245,13 +1415,25 @@ function DeleteScene(scene)
 		endif
 		
 		if scene = LAND2
-		    for i = 0 to 2
+		    for i = 0 to 4
 		        DeleteSprite(land2sprBuildings + i)
 		    next i
-		    for lane = 0 to land2maxLanes - 1
-		        DeleteSprite(land2sprStreet + lane)
-		    next lane
+		    	for i = 1 to land2sprStreet.length
+				for j = 1 to land2sprStreet[i].length 
+					DeleteSprite(land2sprStreet[i, j])
+				next j
+		    next i
 			DeleteSprite(land2sprBoostMeter)
+			
+			// for i = 1 to spawnActive.length
+				// DeleteSprite(spawnActive[1].spr)
+				// spawnActive.remove(0)
+			// next i
+			
+			for i = 1 to 10
+				DeleteSprite(land2Bolt[i])
+			next i
+			DeleteSprite(finishLine)
 		endif
 		
 		if scene = AIR2
@@ -1259,7 +1441,7 @@ function DeleteScene(scene)
 			DeleteSprite(air2BBG)
 			DeleteSprite(eggBird)
 			DeleteSprite(eggBirdHead)
-			DeleteSprite(airFinishLine)
+			DeleteSprite(finishLine)
 			DeleteSprite(air2WindBG)
 			
 			iMax = bulletActive.length
@@ -1283,14 +1465,32 @@ function DeleteScene(scene)
 				if GetSpriteExists(oops[i]) then DeleteSprite(oops[i])
 			next i
 			if GetSpriteExists(spaceScrapS) then DeleteAnimatedSprite(spaceScrapS)
+			
+			for i = 1 to spaceParticleS.length
+				DeleteSprite(spaceParticleS[i])
+			next i
+			DeleteSprite(spacePlanetS)
+			if GetTweenExists(spaceTween) then DeleteTween(spaceTween)
+			//DeleteSprite(spaceBG)
 		endif
 		
 		iMax = spawnActive.length
 		for i = 1 to iMax
-			DeleteAnimatedSprite(spawnActive[1].spr)
+			if scene <> LAND2 then DeleteAnimatedSprite(spawnActive[1].spr)
+			if scene = LAND2 then DeleteSprite(spawnActive[1].spr)
 			if GetTweenExists(spawnActive[1].spr) then DeleteTween(spawnActive[1].spr)
 			spawnActive.remove(1)
 		next i
+			
+		if GetSpriteExists(progBack)
+			DeleteSprite(progBack)
+			for i = 1 to 7
+				DeleteSprite(progFlags[i])
+				DeleteSprite(progFronts[i])
+			next i
+			DeleteSprite(heroIcon)
+			DeleteSprite(duckIcon)
+		endif
 			
 		if GetSpriteExists(cutsceneSpr) then DeleteAnimatedSprite(cutsceneSpr)
 			
@@ -1311,8 +1511,8 @@ function DeleteScene(scene)
 		next j
 		DeleteSprite(startRace)
 	
-		DeleteSprite(pauseButton)
-		DeleteSprite(pauseButtonCol)
+		//DeleteSprite(pauseButton)
+		//DeleteSprite(pauseButtonCol)
 		
 	elseif scene = TITLE
 		
@@ -1321,11 +1521,12 @@ function DeleteScene(scene)
 		DeleteText(cutsceneSpr)
 		DeleteSprite(logo)
 		DeleteSprite(startRace)
+		DeleteSprite(firstGameButton)
 		if GetSpriteExists(contRace) then DeleteSprite(contRace)
 		if GetTextExists(contRace) then GetTextExists(contRace)
 	
-		DeleteSprite(pauseButton)
-		DeleteSprite(pauseButtonCol)
+		//DeleteSprite(pauseButton)
+		//DeleteSprite(pauseButtonCol)
 	
 	elseif scene = FINISH
 		
@@ -1343,20 +1544,21 @@ function DeleteScene(scene)
 		if GetTextExists(i) then DeleteText(i)
 	next i
 		
-		
-	if scene = WATER or scene = LAND or scene = AIR or scene = WATER2 or scene = LAND2 or scene = AIR2 or scene = SPACE2
+		//Probably not relevant anymore, these objects are now recreated every scene transition
+	// if scene = WATER or scene = LAND or scene = AIR or scene = WATER2 or scene = LAND2 or scene = AIR2 or scene = SPACE2
 		//These are hidden for every gameplay section
-		SetSpriteVisible(progBack, 0)
-		for i = 1 to 7
-			SetSpriteVisible(progFronts[i], 0)
-			SetSpriteVisible(progFlags[i], 0)
-		next i
-		SetSpriteVisible(heroIcon, 0)
-		SetSpriteVisible(duckIcon, 0)
-		
-	endif
+		// SetSpriteVisible(progBack, 0)
+		// for i = 1 to 7
+			// SetSpriteVisible(progFronts[i], 0)
+			// SetSpriteVisible(progFlags[i], 0)
+		// next i
+		// SetSpriteVisible(heroIcon, 0)
+		// SetSpriteVisible(duckIcon, 0)
+		// 
+	// endif
 	
 	if GetTextExists(scrapText) then DeleteText(scrapText)		
+	if GetSpriteExists(scrapBG) then DeleteSprite(scrapBG)		
 	
 	EmptyTrashBag()
 	
@@ -1504,16 +1706,32 @@ function FreezeGameplay(deleteParts)
 			StopSprite(spawnActive[i].spr)
 		next i
 		StopSound(swimmingS)
+		StopSprite(featherBoostS)
 	elseif screen = LAND2
-		FreezeLand2()
+		//FreezeLand2()
+		// freeze background and hero animations
+	    StopSprite(hero)
+	    //StopSprite(land2sprStreet)
+	    // freeze all spawnables
+	    for i = 0 to spawnActive.length - 1
+	        StopSprite(spawnActive[i].spr)
+	    next i
+	    // hard stop for any SFX
+	    StopSound(boostChargeS)
+	    StopSound(boostS)
+	    StopSound(hitS)
 	elseif screen = AIR2
 		StopSprite(hero)
+		StopSprite(duck)
 		for i = 1 to bulletActive.length
 			StopSprite(bulletActive[i].spr)
 		next i
 		StopSprite(eggBird)
 		StopSprite(eggBirdHead)
 		StopSound(jetstreamS)
+		for i = 1 to slipEnd
+			StopSprite(slipS[i])
+		next i
 	elseif screen = SPACE2
 		for i = 0 to MashList.length
 			if GetSpriteExists(MashList[i].spr) then StopSprite(MashList[i].spr)
@@ -1532,15 +1750,24 @@ function UnfreezeGameplay()
 		for i = 1 to spawnActive.length
 			ResumeSprite(spawnActive[i].spr)
 		next i
+		ResumeSprite(featherBoostS)
 	elseif screen = LAND2
-		UnfreezeLand2()
+		//UnfreezeLand2()
+	    ResumeSprite(hero)
+	    for i = 0 to spawnActive.length - 1
+	        if GetSpriteFrameCount(spawnActive[i].spr) > 1 then ResumeSprite(spawnActive[i].spr)
+	    next i
 	elseif screen = AIR2
 		ResumeSprite(hero)
+		ResumeSprite(duck)
 		for i = 1 to bulletActive.length
 			ResumeSprite(bulletActive[i].spr)
 		next i
 		ResumeSprite(eggBird)
 		ResumeSprite(eggBirdHead)
+		for i = 1 to slipEnd
+			ResumeSprite(slipS[i])
+		next i
 	elseif screen = SPACE2
 		for i = 0 to MashList.length
 			if GetSpriteExists(MashList[i].spr) then ResumeSprite(MashList[i].spr)

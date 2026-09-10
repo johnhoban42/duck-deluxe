@@ -13,6 +13,7 @@ global AREA_CHARS as string[7] = ["W", "L", "S", "W", "L", "S", "Z"]
 #constant LAND2 5
 #constant AIR2 6
 #constant SPACE2 7
+#constant CARSCRAP 99
 
 #constant UPGRADE 8
 #constant TITLE 9
@@ -51,16 +52,62 @@ function LoadScrapImages()
 		next j
 	next i
 endfunction
+
+global scrapTxtTwnUp as integer[5]
+global scrapTxtTwnDown as integer[5]
+function MakeScrapTweens()
+	for i = 1 to scrapTxtTwnUp.length
+		if GetTweenCharExists(scrapTxtTwnUp[i]) then DeleteTween(scrapTxtTwnUp[i])
+		if GetTweenCharExists(scrapTxtTwnDown[i]) then DeleteTween(scrapTxtTwnDown[i])
+	next i
+	
+	for i = 1 to scrapTxtTwnUp.length
+		scrapTxtTwnUp[i] = CreateTweenChar(0.2)
+		SetTweenCharY(scrapTxtTwnUp[i], -4, 0, TweenEaseIn1())
+		
+		scrapTxtTwnDown[i] = CreateTweenChar(0.2)
+		SetTweenCharY(scrapTxtTwnDown[i], 4, 0, TweenEaseIn1())
+	next i
+endfunction
+
 global fish1I
 global fish2I
 global fish3I
+
+global slipstreamI as integer[8]
+global boosterI as integer[18]
+global boosterLastI as integer[18]
 
 #constant spaceArrowI1 7001
 #constant spaceArrowI2 7002
 #constant spaceArrowI3 7003
 #constant spaceArrowI4 7004
 global spaceArrowColorI as integer[4, 4]
+
+global progFlagI as integer[7]
+global progFinishI as integer[9]
+global progMapI as integer[7]
+
 function LoadGameImages()
+	
+	for i = 1 to 7
+		progFlagI[i] = LoadImage("mapBars/flag" + str(i) + ".png")
+		progFinishI[i] = LoadImage("mapBars/finish" + str(i) + ".png")
+		progMapI[i] = LoadImage("mapBars/mapBar" + str(i) + ".png")
+	next
+	progFinishI[8] = LoadImage("mapBars/finish" + str(8) + ".png")
+	progFinishI[9] = LoadImage("mapBars/finish" + str(9) + ".png")
+	
+	for i = 1 to 8
+		slipstreamI[i] = LoadImage("slips/windtest"+str(i)+".png")
+		SetImageWrapU(slipstreamI[i], 1)
+		SetImageWrapV(slipstreamI[i], 1)
+	next i
+	for i = 1 to 18
+		boosterI[i] = LoadImage("cbg/land2booster"+str(19-i)+".png")
+		boosterLastI[i] = LoadImage("cbg/lastPad/land2booster"+str(19-i)+".png")
+	next i
+	
 	LoadImage(spaceArrowI1, "space/tearrow1.png")
 	LoadImage(spaceArrowI2, "space/tearrow2.png")
 	LoadImage(spaceArrowI3, "space/tearrow3.png")
@@ -135,6 +182,7 @@ global progFlags as integer[7]
 #constant cutsceneSpr3 1028	//Intro
 
 #constant contRace 1029
+#constant firstGameButton 1030
 
 #constant landBoost1 1031
 #constant landBoost2 1032
@@ -203,12 +251,14 @@ global tileEH	//Tile extra height, expanded to make them look connected together
 #constant water2Trees3 4053
 #constant saveSpr 4054
 
-#constant land2sprStreet 5000  // 5000 - 5004 for 5 lanes
+//#constant land2sprStreet 5000  // 5000 - 5004 for 5 lanes
+global land2sprStreet as integer [5, 5]
 #constant land2sprBuildings 5010  // reserved 5010 - 5019 for building sprites
 #constant land2sprBoostMeter 5100
 #constant land2sprScrap 5500  // reserved 5500 - 5699 for scrap sprites
 #constant land2sprCones 5700  // reserved 5700 - 5799 for cone sprites
 #constant land2sprBoostPanels 5800  // reserved 5800 - 5999 for boost panel sprites
+global land2Bolt as integer[10]
 
 #constant air2BG 6001
 #constant air2BBG 6002
@@ -226,7 +276,7 @@ global eggBadI as integer[3]
 global eggGoodI
 global miniBird1I
 global miniBird2I
-global airFinishLine
+global finishLine
 
 //Space 2 Sprites
 global pressThis
@@ -235,7 +285,8 @@ global pressThisBeam2
 
 global spaceBoostS
 global spaceScrapS
-
+global spacePlanetS
+global spaceBG
 
 
 #constant spawnStartS 10001
@@ -253,6 +304,10 @@ global arrowI
 #constant enemyP 4
 #constant eggP 5
 #constant shineP 6
+#constant spaceP1 7
+#constant spaceP2 8
+#constant spaceP3 9
+global spaceParticleS as integer [300]
 
 #constant GOOD 1
 #constant BAD 2
