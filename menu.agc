@@ -134,6 +134,9 @@ function DoMenu()
 	
 	if leaveMenu = 1
 		ClearPopup()
+		
+		spawnS = spawnStartS
+		
 		if curRaceSet = 1 or curRaceSet = 2
 			SetRaceQueue(curRaceSet)
 			nextScreen = TITLE
@@ -525,6 +528,22 @@ function CreateTitle2()
 	
 	CreateTextExpress(contRace, "Starting a new race will erase progress. Are you sure?", 50, fontMI, 1, w/2, 800, -10, 5)
 	
+	CreateSpriteExpress(firstGameButton, 230, 230, 0, 0, 20)
+	img = LoadImage("firstGameButtonMid.png")
+	AddSpriteAnimationFrame(firstGameButton, img)
+	trashBag.insert(img)
+	img = LoadImage("firstGameButtonPressed.png")
+	AddSpriteAnimationFrame(firstGameButton, img)
+	trashBag.insert(img)
+	img = LoadImage("firstGameButton.png")
+	AddSpriteAnimationFrame(firstGameButton, img)
+	trashBag.insert(img)
+	SetSpriteMiddleScreen(firstGameButton)
+	SetSpriteShape(firstGameButton, 3)
+	IncSpriteY(firstGameButton, 230)
+	IncSpriteX(firstGameButton, -480)
+	if isDuckDeluxe then SetSpriteVisible(firstGameButton, 0)
+	
 	PlayMusicOGG(introM, 0)
 endfunction
 
@@ -541,7 +560,7 @@ function DoTitle2()
 		
 	endif
 	
-	if Hover(startRace)
+	if Hover(startRace) and GetSpritePlaying(cutsceneSpr3) = 0
 		if GetSpriteCurrentFrame(startRace) <> 1 then PlaySound(clickDownS, volumeS)
 		SetSpriteFrame(startRace, 1)
 	else
@@ -549,8 +568,21 @@ function DoTitle2()
 		SetSpriteFrame(startRace, 3)
 	endif
 	
+	if Hover(firstGameButton) and GetSpritePlaying(cutsceneSpr3) = 0 and isDuckDeluxe = 0
+		if GetSpriteCurrentFrame(firstGameButton) <> 1 then PlaySound(clickDownS, volumeS)
+		SetSpriteFrame(firstGameButton, 1)
+	else
+		if GetSpriteCurrentFrame(firstGameButton) <> 3 then PlaySound(clickUpS, volumeS)
+		SetSpriteFrame(firstGameButton, 3)
+	endif
+	if Button(firstGameButton) and GetSpritePlaying(cutsceneSpr3) = 0 and isDuckDeluxe = 0
+		PlaySprite(firstGameButton, 15, 0, 2, 3)
+		PlaySound(selectS, volumeS)
+		OpenBrowser("https://www.newgrounds.com/portal/view/910584")
+	endif
+	
 	//The continue button only moves if a save exists
-	if firstDuck2Race = 1
+	if firstDuck2Race = 1 and GetSpritePlaying(cutsceneSpr3) = 0
 		if Hover(contRace)
 			if GetSpriteCurrentFrame(contRace) <> 1 then PlaySound(clickDownS, volumeS)
 			SetSpriteFrame(contRace, 1)

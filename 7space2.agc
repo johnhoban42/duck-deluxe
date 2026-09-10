@@ -59,7 +59,7 @@ function CreateMashInputSprite(spr, dir)
 	
 endfunction
 
-function CreateMashSequence()
+function CreateMashSequence(getOops)
 	
 	DeleteMashSequence()
 	
@@ -157,7 +157,17 @@ function CreateMashSequence()
 
 	onSplit = 0
 	mashPos = 0
-	
+
+	if getOops
+		//Resetting the oops for every chain, if the player didn't end on an oops
+		oopsUsed = Max(oopsUsed-1, 0)
+		for i = 0 to oopsMax 
+			if GetSpriteExists(oops[i]) then SetSpriteVisible(oops[i], 1)
+		next i
+		for i = 0 to oopsUsed 
+			if GetSpriteExists(oops[i]) then SetSpriteVisible(oops[i], 0)
+		next i
+	endif
 	
 	
 endfunction
@@ -338,7 +348,7 @@ function InitSpace2()
 	next i
 		
 	
-	CreateMashSequence()
+	CreateMashSequence(0)
 	
 	//Second chances are like 'oopsie' stickers, they get placed over a combo when the wrong thing is pushed
 	//It always defaults to the speed path
@@ -427,12 +437,13 @@ function DoSpace2()
 			endif
 		endif
 		
-		
+		noOops = 1
 		if contMash = 0 and oopsUsed < oopsMax
 			contMash = 1
 			inc oopsUsed, 1
 			SetSpriteVisible(oops[oopsUsed], 0)
 			PlaySound(oopsS, volumeS)
+			noOops = 0
 		endif
 		
 		tempDir = -1
@@ -472,6 +483,7 @@ function DoSpace2()
 				if mashPos = MashList.length + 1
 					//Boost
 					PlaySound(boostS, volumeS/6)
+					PlaySound(cityBoostS, volumeS/2)
 					PlaySoundR(spaceGSE[mashPos+1], volumeS/1.5)
 					spaceSpeedMult# = Pow(1 + 0.1*(MashList.length), 1.15)
 					spaceSpeed# = spaceSpeed#*spaceSpeedMult#
@@ -491,7 +503,7 @@ function DoSpace2()
 					
 					if GetSpriteExists(spaceScrapS) then SetSpriteVisible(spaceScrapS, 0)
 					//Making a new mash sequence
-					CreateMashSequence()
+					CreateMashSequence(noOops)
 					
 					SetSpaceTween(tempDir+4)
 					
@@ -506,7 +518,7 @@ function DoSpace2()
 				
 				SetSpriteVisible(spaceBoostS, 0)
 				if GetSpriteExists(spaceScrapS) then SetSpriteVisible(spaceScrapS, 0)
-				CreateMashSequence()
+				CreateMashSequence(0)
 			endif
 		else
 			//On the second path - for scrap/oopsie stickers
@@ -532,7 +544,7 @@ function DoSpace2()
 					PlayTweenSprite(tweenSprFadeOut, spr, .1)
 					SetSpriteVisible(spaceBoostS, 0)
 					//Making a new mash sequence
-					CreateMashSequence()
+					CreateMashSequence(noOops)
 				else
 					PlaySoundR(spaceGSE[splitPos+mashPos], volumeS/2)
 				endif
@@ -542,7 +554,7 @@ function DoSpace2()
 				
 				SetSpriteVisible(spaceBoostS, 0)
 				if GetSpriteExists(spaceScrapS) then SetSpriteVisible(spaceScrapS, 0)
-				CreateMashSequence()
+				CreateMashSequence(0)
 			endif
 			
 			

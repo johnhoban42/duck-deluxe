@@ -25,8 +25,8 @@ SetWindowSize( 1280, 720, 0 )
 SetWindowAllowResize( 1 ) // allow the user to resize the window
 
 global debug = 0
-global release = 0	//This makes the game go to the title screen, instead of loading right into a race
-global isDuckDeluxe = 1	//This version makes the game the full release, instead of the standalone version of RAaD 2
+global release = 1	//This makes the game go to the title screen, instead of loading right into a race
+global isDuckDeluxe = 0	//This version makes the game the full release, instead of the standalone version of RAaD 2
 global webVersion = 0	//This variable sets the duck 1 game back to it's original version, instead of the ReDucks version
 if debug = 0 then SetErrorMode(1)
 global nextScreen = AIR
@@ -359,8 +359,8 @@ function SetRaceQueue(raceSet)
 	elseif raceSet = 2 //Race Against a Duck 2 order
 		raceQueue.insert(LAND2)
 		raceQueue.insert(WATER2)
-		raceQueue.insert(AIR2)
 		raceQueue.insert(SPACE2)
+		raceQueue.insert(AIR2)
 	endif
 	raceQueueRef = raceQueue
 	
@@ -511,7 +511,7 @@ do
 		if heroLocalDistance# <= 0
 			if raceQueue.length >= 0
 				//Loading in the next race
-				if screen = LAND2 then PlaySound(cityBoostS, volumeS)
+				//if screen = LAND2 then PlaySound(cityBoostS, volumeS)
 				PlayTweenSprite(tweenSprFadeIn, coverS, 0)
 				PlaySound(windMS, volumeS)
 				WaitFadeTween()
@@ -1069,7 +1069,7 @@ function SetupScene(scene)
 	elseif scene = TITLE
 		SetBG(TITLE)
 		
-		LoadSpriteExpress(pauseButton, "settingsButton.png", 75, 75, w - 100, 25, 5)
+		LoadSpriteExpress(pauseButton, "settingsButton.png", 100, 100, w - 125, 25, 5)
 		FixSpriteToScreen(pauseButton, 1)
 		CreateSpriteExpress(pauseButtonCol, GetSpriteWidth(pauseButton), GetSpriteHeight(pauseButton), GetSpriteX(pauseButton), GetSpriteY(pauseButton), 5)
 		SetSpriteVisible(pauseButtonCol, 0)
@@ -1521,6 +1521,7 @@ function DeleteScene(scene)
 		DeleteText(cutsceneSpr)
 		DeleteSprite(logo)
 		DeleteSprite(startRace)
+		DeleteSprite(firstGameButton)
 		if GetSpriteExists(contRace) then DeleteSprite(contRace)
 		if GetTextExists(contRace) then GetTextExists(contRace)
 	

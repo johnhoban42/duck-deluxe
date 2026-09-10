@@ -300,6 +300,7 @@ function InitWater2()
 			PlaySprite(spawnS, 3+Random(1,3))
 			newS.size = 60
 			SetSpriteSizeSquare(spawnS, newS.size)
+			//SetSpriteGroup(spawnS, WATER2)
 		endif
 		SetSpriteDepth(spawnS, 50)
 		
@@ -622,6 +623,10 @@ function DoWater2()
 					//Sound effect
 					//SetSpriteColor(hero, 255, 100, 100, 255)
 				elseif GetTweenExists(spr) = 0 //SCRAP
+					Print(GetSpriteWidth(spawnActive[i].spr))
+					Sync()
+					Sleep(500)
+					
 					CollectScrap(WATER2)
 					SetSpriteGroup(spr, SCRAP)
 					PlaySprite(spr, 30)

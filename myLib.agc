@@ -1050,7 +1050,7 @@ endfunction result
 
 function ClearPopup()
 	if GetSpriteExists(popupSpr) then 	SetSpriteVisible(popupSpr, 0)
-	if GetTextExists(popupSpr) then SetTextVisible(popupTxt, 0)
+	if GetTextExists(popupTxt) then SetTextVisible(popupTxt, 0)
 endfunction
 
 global selectTarget = 0

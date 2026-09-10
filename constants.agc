@@ -182,6 +182,7 @@ global progFlags as integer[7]
 #constant cutsceneSpr3 1028	//Intro
 
 #constant contRace 1029
+#constant firstGameButton 1030
 
 #constant landBoost1 1031
 #constant landBoost2 1032
