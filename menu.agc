@@ -359,8 +359,8 @@ function DoPauseMenu()
 			DeleteScene(screen)
 			SetSpriteVisible(bg, 0)
 			SetTextVisible(scrapText, 0)
-			PlaySprite(cutsceneSpr3, 3, 0, 1, 60)
-			StopSprite(cutsceneSpr3)
+			//PlaySprite(cutsceneSpr3, 3, 0, 1, 60)
+			//StopSprite(cutsceneSpr3)
 			if screen = UPGRADE
 				StopMusicOGG(upgrade2M)
 				DeleteUpgrade2()
@@ -405,13 +405,7 @@ function CreateTitle1()
 	HideUIText()
 	SetSpriteVisible(pauseButton, 0)
 	
-	SetSpriteVisible(cutsceneSpr3, 1)
-	SetSpriteExpress(cutsceneSpr3, h, h, 0, 0, 10)
-	SetSpriteMiddleScreen(cutsceneSpr3)
-	PlaySprite(cutsceneSpr3, 3, 0, 1, 60)
-	
-	CreateTextExpress(cutsceneSpr, "Press SPACE to skip.", 40, fontMI, 2, w-20, h-60, -6, 8)
-	SetTextVisible(cutsceneSpr, 0)
+	SetupCutscene("intro/intro", 60, 3)
 	
 	SetSpriteVisible(bg, 0)
 		
@@ -426,7 +420,11 @@ function CreateTitle1()
 endfunction
 
 function DoTitle1()
+	
+	
+	
 	if GetSpritePlaying(cutsceneSpr3) = 0 and GetSpriteVisible(cutsceneSpr3) = 1
+		if GetMusicPlayingOGG(introM) then StopMusicOGG(introM)
 		PlayMusicOGG(titleM, 1)
 		SetSpriteColor(coverS, 0, 0, 0, 255)
 		SetSpriteVisible(cutsceneSpr3, 0)
@@ -438,17 +436,9 @@ function DoTitle1()
 		
 	endif
 	
-	if inputSelect or Button(startRace) or GetPointerPressed()
+	if (inputSelect or Button(startRace) or GetPointerPressed()) and GetSpritePlaying(cutsceneSpr3) = 0
 		
-		if GetSpriteVisible(cutsceneSpr3) and GetTextVisible(cutsceneSpr) = 0
-			SetTextVisible(cutsceneSpr, 1)
-			PlaySound(selectS, volumeS)
-		elseif GetSpritePlaying(cutsceneSpr3) and GetTextVisible(cutsceneSpr) and inputSelect
-			StopSprite(cutsceneSpr3)
-			PlaySound(selectS, volumeS)
-			
-			if GetMusicPlayingOGG(introM) then StopMusicOGG(introM)
-		elseif Button(startRace) or inputSelect
+		if Button(startRace) or inputSelect
 			if inputSelect then PlaySound(selectS, volumeS)
 			SetSpriteColor(coverS, 255, 255, 255, 0)
 			PlayTweenSprite(tweenSprFadeIn, coverS, 0)
@@ -467,6 +457,11 @@ function DoTitle1()
 			if GetMusicPlayingOGG(titleM) then StopMusicOGG(titleM)
 		endif
 	endif
+	
+	if GetSpritePlaying(cutsceneSpr3)
+		DoCutscene()
+	endif
+	
 endfunction
 
 function CreateTitle2()
@@ -477,13 +472,7 @@ function CreateTitle2()
 	HideUIText()
 	SetSpriteVisible(pauseButton, 0)
 	
-	SetSpriteVisible(cutsceneSpr3, 1)
-	SetSpriteExpress(cutsceneSpr3, h, h, 0, 0, 10)
-	SetSpriteMiddleScreen(cutsceneSpr3)
-	PlaySprite(cutsceneSpr3, 3, 0, 1, 60)
-	
-	CreateTextExpress(cutsceneSpr, "Press SPACE to skip.", 40, fontMI, 2, w-20, h-60, -6, 8)
-	SetTextVisible(cutsceneSpr, 0)
+	SetupCutscene("intro2/2-01-", 84, 4.2)
 	
 	SetSpriteVisible(bg, 0)
 		
@@ -505,9 +494,9 @@ function CreateTitle2()
 	//StopSprite(startRace)
 	SetSpriteMiddleScreen(startRace)
 	SetSpriteShape(startRace, 3)
-	IncSpriteY(startRace, 230)
+	IncSpriteY(startRace, 200)
 	IncSpriteX(startRace, -180)
-	PlayMusicOGG(introM, 0)
+	//PlayMusicOGG(intro2M, 0)
 	
 	LoadSpriteExpress(contRace, "contButtonCant.png", 230, 230, 0, 0, 20)
 	img = LoadImage("contButtonMid.png")
@@ -523,7 +512,7 @@ function CreateTitle2()
 	//StopSprite(contRace)
 	SetSpriteMiddleScreen(contRace)
 	SetSpriteShape(contRace, 3)
-	IncSpriteY(contRace, 230)
+	IncSpriteY(contRace, 200)
 	IncSpriteX(contRace, 180)
 	
 	CreateTextExpress(contRace, "Starting a new race will erase progress. Are you sure?", 50, fontMI, 1, w/2, 800, -10, 5)
@@ -540,16 +529,20 @@ function CreateTitle2()
 	trashBag.insert(img)
 	SetSpriteMiddleScreen(firstGameButton)
 	SetSpriteShape(firstGameButton, 3)
-	IncSpriteY(firstGameButton, 230)
-	IncSpriteX(firstGameButton, -480)
+	IncSpriteY(firstGameButton, 300)
+	//IncSpriteX(firstGameButton, -480)
 	if isDuckDeluxe then SetSpriteVisible(firstGameButton, 0)
 	
-	PlayMusicOGG(introM, 0)
+	PlayMusicOGG(intro2M, 0)
+	SetMusicVolumeOGG(intro2M, 70)
 endfunction
 
 function DoTitle2()
+	
+	
 	if GetSpritePlaying(cutsceneSpr3) = 0 and GetSpriteVisible(cutsceneSpr3) = 1
-		PlayMusicOGG(titleM, 1)
+		if GetMusicPlayingOGG(intro2M) then StopMusicOGG(intro2M)
+		PlayMusicOGG(title2M, 1)
 		SetSpriteColor(coverS, 0, 0, 0, 255)
 		SetSpriteVisible(cutsceneSpr3, 0)
 		SetSpriteVisible(coverS, 1)
@@ -595,18 +588,9 @@ function DoTitle2()
 	//Continuing to move the text if it's already on it's way up
 	if GetTextY(contRace) < 800 then GlideTextToSpot(contRace, w/2, 640, 10)
 	
-	if inputSelect or Button(startRace) or GetPointerPressed()
-		
-		
-		if GetSpriteVisible(cutsceneSpr3) and GetTextVisible(cutsceneSpr) = 0
-			SetTextVisible(cutsceneSpr, 1)
-			PlaySound(selectS, volumeS)
-		elseif GetSpritePlaying(cutsceneSpr3) and GetTextVisible(cutsceneSpr) and inputSelect
-			StopSprite(cutsceneSpr3)
-			PlaySound(selectS, volumeS)
+	if (inputSelect or Button(startRace) or GetPointerPressed()) and GetSpritePlaying(cutsceneSpr3) = 0
 			
-			if GetMusicPlayingOGG(introM) then StopMusicOGG(introM)
-		elseif Button(startRace) and firstDuck2Race = 1 and GetTextY(contRace) > 700
+		if Button(startRace) and firstDuck2Race = 1 and GetTextY(contRace) > 700
 			GlideTextToSpot(contRace, w/2, 580, 10)
 			
 		elseif ((Button(contRace) and firstDuck2Race = 1) or Button(startRace) or inputSelect) and GetSpritePlaying(cutsceneSpr3) = 0
@@ -636,10 +620,15 @@ function DoTitle2()
 			SetRaceQueue(curRaceSet)
 			
 			duckSpeed# = duckSpeedDefault#
-			if GetMusicPlayingOGG(introM) then StopMusicOGG(introM)
-			if GetMusicPlayingOGG(titleM) then StopMusicOGG(titleM)
+			if GetMusicPlayingOGG(intro2M) then StopMusicOGG(intro2M)
+			if GetMusicPlayingOGG(title2M) then StopMusicOGG(title2M)
 		endif
 	endif
+	
+	if GetSpritePlaying(cutsceneSpr3)
+		DoCutscene()
+	endif
+	
 endfunction
 
 //global saveSpr = 0
@@ -723,5 +712,50 @@ function LoadGame()
 	
 endfunction
 
+function SetupCutscene(imgStr$, endFrame, framerate#)
+	
+	if GetSpriteExists(cutsceneSpr3) = 0 then CreateSprite(cutsceneSpr3, 0)
+	
+	for i = 1 to endFrame
+		if i < 10
+			img = LoadImage(imgStr$ + "0" + str(i) + ".png")
+		else
+			img = LoadImage(imgStr$ + str(i) + ".png")
+		endif
+		AddSpriteAnimationFrame(cutsceneSpr3, img)
+		if Mid(imgStr$,1,6) = "scene2" and (i = 28 or i = 46)
+			AddSpriteAnimationFrame(cutsceneSpr3, img)
+			AddSpriteAnimationFrame(cutsceneSpr3, img)
+			AddSpriteAnimationFrame(cutsceneSpr3, img)
+			AddSpriteAnimationFrame(cutsceneSpr3, img)
+			AddSpriteAnimationFrame(cutsceneSpr3, img)
+			AddSpriteAnimationFrame(cutsceneSpr3, img)
+		endif
+		trashBag.insert(img)
+	next i
+	
+	SetSpriteVisible(cutsceneSpr3, 1)
+	SetSpriteExpress(cutsceneSpr3, h, h, 0, 0, 10)
+	SetSpriteMiddleScreen(cutsceneSpr3)
+	PlaySprite(cutsceneSpr3, framerate#, 0, 1, GetSpriteFrameCount(cutsceneSpr3))
+	SetSpriteDepth(cutsceneSpr3, 1)
+	
+	CreateTextExpress(cutsceneSpr, "Press SPACE to skip.", 40, fontMI, 2, w-20, h-60, -6, 1)
+	SetTextVisible(cutsceneSpr, 0)
+	
+endfunction
 
+function DoCutscene()
+	if inputSelect or Button(startRace) or GetPointerPressed()
+		
+		if GetSpriteVisible(cutsceneSpr3) and GetTextVisible(cutsceneSpr) = 0
+			SetTextVisible(cutsceneSpr, 1)
+			PlaySound(selectS, volumeS)
+		elseif GetSpritePlaying(cutsceneSpr3) and GetTextVisible(cutsceneSpr) and inputSelect
+			StopSprite(cutsceneSpr3)
+			PlaySound(selectS, volumeS)
+		endif
+	endif
+	
+endfunction
 

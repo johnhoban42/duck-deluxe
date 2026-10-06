@@ -623,10 +623,6 @@ function DoWater2()
 					//Sound effect
 					//SetSpriteColor(hero, 255, 100, 100, 255)
 				elseif GetTweenExists(spr) = 0 //SCRAP
-					Print(GetSpriteWidth(spawnActive[i].spr))
-					Sync()
-					Sleep(500)
-					
 					CollectScrap(WATER2)
 					SetSpriteGroup(spr, SCRAP)
 					PlaySprite(spr, 30)

@@ -149,6 +149,8 @@ LoadSoundOGG(carHonk2S, "sounds/carHonk2.ogg")
 LoadSoundOGG(carHonkSideS, "sounds/carHonkSide.ogg")
 #constant duckStepS 47
 LoadSoundOGG(duckStepS, "sounds/duckStep.ogg")
+#constant thunderS 48
+LoadSoundOGG(thunderS, "sounds/thunder.ogg")
 
 
 global spaceCSE as integer[13]
@@ -173,7 +175,16 @@ LoadMusicOGG(endingM, "music/ending.ogg")
 #constant titleM 7
 LoadMusicOGG(titleM, "music/title.ogg")
 SetMusicLoopTimesOGG(titleM, 4.941, 33.030)
+
 #constant upgrade2M 8
+#constant intro2M 9
+LoadMusicOGG(intro2M, "music/intro2.ogg")
+#constant title2M 10
+LoadMusicOGG(title2M, "music/title2.ogg")
+SetMusicLoopTimesOGG(title2M, 8.182, -1)
+#constant scene2M 15
+LoadMusicOGG(scene2M, "music/scene2.ogg")
+SetMusicLoopTimesOGG(scene2M, 32.49, -1)
 
 #constant swampM 11
 LoadMusicOGG(swampM, "music/race2-1.ogg")
@@ -183,6 +194,7 @@ LoadMusicOGG(cityM, "music/race2-2.ogg")
 LoadMusicOGG(mesaM, "music/race2-3.ogg")
 #constant spaceM 14
 LoadMusicOGG(spaceM, "music/race2-4.ogg")
+
 
 
 #constant ambWater2 21
@@ -300,7 +312,7 @@ LoadAnimatedSprite(landS, "lBG/l", 60)
 SetSpriteVisible(landS, 0)
 if debug = 0 then LoadAnimatedSprite(airS, "sBG/s", 52)
 SetSpriteVisible(airS, 0)
-if debug = 0 then LoadAnimatedSprite(cutsceneSpr3, "intro/intro", 60)
+CreateSprite(cutsceneSpr3, 0)
 SetSpriteVisible(cutsceneSpr3, 0)
 if debug = 0 then LoadAnimatedSprite(cutsceneSpr2, "ending/end", 89)
 SetSpriteVisible(cutsceneSpr2, 0)
@@ -357,10 +369,10 @@ function SetRaceQueue(raceSet)
 		raceQueue.insert(WATER)
 		raceQueue.insert(LAND)
 	elseif raceSet = 2 //Race Against a Duck 2 order
-		raceQueue.insert(LAND2)
 		raceQueue.insert(WATER2)
-		raceQueue.insert(SPACE2)
+		raceQueue.insert(LAND2)
 		raceQueue.insert(AIR2)
+		raceQueue.insert(SPACE2)
 	endif
 	raceQueueRef = raceQueue
 	
@@ -583,7 +595,6 @@ do
 			StopAmbientMusic()
 			//SaveGame()
 			FreezeGameplay(1)
-			firstDuck2Race = 1
 			
 			HideUIText()
 			finStr$ = "finishHero.png"
@@ -601,6 +612,27 @@ do
 			PlayTweenSprite(tweenSprFadeIn, coverS, 0)
 			PlaySound(windMS, volumeS)
 			WaitFadeTween()
+			
+			if firstDuck2Race = 0
+				SetupCutscene("scene2/2-02-", 78, 3.8)
+				PlayMusicOGG(scene2M, 1)
+				SetViewOffset(0, 0)
+				SetViewZoom(1)
+				SetSpriteColor(coverS, 0, 0, 0, 255)
+				
+				while GetSpritePlaying(cutsceneSpr3)
+					DoInputs()
+					DoCutscene()
+					if GetSpriteCurrentFrame(cutsceneSpr3) = 43 and GetSoundInstances(thunderS) = 0 then PlaySound(thunderS, volumeS)
+					SyncG()
+					
+				endwhile
+				
+				DeleteSprite(cutsceneSpr3)
+				DeleteText(cutsceneSpr)
+				
+				firstDuck2Race = 1
+			endif
 			
 			DeleteScene(screen)
 			DeleteSprite(finishS)
@@ -1517,7 +1549,7 @@ function DeleteScene(scene)
 	elseif scene = TITLE
 		
 		//SetSpriteVisible(cutsceneSpr, 0)
-		DeleteAnimatedSprite(cutsceneSpr3)
+		DeleteSprite(cutsceneSpr3)
 		DeleteText(cutsceneSpr)
 		DeleteSprite(logo)
 		DeleteSprite(startRace)

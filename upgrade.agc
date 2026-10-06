@@ -199,10 +199,13 @@ function CreateUpgrade2()
 		LoadSpriteExpress(upgradeBG, "upgrade2-" + str(areaSeen) + ".png", w, h, 0, 0, 900)
 		
 		if areaSeen = 1 //Fall
-			LoadMusicOGG(upgrade2M, "music/upgrade2-1.ogg")
-			SetMusicLoopTimesOGG(upgrade2M, 6.667, -1)
+			if GetMusicPlayingOGG(scene2M) = 0
+				LoadMusicOGG(upgrade2M, "music/upgrade2-1.ogg")
+				SetMusicLoopTimesOGG(upgrade2M, 6.667, -1)
+			endif
 			PlayMusicOGG(ambUpgrade2, 1)
 			SetMusicVolumeOGG(ambUpgrade2, ambVol/2)
+			
 			LoadSpriteExpress(upgradeBGTop, "fallfilter.png", w, h, 0, 0, 800)
 		endif
 		if areaSeen = 2	//Winter
@@ -232,7 +235,7 @@ function CreateUpgrade2()
 	if GetMusicExistsOGG(upgrade2M) = 0 then LoadMusicOGG(upgrade2M, "music/upgrade.ogg")
 	
 	
-	PlayMusicOGG(upgrade2M, 1)	
+	if GetMusicPlayingOGG(scene2M) = 0 then PlayMusicOGG(upgrade2M, 1)	
 	
 	
 	FixSpriteToScreen(upgradeBG, 1)
@@ -301,9 +304,6 @@ function CreateUpgrade2()
 	
 endfunction
 function DoUpgrade2()
-	Print(GetMusicPlayingOgg(upgrade2M))
-	//SetMusicVolumeOGG(upgrade2M, 100)
-	//Print(GetMusic(upgrade2M))
 	if debug = 1 then scrapTotal = 9999
 	triggerMove = 0
 	if inputLeft then triggerMove = -4
@@ -544,7 +544,9 @@ function StartRace2()
 	ClearPopup()
 	duckSpeed# = duckSpeedDefault#
 	StopMusicOGG(upgrade2M)
+	StopMusicOGG(scene2M)
 	PlaySound(selectS, volumeS)
+	SetSpriteColor(coverS, 255, 255, 255, 255)
 	PlayTweenSprite(tweenSprFadeIn, coverS, 0)
 	PlaySound(windMS, volumeS)
 	WaitFadeTween()

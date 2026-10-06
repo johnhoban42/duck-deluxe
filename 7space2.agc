@@ -265,7 +265,7 @@ function InitSpace2()
 	If GetImageExists(arrowI) = 0 then arrowI = LoadImage("arrow.png")
 	
 	wid = 80
-	CreateSpriteExpress(hero, wid, wid, 300, 300, 5)
+	LoadSpriteExpress(hero, "mesaBG/duck3.png", wid, wid, 300, 300, 5)
 	LoadSpriteExpress(duck, "swampfoe1a.png", wid, wid, 800, 300, 60)
 	
 	
