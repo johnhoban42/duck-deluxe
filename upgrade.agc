@@ -107,7 +107,7 @@ function CreatePod(row, col)
 	SetTextLineSpacing(pod.txtUpgrade, 3)
 	SetTextColor(pod.txtUpgrade, 0, 255, 0, 255)
 	
-	pod.sprBuy = LoadSprite("upgrade/buy.png")
+	pod.sprBuy = LoadSprite("upgrade/BUY.png")
 	SetSpriteExpress(pod.sprBuy, 98*.7, 42*.7, GetSpriteX(spr)+275, GetSpriteY(pod.sprUpBG)+GetSpriteHeight(pod.sprUpBG)-67, 80)
 	//SetSpriteShape(pod.sprBuy, 2)
 	SetPodBuyColor(pod)
